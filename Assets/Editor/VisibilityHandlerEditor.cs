@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using UnityEngine.XR;
 
 [CustomEditor(typeof(VisibilityHandler))]
 public class VisibilityHandlerEditor : Editor {
@@ -14,6 +13,7 @@ public class VisibilityHandlerEditor : Editor {
         //        handler.Generate();
         //    }
         //}
+        DrawDefaultInspector();
 
         if(GUILayout.Button("Init")) {
             handler.Init();
@@ -23,7 +23,7 @@ public class VisibilityHandlerEditor : Editor {
             handler.GenerateVisibilityData();
         }
 
-        GUILayout.BeginHorizontal("box");
+        GUILayout.BeginHorizontal(/*"box"*/);
         if(GUILayout.Button("Show Plane: " + showPlaneSliderValue)) {
             handler.Init();
             handler.GenerateVisibilityData();
@@ -35,15 +35,6 @@ public class VisibilityHandlerEditor : Editor {
         }
         GUILayout.EndHorizontal();
 
-        if(handler.progressAnalysis > -1f) {
-            if(handler.progressAnalysis > 0f) {
-                EditorUtility.DisplayCancelableProgressBar("Simple Progress Bar", "Shows a progress bar for the given seconds", 1f - handler.progressAnalysis);
-            }
-            else {
-                EditorUtility.ClearProgressBar();
-                handler.progressAnalysis = -1f;
-            }
-        }
 
     }
 

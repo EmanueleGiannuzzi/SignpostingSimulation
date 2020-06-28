@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.IO;
 using System;
 
 public static class Utility
@@ -27,5 +28,34 @@ public static class Utility
         for(int i = 0; i < arr.Length; ++i) {
             arr[i] = value;
         }
+    }
+
+    public static void DeleteFile(string path) {
+        if(File.Exists(path)) {
+            File.Delete(path);
+        }
+    }
+
+    public static System.Diagnostics.Process RunCommand(string commandFileName, string arg, bool showConsole) {
+        System.Diagnostics.Process process = new System.Diagnostics.Process();
+        System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+
+        if(!showConsole) {
+            startInfo.UseShellExecute = false;
+            startInfo.CreateNoWindow = false; 
+        }
+
+        startInfo.FileName = commandFileName;
+        startInfo.Arguments = arg;
+        process.StartInfo = startInfo;
+
+        try {
+            process.Start();
+        }
+        catch(Exception) {
+            throw;
+        }
+
+        return process;
     }
 }

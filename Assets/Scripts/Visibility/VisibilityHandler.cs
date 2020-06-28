@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using System;
-using UnityEditor.Experimental.AssetImporters;
+using UnityEditor;
 
 public class VisibilityHandler : MonoBehaviour {
     [Header("Agent Types(Eye level)")]
@@ -23,10 +22,6 @@ public class VisibilityHandler : MonoBehaviour {
 
     public float progressAnalysis = -1f;
 
-
-    //void Start() {
-
-    //}
 
     public void Init() {
 
@@ -66,14 +61,16 @@ public class VisibilityHandler : MonoBehaviour {
     }
 
     private void AnalyzeSignboards() {
-        progressAnalysis = 1f;
+        this.progressAnalysis = 1f;
+
+        //EditorUtility.DisplayCancelableProgressBar("Simple Progress Bar", "Shows a progress bar for the given seconds", 1f - progressAnalysis);
 
         Bounds meshRendererBounds = visibilityPlane.GetComponent<MeshRenderer>().bounds;
         Vector3 cornerMin = meshRendererBounds.max;
         float planeWidth = meshRendererBounds.extents.x * 2;
         float planeHeight = meshRendererBounds.extents.z * 2;
 
-        float agentTypeProgress = progressAnalysis / agentTypes.Length;
+        float agentTypeProgress = this.progressAnalysis / agentTypes.Length;
         for(int agentTypeID = 0; agentTypeID < agentTypes.Length; agentTypeID++) {
             StringFloatTuple tuple = agentTypes[agentTypeID];
 
@@ -102,11 +99,11 @@ public class VisibilityHandler : MonoBehaviour {
                 for(int z = 0; z < heightResolution; z++) {
                     for(int x = 0; x < widthResolution; x++) {
                         Vector3 vi = new Vector3(cornerMin.x - ((planeWidth / widthResolution) * x), visibilityPlane.transform.position.y, cornerMin.z - ((planeHeight / heightResolution) * z));
-                        
+
                         bool isVisible = false;
 
                         if(
-                            Utility.HorizontalPlaneContainsPoint(visibilityPlane.GetComponent<MeshFilter>().sharedMesh, visibilityPlane.transform.InverseTransformPoint(vi)) 
+                            Utility.HorizontalPlaneContainsPoint(visibilityPlane.GetComponent<MeshFilter>().sharedMesh, visibilityPlane.transform.InverseTransformPoint(vi))
                             && (Vector3.Dot((vi - p), n) / ((vi - p).magnitude * n.magnitude)) >= Mathf.Cos(theta / 2)
                             && ((vi - p).magnitude <= d)
                             ) {
@@ -132,12 +129,19 @@ public class VisibilityHandler : MonoBehaviour {
                                 visibilityInfos[agentTypeID].Add(coords, vinfo);
                             }
                         }
-                        progressAnalysis -= resolutionProgress;
-                        Debug.Log(progressAnalysis);
+                        this.progressAnalysis -= resolutionProgress;
+                    }
+                    if(EditorUtility.DisplayCancelableProgressBar("Simple Progress Bar", "Shows a progress bar for the given seconds", 1f - progressAnalysis)) {
+                        EditorUtility.ClearProgressBar();
+                        this.progressAnalysis = -1f;
+                        return;
                     }
                 }
             }
         }
-        progressAnalysis = 0f;
+        this.progressAnalysis = 0f;
+        EditorUtility.ClearProgressBar();
+
+        this.progressAnalysis = -1f;
     }
 }
