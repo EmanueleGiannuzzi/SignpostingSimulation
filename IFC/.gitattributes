@@ -1,0 +1,2 @@
+0912106-02windows_placement_inside_wall_all_1.obj filter=lfs diff=lfs merge=lfs -text
+20160125OTC-Conference[[:space:]]Center[[:space:]]-[[:space:]]IFC4.obj filter=lfs diff=lfs merge=lfs -text

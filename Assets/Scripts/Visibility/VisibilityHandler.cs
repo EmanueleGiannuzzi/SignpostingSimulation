@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 public class VisibilityHandler : MonoBehaviour {
     [Header("Agent Types(Eye level)")]
@@ -20,6 +21,7 @@ public class VisibilityHandler : MonoBehaviour {
 
     private Dictionary<Vector2Int, VisibilityInfo>[] visibilityInfos;
 
+    [HideInInspector]
     public float progressAnalysis = -1f;
 
 
@@ -143,5 +145,84 @@ public class VisibilityHandler : MonoBehaviour {
         EditorUtility.ClearProgressBar();
 
         this.progressAnalysis = -1f;
+    }
+
+    public static Mesh GetTopMeshFromGameObject(GameObject gameObject) {
+        MeshFilter goMeshFilter = gameObject.GetComponent<MeshFilter>();
+        if(goMeshFilter == null || goMeshFilter.sharedMesh == null) {
+            return null;
+        }
+
+        Mesh goMesh = goMeshFilter.sharedMesh;
+        float higherCoord = -float.MaxValue;
+        foreach(Vector3 vertex in goMesh.vertices) {
+            if(vertex.z > higherCoord) {
+                higherCoord = vertex.z;
+            }
+        }
+
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> invalidVerticesIDs = new List<int>();
+        List<int> triangles = new List<int>();
+        Dictionary<int, int> conversionTable = new Dictionary<int, int>();
+
+        int j = 0;//New array id
+        for(int i = 0; i < goMesh.vertices.Length; i++) {
+            Vector3 vertex = goMesh.vertices[i];
+            if(vertex.z == higherCoord) {
+                vertices.Add(vertex);
+                conversionTable.Add(i, j);
+                j++;
+            }
+            else {
+                invalidVerticesIDs.Add(i);
+            }
+        }
+
+        int triangleCount = goMesh.triangles.Length / 3;
+        for(int i = 0; i < triangleCount; i++) {
+            int v1 = goMesh.triangles[i * 3];
+            int v2 = goMesh.triangles[i * 3 + 1];
+            int v3 = goMesh.triangles[i * 3 + 2];
+
+            if(!(invalidVerticesIDs.Contains(v1) 
+                || invalidVerticesIDs.Contains(v2) 
+                || invalidVerticesIDs.Contains(v3))) {//If triangle is valid
+                triangles.Add(conversionTable[v1]);
+                triangles.Add(conversionTable[v2]);
+                triangles.Add(conversionTable[v3]);
+            }
+        }
+
+
+        Mesh mesh = new Mesh {
+            vertices = vertices.ToArray(),
+            triangles = triangles.ToArray()
+        };
+
+        mesh.name = goMesh.name;
+
+        mesh.RecalculateNormals();
+        mesh.RecalculateTangents();
+        mesh.RecalculateBounds();
+
+        return mesh;
+    }
+
+    public GameObject testObject;
+    public Material visibilityPlaneMaterial;
+    public void Test() {
+        GameObject visibilityPlane = new GameObject("VisibilityPlaneTEST");
+        MeshFilter meshFilter = visibilityPlane.AddComponent<MeshFilter>();
+        MeshRenderer meshRenderer = visibilityPlane.AddComponent<MeshRenderer>();
+
+        visibilityPlane.transform.position = testObject.transform.position;
+        visibilityPlane.transform.rotation = testObject.transform.rotation;
+        visibilityPlane.transform.localScale = testObject.transform.localScale;
+
+        meshRenderer.material = new Material(visibilityPlaneMaterial);
+
+        Mesh topMesh = GetTopMeshFromGameObject(testObject);
+        meshFilter.mesh = topMesh;
     }
 }

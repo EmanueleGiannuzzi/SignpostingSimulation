@@ -22,17 +22,36 @@ public class ShowAllVertices : MonoBehaviour {
 
         //int width = 20;
         //int height = 20;
-        
-        Bounds meshRendererBounds = this.GetComponent<MeshRenderer>().bounds;
-        Vector3 cornerMin = meshRendererBounds.min;
-        float planeWidth = meshRendererBounds.extents.x * 2;
-        float planeHeight = meshRendererBounds.extents.z * 2;
+
+        Mesh goMesh = this.GetComponent<MeshFilter>().sharedMesh;
+        float maxY = -float.MaxValue;
+        foreach(Vector3 vertex in goMesh.vertices) {
+            Debug.Log("V: " + vertex);
+            if(vertex.z > maxY) {
+                maxY = vertex.z;
+            }
+        }
+
+        for(int i = 0; i < goMesh.vertices.Length; i++) {
+            Vector3 vertex = goMesh.vertices[i];
+            if(vertex.z == maxY) {
+                VerticeListToShow.Add(transform.TransformPoint(vertex));
+            }
+        }
 
 
-        Bounds bounds = GetComponent<MeshFilter>().mesh.bounds;
-        Debug.Log(transform.TransformPoint(bounds.center));
-        VerticeListToShow.Add(transform.TransformPoint(bounds.center));
-        VerticeListToShow.Add(transform.TransformPoint(bounds.min));
+
+
+        //Bounds meshRendererBounds = this.GetComponent<MeshRenderer>().bounds;
+        //Vector3 cornerMin = meshRendererBounds.min;
+        //float planeWidth = meshRendererBounds.extents.x * 2;
+        //float planeHeight = meshRendererBounds.extents.z * 2;
+
+
+        //Bounds bounds = GetComponent<MeshFilter>().mesh.bounds;
+        //Debug.Log(transform.TransformPoint(bounds.center));
+        //VerticeListToShow.Add(transform.TransformPoint(bounds.center));
+        //VerticeListToShow.Add(transform.TransformPoint(bounds.min));
         //VerticeListToShow.Add(transform.TransformPoint(bounds.max));
 
 

@@ -23,19 +23,21 @@ public class VisibilityHandlerEditor : Editor {
             handler.GenerateVisibilityData();
         }
 
-        GUILayout.BeginHorizontal(/*"box"*/);
+        //GUILayout.BeginHorizontal(/*"box"*/);
         if(GUILayout.Button("Show Plane: " + showPlaneSliderValue)) {
             handler.Init();
             handler.GenerateVisibilityData();
             handler.ShowVisibilityPlane(0);
         }
-        if(handler.agentTypes.Length > 1) {
-            showPlaneSliderValue = GUILayout.HorizontalSlider(showPlaneSliderValue, 0, handler.GetVisibilityInfo().Length);
-            showPlaneSliderValue = Mathf.Round(showPlaneSliderValue);
+        //if(handler.agentTypes.Length > 1) {
+        //    showPlaneSliderValue = GUILayout.HorizontalSlider(showPlaneSliderValue, 0, handler.GetVisibilityInfo().Length);
+        //    showPlaneSliderValue = Mathf.Round(showPlaneSliderValue);
+        //}
+        //GUILayout.EndHorizontal();
+
+        if(GUILayout.Button("Test")) {
+            handler.Test();
         }
-        GUILayout.EndHorizontal();
-
-
     }
 
     void OnEnable() {

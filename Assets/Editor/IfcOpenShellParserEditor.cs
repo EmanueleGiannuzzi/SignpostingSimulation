@@ -13,9 +13,17 @@ public class IfcOpenShellParserEditor : Editor
             handler.LoadIFC();
         }
 
-        //if(GUILayout.Button("Load OBJ, MTL, XML")) {
-        //    handler.LoadOBJMTLXMLFile();
-        //}
+        if(GUILayout.Button("Load OBJ, MTL, XML")) {
+            handler.LoadOBJMTLXMLFile();
+        }
+
+        if(GUILayout.Button("Load XML")) {
+            string xmlPath = EditorUtility.OpenFilePanel("Import XML", "", "xml");
+
+            if(!string.IsNullOrEmpty(xmlPath)) {
+                handler.LoadXML(xmlPath);
+            }
+        }
     }
 
     void OnEnable() {

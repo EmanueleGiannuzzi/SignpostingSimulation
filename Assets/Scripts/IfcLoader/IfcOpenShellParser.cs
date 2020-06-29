@@ -5,14 +5,23 @@ using System;
 using System.IO;
 using System.Xml;
 using System.Collections.Generic;
-
+using System.Linq;
+using UnityEngine.AI;
 
 public class IfcOpenShellParser : MonoBehaviour {
     //private string fileName;
+    [Header("Walkable Areas")]
+    public string[] walkableAreas = { "IfcSlab", "IfcStair", "IfcStairFlight" };
+
+    [Header("Loader")]
+    public bool deleteTemporaryFiles = true;
+
     private GameObject loadedOBJ;
     private XmlDocument loadedXML;
 
-    private Dummiesman.OBJLoader objLoader = new Dummiesman.OBJLoader {
+    private static readonly int NOTWALKABLE_AREATYPE = 1;
+
+    private readonly Dummiesman.OBJLoader objLoader = new Dummiesman.OBJLoader {
         SplitMode = Dummiesman.SplitMode.Object,
     };
 
@@ -37,9 +46,11 @@ public class IfcOpenShellParser : MonoBehaviour {
             Debug.LogError("Error during parse");
         }
 
-        Utility.DeleteFile(objPath);
-        Utility.DeleteFile(mtlPath);
-        Utility.DeleteFile(xmlPath);
+        if(this.deleteTemporaryFiles) {
+            Utility.DeleteFile(objPath);
+            Utility.DeleteFile(mtlPath);
+            Utility.DeleteFile(xmlPath);
+        }
     }
 
     public void LoadOBJMTLXMLFile() {
@@ -66,14 +77,14 @@ public class IfcOpenShellParser : MonoBehaviour {
         }
     }
 
-    private void LoadXML(string path) {
+    public void LoadXML(string path) {
         loadedXML = new XmlDocument();
         loadedXML.Load(path);
 
         string basePath = @"//ifc/decomposition";
 
         GameObject root = new GameObject {
-            name = Path.GetFileNameWithoutExtension(path) + " (IFC)"
+            name = Path.GetFileNameWithoutExtension(path)
         };
 
         foreach(XmlNode node in loadedXML.SelectNodes(basePath + "/IfcProject")) {
@@ -81,6 +92,11 @@ public class IfcOpenShellParser : MonoBehaviour {
         }
 
         DestroyImmediate(loadedOBJ);
+
+        Debug.Log("Loaded XML");
+    }
+    private bool IsIfcWalkableArea(string ifcClass) {
+        return this.walkableAreas.Contains(ifcClass);
     }
 
     private void AddElements(XmlNode node, GameObject parent) {
@@ -100,11 +116,23 @@ public class IfcOpenShellParser : MonoBehaviour {
             }
 
             if(goElement != null) {
+                //if(IsIfcWalkableArea(node.Name)) {
+                //    goElement.layer = WALKABLE_LAYER;
+                //}
+                MeshFilter goMeshFilter = goElement.GetComponent<MeshFilter>();
+                if(goMeshFilter != null && goMeshFilter.sharedMesh != null) {
+                    goElement.AddComponent<MeshCollider>();
+                    if(!IsIfcWalkableArea(node.Name)) {
+                        NavMeshModifier navmeshModifier = goElement.AddComponent<NavMeshModifier>();
+                        navmeshModifier.overrideArea = true;
+                        navmeshModifier.area = NOTWALKABLE_AREATYPE;
+                    }
+                }
+
                 goElement.name = name;
                 if(parent != null) {
                     goElement.transform.SetParent(parent.transform);
                 }
-
                 AddProperties(node, goElement);
 
                 foreach(XmlNode child in node.ChildNodes) {

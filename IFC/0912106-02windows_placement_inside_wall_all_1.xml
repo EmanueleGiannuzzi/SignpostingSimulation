@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ifc xmlns:xlink="http://www.w3.org/1999/xlink">
+	<header>
+		<file_description>
+			<description/>
+			<implementation_level>2;1</implementation_level>
+		</file_description>
+		<file_name>
+			<author/>
+			<organization/>
+			<name>E:\nem\V2006\Extern\Windows\windows_placement_inside_wall_all_1.ifc</name>
+			<time_stamp>2006-05-31T11:19:04</time_stamp>
+			<preprocessor_version>EDM 4.7.036</preprocessor_version>
+			<originating_system>Allplan 2006.0 31.05.2006 - 07:15:08</originating_system>
+			<authorization/>
+		</file_name>
+		<file_schema>
+			<schema_identifiers>IFC2X3</schema_identifiers>
+		</file_schema>
+	</header>
+	<units>
+		<IfcSIUnit UnitType="LENGTHUNIT" Prefix="MILLI" Name="METRE" SI_equivalent="0.001"/>
+		<IfcConversionBasedUnit UnitType="PLANEANGLEUNIT" Name="DEGREE" SI_equivalent="0.017453292519943299"/>
+	</units>
+	<properties/>
+	<quantities/>
+	<types>
+		<IfcWindowStyle id="0UtDTboVb5DRPsQepBxOFh" Name="m" ConstructionType="NOTDEFINED" OperationType="SINGLE_PANEL" ParameterTakesPrecedence="true" Sizeable="false"/>
+		<IfcWindowStyle id="0oAT5nn8P669yML893f2hT" Name="m" ConstructionType="NOTDEFINED" OperationType="SINGLE_PANEL" ParameterTakesPrecedence="true" Sizeable="false"/>
+		<IfcWindowStyle id="0sbVeEG7vCy9gSjtFCpu51" Name="m" ConstructionType="NOTDEFINED" OperationType="SINGLE_PANEL" ParameterTakesPrecedence="true" Sizeable="false"/>
+		<IfcWindowStyle id="1hpdqLmKnB9ugp1B9$kGXU" Name="m" ConstructionType="NOTDEFINED" OperationType="SINGLE_PANEL" ParameterTakesPrecedence="true" Sizeable="false"/>
+		<IfcWindowStyle id="3IALxY$eX8bR7jxZwmj7wF" Name="m" ConstructionType="NOTDEFINED" OperationType="SINGLE_PANEL" ParameterTakesPrecedence="true" Sizeable="false"/>
+	</types>
+	<layers/>
+	<materials>
+		<IfcMaterialLayerSetUsage id="IfcMaterialLayerSetUsage_195" LayerSetDirection="AXIS2" DirectionSense="POSITIVE" OffsetFromReferenceLine="-600">
+			<IfcMaterialLayer Name="Bricks" LayerThickness="600"/>
+		</IfcMaterialLayerSetUsage>
+		<IfcMaterialLayerSetUsage id="IfcMaterialLayerSetUsage_470" LayerSetDirection="AXIS2" DirectionSense="POSITIVE" OffsetFromReferenceLine="-600">
+			<IfcMaterialLayer Name="Bricks" LayerThickness="600"/>
+		</IfcMaterialLayerSetUsage>
+		<IfcMaterialLayerSetUsage id="IfcMaterialLayerSetUsage_745" LayerSetDirection="AXIS2" DirectionSense="POSITIVE" OffsetFromReferenceLine="-600">
+			<IfcMaterialLayer Name="Bricks" LayerThickness="600"/>
+		</IfcMaterialLayerSetUsage>
+		<IfcMaterialLayerSetUsage id="IfcMaterialLayerSetUsage_1021" LayerSetDirection="AXIS2" DirectionSense="POSITIVE" OffsetFromReferenceLine="-600">
+			<IfcMaterialLayer Name="Bricks" LayerThickness="600"/>
+		</IfcMaterialLayerSetUsage>
+		<IfcMaterialLayerSetUsage id="IfcMaterialLayerSetUsage_1296" LayerSetDirection="AXIS2" DirectionSense="POSITIVE" OffsetFromReferenceLine="-600">
+			<IfcMaterialLayer Name="Bricks" LayerThickness="600"/>
+		</IfcMaterialLayerSetUsage>
+	</materials>
+	<decomposition>
+		<IfcProject id="1Q7TNx61DAXBcSy$WWVfV0" Name="IFC Project">
+			<IfcBuilding id="1rzee63SXDUgm$HvohaOhS" Name="Gebäude" ObjectPlacement="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1" CompositionType="ELEMENT">
+				<IfcBuildingStorey id="1Jn_d0UBv8ERm$jgqs1AzE" Name="Geschossebene  1" ObjectPlacement="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1" CompositionType="ELEMENT" Elevation="0">
+					<IfcWallStandardCase id="1KN_ysk0zFlRmowkjTFjmd" ObjectPlacement="-1 0 0 0 0 -1 0 0 0 0 1 0 3194.95 600 0 1">
+						<IfcOpeningElement id="1BNBg0Jrr8HQYNALT3AEW3" ObjectType="Opening" ObjectPlacement="0 0 1 0 -1 0 0 0 0 -1 0 0 2500 600 1000 1">
+							<IfcWindow id="1aebxPu_rCJQ9UmuB92AGj" Name="m" ObjectPlacement="-1 0 0 0 0 -1 0 0 0 0 1 0 2500 0 1000 1">
+								<IfcWindowStyle xlink:href="#0UtDTboVb5DRPsQepBxOFh"/>
+							</IfcWindow>
+						</IfcOpeningElement>
+						<IfcMaterialLayerSetUsage xlink:href="#IfcMaterialLayerSetUsage_195"/>
+					</IfcWallStandardCase>
+					<IfcOpeningElement id="1BNBg0Jrr8HQYNALT3AEW3" ObjectType="Opening" ObjectPlacement="0 0 1 0 -1 0 0 0 0 -1 0 0 2500 600 1000 1">
+						<IfcWindow id="1aebxPu_rCJQ9UmuB92AGj" Name="m" ObjectPlacement="-1 0 0 0 0 -1 0 0 0 0 1 0 2500 0 1000 1">
+							<IfcWindowStyle xlink:href="#0UtDTboVb5DRPsQepBxOFh"/>
+						</IfcWindow>
+					</IfcOpeningElement>
+					<IfcWallStandardCase id="0drxPnGAv6pADOL8MhEYoC" ObjectPlacement="-0.309017 -0.951057 0 0 0.951057 -0.309017 0 0 0 0 1 0 3416.66 3223.99 0 1">
+						<IfcOpeningElement id="1w7hm6owT5JBM59YcXIgCA" ObjectType="Opening" ObjectPlacement="0 0 1 0 -0.309017 -0.951057 0 0 0.951057 -0.309017 0 0 3047.4 2087.52 1000 1">
+							<IfcWindow id="0jE$_$9_zFGOiP2EyeuBBa" Name="m" ObjectPlacement="-0.309017 -0.951057 0 0 0.951057 -0.309017 0 0 0 0 1 0 3522.93 1933.01 1000 1">
+								<IfcWindowStyle xlink:href="#0oAT5nn8P669yML893f2hT"/>
+							</IfcWindow>
+						</IfcOpeningElement>
+						<IfcMaterialLayerSetUsage xlink:href="#IfcMaterialLayerSetUsage_470"/>
+					</IfcWallStandardCase>
+					<IfcOpeningElement id="1w7hm6owT5JBM59YcXIgCA" ObjectType="Opening" ObjectPlacement="0 0 1 0 -0.309017 -0.951057 0 0 0.951057 -0.309017 0 0 3047.4 2087.52 1000 1">
+						<IfcWindow id="0jE$_$9_zFGOiP2EyeuBBa" Name="m" ObjectPlacement="-0.309017 -0.951057 0 0 0.951057 -0.309017 0 0 0 0 1 0 3522.93 1933.01 1000 1">
+							<IfcWindowStyle xlink:href="#0oAT5nn8P669yML893f2hT"/>
+						</IfcWindow>
+					</IfcOpeningElement>
+					<IfcWallStandardCase id="1nO6Za46PCzhNOn1w$cJXU" ObjectPlacement="0.809017 -0.587785 0 0 0.587785 0.809017 0 0 0 0 1 0 989.61 4245.7 0 1">
+						<IfcOpeningElement id="3vxasuOyn8Tx$oKzXSBSx6" ObjectType="Opening" ObjectPlacement="0 0 1 0 0.809017 -0.587785 0 0 0.587785 0.809017 0 0 1956.35 3543.33 1000 1">
+							<IfcWindow id="1rGnTVw9bBsvTSfW4oVcj8" Name="m" ObjectPlacement="0.809017 -0.587785 0 0 0.587785 0.809017 0 0 0 0 1 0 2147.38 3806.26 1000 1">
+								<IfcWindowStyle xlink:href="#0sbVeEG7vCy9gSjtFCpu51"/>
+							</IfcWindow>
+						</IfcOpeningElement>
+						<IfcMaterialLayerSetUsage xlink:href="#IfcMaterialLayerSetUsage_745"/>
+					</IfcWallStandardCase>
+					<IfcOpeningElement id="3vxasuOyn8Tx$oKzXSBSx6" ObjectType="Opening" ObjectPlacement="0 0 1 0 0.809017 -0.587785 0 0 0.587785 0.809017 0 0 1956.35 3543.33 1000 1">
+						<IfcWindow id="1rGnTVw9bBsvTSfW4oVcj8" Name="m" ObjectPlacement="0.809017 -0.587785 0 0 0.587785 0.809017 0 0 0 0 1 0 2147.38 3806.26 1000 1">
+							<IfcWindowStyle xlink:href="#0sbVeEG7vCy9gSjtFCpu51"/>
+						</IfcWindow>
+					</IfcOpeningElement>
+					<IfcWallStandardCase id="0YfKCzw7D7xhfpJLpAlG8N" ObjectPlacement="0.809017 0.587785 0 0 -0.587785 0.809017 0 0 0 0 1 0 -732.099 2253.17 0 1">
+						<IfcOpeningElement id="2XW7SMQm9A4RfPHW7x1wlO" ObjectType="Opening" ObjectPlacement="0 0 1 0 0.809017 0.587785 0 0 -0.587785 0.809017 0 0 234.637 2955.54 1000 1">
+							<IfcWindow id="2$9TnbQTP57efsrLcIcFru" Name="m" ObjectPlacement="0.809017 0.587785 0 0 -0.587785 0.809017 0 0 0 0 1 0 146.469 3076.9 1000 1">
+								<IfcWindowStyle xlink:href="#1hpdqLmKnB9ugp1B9$kGXU"/>
+							</IfcWindow>
+						</IfcOpeningElement>
+						<IfcMaterialLayerSetUsage xlink:href="#IfcMaterialLayerSetUsage_1021"/>
+					</IfcWallStandardCase>
+					<IfcOpeningElement id="2XW7SMQm9A4RfPHW7x1wlO" ObjectType="Opening" ObjectPlacement="0 0 1 0 0.809017 0.587785 0 0 -0.587785 0.809017 0 0 234.637 2955.54 1000 1">
+						<IfcWindow id="2$9TnbQTP57efsrLcIcFru" Name="m" ObjectPlacement="0.809017 0.587785 0 0 -0.587785 0.809017 0 0 0 0 1 0 146.469 3076.9 1000 1">
+							<IfcWindowStyle xlink:href="#1hpdqLmKnB9ugp1B9$kGXU"/>
+						</IfcWindow>
+					</IfcOpeningElement>
+					<IfcWallStandardCase id="1UmCVIcm97FwG2QkbvYc1E" ObjectPlacement="-0.309017 0.951057 0 0 -0.951057 -0.309017 0 0 0 0 1 0 435.926 600 0 1">
+						<IfcOpeningElement id="0jmi1lBwXEkOsLZzol1U3G" ObjectType="Opening" ObjectPlacement="0 0 1 0 -0.309017 0.951057 0 0 -0.951057 -0.309017 0 0 261.617 1136.47 1000 1">
+							<IfcWindow id="1gNRepVvD13v6I8Go$pt6k" Name="m" ObjectPlacement="-0.309017 0.951057 0 0 -0.951057 -0.309017 0 0 0 0 1 0 214.064 1121.02 1000 1">
+								<IfcWindowStyle xlink:href="#3IALxY$eX8bR7jxZwmj7wF"/>
+							</IfcWindow>
+						</IfcOpeningElement>
+						<IfcMaterialLayerSetUsage xlink:href="#IfcMaterialLayerSetUsage_1296"/>
+					</IfcWallStandardCase>
+					<IfcOpeningElement id="0jmi1lBwXEkOsLZzol1U3G" ObjectType="Opening" ObjectPlacement="0 0 1 0 -0.309017 0.951057 0 0 -0.951057 -0.309017 0 0 261.617 1136.47 1000 1">
+						<IfcWindow id="1gNRepVvD13v6I8Go$pt6k" Name="m" ObjectPlacement="-0.309017 0.951057 0 0 -0.951057 -0.309017 0 0 0 0 1 0 214.064 1121.02 1000 1">
+							<IfcWindowStyle xlink:href="#3IALxY$eX8bR7jxZwmj7wF"/>
+						</IfcWindow>
+					</IfcOpeningElement>
+				</IfcBuildingStorey>
+			</IfcBuilding>
+		</IfcProject>
+	</decomposition>
+</ifc>
