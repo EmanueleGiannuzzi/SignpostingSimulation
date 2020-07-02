@@ -35,9 +35,9 @@ public class VisibilityHandlerEditor : Editor {
         //}
         //GUILayout.EndHorizontal();
 
-        if(GUILayout.Button("Test")) {
-            handler.Test();
-        }
+        //if(GUILayout.Button("Test")) {
+        //    handler.Test();
+        //}
     }
 
     void OnEnable() {

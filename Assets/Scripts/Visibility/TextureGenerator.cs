@@ -20,6 +20,7 @@ public class VisibilityTextureGenerator : MonoBehaviour
 
 		foreach(KeyValuePair<Vector2Int, VisibilityInfo> entry in visibilityData) {
 			Vector2Int coords = entry.Key;
+
 			Color visibleColor = Color.white;
 			foreach(int signageboardID in entry.Value.GetVisibleBoards()) {
 				visibleColor *= signageBoards[signageboardID].GetColor();
