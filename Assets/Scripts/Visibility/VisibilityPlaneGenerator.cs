@@ -9,8 +9,6 @@ public class VisibilityPlaneGenerator : MonoBehaviour {
 
     private GameObject visibilityPlanesGroup;
 
-    public Material visibilityPlaneMaterial;
-
     private readonly string VISIBILITY_GROUP_NAME = "VisibilityPlanesGroup";
 
     public GameObject GetVisibilityPlanesGroup() {
@@ -44,17 +42,26 @@ public class VisibilityPlaneGenerator : MonoBehaviour {
                 MeshFilter meshFilter = plane.AddComponent<MeshFilter>();
                 MeshRenderer meshRenderer = plane.AddComponent<MeshRenderer>();
 
-                plane.transform.position = goElement.transform.position;
+                //plane.transform.position = goElement.transform.position;
                 //plane.transform.rotation = goElement.transform.rotation;
                 //plane.transform.localScale = goElement.transform.localScale;
 
-                meshRenderer.material = new Material(visibilityPlaneMaterial);
+                meshRenderer.material = new Material(Shader.Find("Unlit/Transparent"));
 
-                Mesh topMesh = Utility.GetTopMeshFromGameObject(goElement);
-                
+                float floorHeight;
+                Mesh topMesh = Utility.GetTopMeshFromGameObject(goElement, out floorHeight);
+                Debug.Log("FH: " + floorHeight);
+
+                Vector3 position = goElement.transform.position;
+                position[1] = floorHeight; // the Y value
+                plane.transform.position = position;
+
                 meshFilter.mesh = topMesh;
 
                 plane.transform.parent = visibilityPlanesGroup.transform;
+
+                VisibilityPlaneData planeData = plane.AddComponent<VisibilityPlaneData>();
+                planeData.OriginalFloorHeight = floorHeight;
             }
         }
         foreach(Transform childTransform in goElement.transform) {

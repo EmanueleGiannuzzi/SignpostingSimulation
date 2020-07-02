@@ -12,10 +12,7 @@ public class VisibilityHandler : MonoBehaviour {
     [Header("Resolution (point/meter)")]
     public int resolution = 10;
 
-    public GameObject visibilityPlaneGroup;
-
-    //[Header("Visibility Plane")]
-    //public GameObject visibilityPlane;
+    //public GameObject visibilityPlaneGroup
 
     private SignageBoard[] signageBoards;
 
@@ -25,13 +22,13 @@ public class VisibilityHandler : MonoBehaviour {
     public float progressAnalysis = -1f;
 
     private GameObject GetVisibilityPlane(int visPlaneId) {//TODO
-        return visibilityPlaneGroup.transform.GetChild(visPlaneId).gameObject;
-        //return FindObjectOfType<VisibilityPlaneGenerator>().GetVisibilityPlanesGroup().transform.GetChild(visPlaneId).gameObject;
+        //return visibilityPlaneGroup.transform.GetChild(visPlaneId).gameObject;
+        return FindObjectOfType<VisibilityPlaneGenerator>().GetVisibilityPlanesGroup().transform.GetChild(visPlaneId).gameObject;
     }
 
     private int GetVisibilityPlaneSize() {
-        return visibilityPlaneGroup.transform.childCount;
-        //return FindObjectOfType<VisibilityPlaneGenerator>().GetVisibilityPlanesGroup().transform.childCount;
+        //return visibilityPlaneGroup.transform.childCount;
+        return FindObjectOfType<VisibilityPlaneGenerator>().GetVisibilityPlanesGroup().transform.childCount;
     }
 
     public void Init() {
@@ -69,7 +66,8 @@ public class VisibilityHandler : MonoBehaviour {
             Dictionary<Vector2Int, VisibilityInfo>[] visInfos = this.visibilityInfos[visPlaneId];
 
             Vector3 position = visibilityPlane.transform.position;
-            position[1] = agentTypes[agentTypeID].Value; // the Y value
+            float originalFloorHeight = visibilityPlane.GetComponent<VisibilityPlaneData>().OriginalFloorHeight;
+            position[1] = originalFloorHeight + agentTypes[agentTypeID].Value; // the Y value
             visibilityPlane.transform.position = position;
 
             Bounds meshRendererBounds = visibilityPlane.GetComponent<MeshRenderer>().bounds;
@@ -93,7 +91,7 @@ public class VisibilityHandler : MonoBehaviour {
 
             Texture2D texture = VisibilityTextureGenerator.TextureFromVisibilityData(visInfos[agentTypeID], signageBoards, widthResolution, heightResolution, nonVisibleColor);
             MeshRenderer meshRenderer = visibilityPlane.GetComponent<MeshRenderer>();
-            meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Transparent"));
+            //meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Transparent"));
             meshRenderer.sharedMaterial.mainTexture = texture;
         }
     }
@@ -116,7 +114,8 @@ public class VisibilityHandler : MonoBehaviour {
                 StringFloatTuple tuple = agentTypes[agentTypeID];
 
                 Vector3 position = visibilityPlane.transform.position;
-                position[1] += tuple.Value; // the Y value
+                float originalFloorHeight = visibilityPlane.GetComponent<VisibilityPlaneData>().OriginalFloorHeight;
+                position[1] = originalFloorHeight + tuple.Value; // the Y value
                 visibilityPlane.transform.position = position;
 
                 //float eyeHeight = tuple.Value;
@@ -131,7 +130,7 @@ public class VisibilityHandler : MonoBehaviour {
                 for(int signageboardID = 0; signageboardID < signageBoards.Length; signageboardID++) {
                     SignageBoard signageboard = signageBoards[signageboardID];
 
-                    Vector3 p = signageboard.GetCenterPoint();
+                    Vector3 p = signageboard.GetWorldCenterPoint();
                     Vector3 n = signageboard.GetDirection();
                     float theta = (signageboard.GetViewingAngle() * Mathf.PI) / 180;
                     float d = signageboard.GetViewingDistance();
@@ -143,7 +142,8 @@ public class VisibilityHandler : MonoBehaviour {
                     for(int z = 0; z < heightResolution; z++) {
                         for(int x = 0; x < widthResolution; x++) {
                             Vector3 vi = new Vector3(cornerMin.x - ((planeWidth / widthResolution) * x), visibilityPlane.transform.position.y, cornerMin.z - ((planeHeight / heightResolution) * z));
-                            Debug.DrawLine(vi, p, Color.green);
+                            Vector3 pToViDirection = vi - p;
+                            //Debug.DrawLine(vi, p, Color.green);
 
                             bool isVisible = false;
 
@@ -152,15 +152,18 @@ public class VisibilityHandler : MonoBehaviour {
                                 && (Vector3.Dot((vi - p), n) / ((vi - p).magnitude * n.magnitude)) >= Mathf.Cos(theta / 2)
                                 && ((vi - p).magnitude <= d)
                                 ) {
-                                Ray ray = new Ray(vi, p);
-                                //float maxDistance = Vector3.Distance(p, vi);
-                                //RaycastHit hit;
-                                if(!Physics.Raycast(ray, out _)) {//(ray, out hit, maxDistance)
+                                Ray ray = new Ray(p, pToViDirection);
+                                float maxDistance = Vector3.Distance(p, vi);
+                                RaycastHit hit;
+                                if(!Physics.Raycast(ray, out hit, maxDistance)) {//(ray, out hit, maxDistance)
                                     isVisible = true;
                                 }
-                                //else {
-                                //    Debug.DrawLine(p, vi, Color.red);
-                                //}
+                                else {
+                                    Debug.DrawRay(p, pToViDirection, Color.red);
+                                    //Debug.Log(hit.collider.name);
+                                    //Debug.DrawLine(vi, p, Color.blue);
+                                    //Debug.DrawLine(vi, hit.point, Color.red);
+                                }
                             }
 
                             if(isVisible) {
@@ -189,24 +192,5 @@ public class VisibilityHandler : MonoBehaviour {
         EditorUtility.ClearProgressBar();
 
         this.progressAnalysis = -1f;
-    }
-
-    
-
-    //public GameObject testObject;
-    //public static Material visibilityPlaneMaterial;
-    public void Test() {
-        //GameObject visibilityPlane = new GameObject("VisibilityPlaneTEST");
-        //MeshFilter meshFilter = visibilityPlane.AddComponent<MeshFilter>();
-        //MeshRenderer meshRenderer = visibilityPlane.AddComponent<MeshRenderer>();
-
-        //visibilityPlane.transform.position = testObject.transform.position;
-        //visibilityPlane.transform.rotation = testObject.transform.rotation;
-        //visibilityPlane.transform.localScale = testObject.transform.localScale;
-
-        //meshRenderer.material = new Material(Shader.Find("Unlit/Transparent"));
-
-        //Mesh topMesh = Utility.GetTopMeshFromGameObject(testObject);
-        //meshFilter.mesh = topMesh;
     }
 }

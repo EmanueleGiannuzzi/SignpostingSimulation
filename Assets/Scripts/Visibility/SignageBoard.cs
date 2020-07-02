@@ -23,11 +23,11 @@ public class SignageBoard : MonoBehaviour
     public bool autoUpdate;
 
     public Vector3 GetDirection() {
-        return this.GetComponent<Transform>().up;
+        return this.transform.up;
     }
 
-    public Vector3 GetCenterPoint() {
-        return this.GetComponent<Transform>().position;
+    public Vector3 GetWorldCenterPoint() {
+        return this.transform.position;
     }
 
     public float GetViewingAngle() {

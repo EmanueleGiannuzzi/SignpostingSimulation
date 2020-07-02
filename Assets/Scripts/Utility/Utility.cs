@@ -3,11 +3,8 @@ using System.IO;
 using System;
 using System.Collections.Generic;
 
-public static class Utility
-{
-
-    public static bool HorizontalPlaneContainsPoint(Mesh aMesh, Vector3 aLocalPoint)
-    {
+public static class Utility {
+    public static bool HorizontalPlaneContainsPoint(Mesh aMesh, Vector3 aLocalPoint) {
         Vector3[] verts = aMesh.vertices;
         int[] tris = aMesh.triangles;
         int triangleCount = tris.Length / 3;
@@ -43,7 +40,7 @@ public static class Utility
 
         if(!showConsole) {
             startInfo.UseShellExecute = false;
-            startInfo.CreateNoWindow = false; 
+            startInfo.CreateNoWindow = false;
         }
 
         startInfo.FileName = commandFileName;
@@ -71,9 +68,10 @@ public static class Utility
         return dest;
     }
 
-    public static Mesh GetTopMeshFromGameObject(GameObject gameObject) {
+    public static Mesh GetTopMeshFromGameObject(GameObject gameObject, out float floorHeight) {
         MeshFilter goMeshFilter = gameObject.GetComponent<MeshFilter>();
         if(goMeshFilter == null || goMeshFilter.sharedMesh == null) {
+            floorHeight = 0f;
             return null;
         }
 
@@ -90,7 +88,7 @@ public static class Utility
         List<int> triangles = new List<int>();
         Dictionary<int, int> conversionTable = new Dictionary<int, int>();
 
-    int j = 0;//New array id
+        int j = 0;//New array id
         for(int i = 0; i < goMesh.vertices.Length; i++) {
             Vector3 vertex = goMesh.vertices[i];
             if(vertex.z == higherCoord) {
@@ -114,7 +112,7 @@ public static class Utility
                 || invalidVerticesIDs.Contains(v2)
                 || invalidVerticesIDs.Contains(v3))) {//If triangle is valid
                 triangles.Add(conversionTable[v1]);
-                triangles.Add(conversionTable[v3]);
+                triangles.Add(conversionTable[v3]);//Reverse order(Counter-clockwise)
                 triangles.Add(conversionTable[v2]);
             }
         }
@@ -130,8 +128,7 @@ public static class Utility
 
         Mesh mesh = new Mesh {
             vertices = meshVertices,
-            triangles = triangles.ToArray(),
-            //uv = uvs.ToArray()
+            triangles = triangles.ToArray()
         };
 
         mesh.name = goMesh.name;
@@ -140,6 +137,7 @@ public static class Utility
         mesh.RecalculateTangents();
         mesh.RecalculateBounds();
 
+        floorHeight = higherCoord;
 
         return mesh;
     }
