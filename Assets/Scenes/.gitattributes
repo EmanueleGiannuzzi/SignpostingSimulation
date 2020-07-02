@@ -1,2 +1,0 @@
-IFCTests.unity filter=lfs diff=lfs merge=lfs -text
-MainScene.unity filter=lfs diff=lfs merge=lfs -text
