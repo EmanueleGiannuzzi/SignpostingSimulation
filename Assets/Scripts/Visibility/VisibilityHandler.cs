@@ -66,15 +66,18 @@ public class VisibilityHandler : MonoBehaviour {
             Dictionary<Vector2Int, VisibilityInfo>[] visInfos = this.visibilityInfos[visPlaneId];
 
             Vector3 position = visibilityPlane.transform.position;
-            float originalFloorHeight = visibilityPlane.GetComponent<VisibilityPlaneData>().OriginalFloorHeight;
+            VisibilityPlaneData planeData = visibilityPlane.GetComponent<VisibilityPlaneData>();
+            float originalFloorHeight = planeData.OriginalFloorHeight;
             position[1] = originalFloorHeight + agentTypes[agentTypeID].Value; // the Y value
             visibilityPlane.transform.position = position;
 
             Bounds meshRendererBounds = visibilityPlane.GetComponent<MeshRenderer>().bounds;
             float planeWidth = meshRendererBounds.extents.x * 2;
             float planeHeight = meshRendererBounds.extents.z * 2;
-            int widthResolution = (int)Mathf.Floor(planeWidth * this.resolution);
-            int heightResolution = (int)Mathf.Floor(planeHeight * this.resolution);
+            int widthResolution = planeData.GetAxesResolution().x;
+            int heightResolution = planeData.GetAxesResolution().y;
+            //int widthResolution = (int)Mathf.Floor(planeWidth * this.resolution);
+            //int heightResolution = (int)Mathf.Floor(planeHeight * this.resolution);
 
 
             Vector3[] meshVertices = visibilityPlane.GetComponent<MeshFilter>().sharedMesh.vertices;
@@ -83,7 +86,7 @@ public class VisibilityHandler : MonoBehaviour {
             Vector3 localMin = visibilityPlane.transform.InverseTransformPoint(meshRendererBounds.min);
             Vector3 localMax = visibilityPlane.transform.InverseTransformPoint(meshRendererBounds.max) - localMin;
 
-        for(int i = 0; i < meshVertices.Length; i++) {
+            for(int i = 0; i < meshVertices.Length; i++) {
                 Vector3 normVertex = meshVertices[i] - localMin;
                 uvs[i] = new Vector2(1f - (float)(normVertex.x / localMax.x), 1f - (float)(normVertex.z / localMax.z));
             }
@@ -109,22 +112,26 @@ public class VisibilityHandler : MonoBehaviour {
             float planeWidth = meshRendererBounds.extents.x * 2;
             float planeHeight = meshRendererBounds.extents.z * 2;
 
+            int widthResolution = (int)Mathf.Floor(planeWidth * this.resolution);
+            int heightResolution = (int)Mathf.Floor(planeHeight * this.resolution);
+            VisibilityPlaneData visibilityPlaneData = visibilityPlane.GetComponent<VisibilityPlaneData>();
+            visibilityPlaneData.ValidMeshPointsCount = 0;
+            visibilityPlaneData.SetResolution(widthResolution, heightResolution);
+            float originalFloorHeight = visibilityPlaneData.OriginalFloorHeight;
+
             float agentTypeProgress = planesProgress / agentTypes.Length;
             for(int agentTypeID = 0; agentTypeID < agentTypes.Length; agentTypeID++) {
                 StringFloatTuple tuple = agentTypes[agentTypeID];
 
                 Vector3 position = visibilityPlane.transform.position;
-                float originalFloorHeight = visibilityPlane.GetComponent<VisibilityPlaneData>().OriginalFloorHeight;
                 position[1] = originalFloorHeight + tuple.Value; // the Y value
                 visibilityPlane.transform.position = position;
 
-                //float eyeHeight = tuple.Value;
-
-                Vector3[] localVertices = visibilityPlane.GetComponent<MeshFilter>().sharedMesh.vertices;
-                Vector3[] worldVertices = new Vector3[localVertices.Length];
-                for(int i = 0; i < localVertices.Length; ++i) {
-                    worldVertices[i] = visibilityPlane.transform.TransformPoint(localVertices[i]);
-                }
+                //Vector3[] localVertices = visibilityPlane.GetComponent<MeshFilter>().sharedMesh.vertices;
+                //Vector3[] worldVertices = new Vector3[localVertices.Length];
+                //for(int i = 0; i < localVertices.Length; ++i) {
+                //    worldVertices[i] = visibilityPlane.transform.TransformPoint(localVertices[i]);
+                //}
 
                 float signageboardProgress = agentTypeProgress / signageBoards.Length;
                 for(int signageboardID = 0; signageboardID < signageBoards.Length; signageboardID++) {
@@ -135,9 +142,6 @@ public class VisibilityHandler : MonoBehaviour {
                     float theta = (signageboard.GetViewingAngle() * Mathf.PI) / 180;
                     float d = signageboard.GetViewingDistance();
 
-                    int widthResolution = (int)Mathf.Floor(planeWidth * this.resolution);
-                    int heightResolution = (int)Mathf.Floor(planeHeight * this.resolution);
-
                     float resolutionProgress = signageboardProgress / (heightResolution * widthResolution);
                     for(int z = 0; z < heightResolution; z++) {
                         for(int x = 0; x < widthResolution; x++) {
@@ -147,22 +151,21 @@ public class VisibilityHandler : MonoBehaviour {
 
                             bool isVisible = false;
 
-                            if(
-                                Utility.HorizontalPlaneContainsPoint(visibilityPlane.GetComponent<MeshFilter>().sharedMesh, visibilityPlane.transform.InverseTransformPoint(vi))
-                                && (Vector3.Dot((vi - p), n) / ((vi - p).magnitude * n.magnitude)) >= Mathf.Cos(theta / 2)
-                                && ((vi - p).magnitude <= d)
-                                ) {
-                                Ray ray = new Ray(p, pToViDirection);
-                                float maxDistance = Vector3.Distance(p, vi);
-                                RaycastHit hit;
-                                if(!Physics.Raycast(ray, out hit, maxDistance)) {//(ray, out hit, maxDistance)
-                                    isVisible = true;
+                            if(Utility.HorizontalPlaneContainsPoint(visibilityPlane.GetComponent<MeshFilter>().sharedMesh, visibilityPlane.transform.InverseTransformPoint(vi))) {
+                                if(agentTypeID == 0 && signageboardID == 0) {
+                                    visibilityPlaneData.ValidMeshPointsCount++;
                                 }
-                                else {
-                                    Debug.DrawRay(p, pToViDirection, Color.red);
-                                    //Debug.Log(hit.collider.name);
-                                    //Debug.DrawLine(vi, p, Color.blue);
-                                    //Debug.DrawLine(vi, hit.point, Color.red);
+                                if((Vector3.Dot((vi - p), n) / ((vi - p).magnitude * n.magnitude)) >= Mathf.Cos(theta / 2)
+                                && ((vi - p).magnitude <= d)) {
+                                    Ray ray = new Ray(p, pToViDirection);
+                                    float maxDistance = Vector3.Distance(p, vi);
+                                    RaycastHit hit;
+                                    if(!Physics.Raycast(ray, out hit, maxDistance)) {//(ray, out hit, maxDistance)
+                                        isVisible = true;
+                                    }
+                                    //else {
+                                    //    Debug.DrawRay(p, pToViDirection, Color.red);
+                                    //}
                                 }
                             }
 
@@ -188,9 +191,38 @@ public class VisibilityHandler : MonoBehaviour {
                 }
             }
         }
+        CalculateSignCoverage();
         this.progressAnalysis = 0f;
         EditorUtility.ClearProgressBar();
 
         this.progressAnalysis = -1f;
+    }
+
+
+    public void CalculateSignCoverage() {
+        int[,] signageboardCoverage = new int[signageBoards.Length, agentTypes.Length];
+        int visibilityGroupMaxSize = 0;
+        for(int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
+            Dictionary<Vector2Int, VisibilityInfo>[] visInfosPerMesh = this.visibilityInfos[visPlaneId];
+            for(int agentTypeID = 0; agentTypeID < agentTypes.Length; agentTypeID++) {
+                Dictionary<Vector2Int, VisibilityInfo> visInfosPerAgentType = visInfosPerMesh[agentTypeID];
+                foreach(KeyValuePair<Vector2Int, VisibilityInfo> entry in visInfosPerAgentType) {
+                    foreach(int signageboardID in entry.Value.GetVisibleBoards()) {
+                        signageboardCoverage[signageboardID, agentTypeID]++;
+                    }
+                }
+            }
+            visibilityGroupMaxSize += GetVisibilityPlane(visPlaneId).GetComponent<VisibilityPlaneData>().ValidMeshPointsCount;
+        }
+
+        for(int signageboardID = 0; signageboardID < signageBoards.Length; signageboardID++) {
+            SignageBoard signageboard = signageBoards[signageboardID];
+            signageboard.coveragePerAgentType = new float[agentTypes.Length];
+            for(int agentTypeID = 0; agentTypeID < agentTypes.Length; agentTypeID++) {
+                float coverage = (float)signageboardCoverage[signageboardID, agentTypeID] / visibilityGroupMaxSize;
+                signageboard.coveragePerAgentType[agentTypeID] = coverage;
+                Debug.Log("BANANA " + signageboardID + " " + signageboardCoverage[signageboardID, agentTypeID] + " " + visibilityGroupMaxSize + " " + coverage);
+            }
+        }
     }
 }

@@ -11,6 +11,9 @@ public class SignageBoard : MonoBehaviour
     public float viewingAngle;
     public Color color;
 
+    [Header("Analysys Result")]
+    public float[] coveragePerAgentType;//[0,1]
+
     public void Start() {
         color = new Color(
          Random.Range(0f, 1f),
@@ -19,8 +22,8 @@ public class SignageBoard : MonoBehaviour
        );
     }
 
-    [Header("Editor Settings")]
-    public bool autoUpdate;
+    //[Header("Editor Settings")]
+    //public bool autoUpdate;
 
     public Vector3 GetDirection() {
         return this.transform.up;

@@ -48,9 +48,8 @@ public class VisibilityPlaneGenerator : MonoBehaviour {
 
                 meshRenderer.material = new Material(Shader.Find("Unlit/Transparent"));
 
-                float floorHeight;
-                Mesh topMesh = Utility.GetTopMeshFromGameObject(goElement, out floorHeight);
-                Debug.Log("FH: " + floorHeight);
+                Mesh topMesh = Utility.GetTopMeshFromGameObject(goElement, out float floorHeight);
+                //Debug.Log("FH: " + floorHeight);
 
                 Vector3 position = goElement.transform.position;
                 position[1] = floorHeight; // the Y value
