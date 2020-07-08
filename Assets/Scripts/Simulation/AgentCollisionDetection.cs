@@ -20,13 +20,5 @@ public class AgentCollisionDetection : MonoBehaviour {
         if(destination.Equals(other)) {
             Destroy(this.gameObject);
         }
-
-        //if(PedestrianFlow.instances != null) {
-        //    foreach(PedestrianFlow listener in PedestrianFlow.instances) {
-        //        if(listener.isStarted) {
-        //            listener.OnCollidedWithCheckpoint(other.gameObject, this.gameObject);
-        //        }
-        //    }
-        //}
     }
 }

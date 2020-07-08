@@ -11,8 +11,8 @@ using System.Linq;
 public class IfcOpenShellParser : MonoBehaviour {
     //private string fileName;
     [Header("Walkable Areas")]
-    public string[] walkableAreas = { "IfcSlab", "IfcStair", "IfcStairFlight" };
-
+    public string[] walkableAreas = { "IfcSlab", "IfcStair", "IfcStairFlight", "IfcWallStandardCase" };
+    public string[] navMeshIgnoredAreas = { "IfcDoor" };
 
     [Header("Loader")]
     public bool deleteTemporaryFiles = true;
@@ -21,7 +21,6 @@ public class IfcOpenShellParser : MonoBehaviour {
     private XmlDocument loadedXML;
 
     private static readonly int NOTWALKABLE_AREATYPE = 1;
-
 
     private readonly Dummiesman.OBJLoader objLoader = new Dummiesman.OBJLoader {
         SplitMode = Dummiesman.SplitMode.Object,
@@ -98,10 +97,6 @@ public class IfcOpenShellParser : MonoBehaviour {
 
         Debug.Log("Loaded XML");
     }
-    private bool IsIfcWalkableArea(string ifcClass) {
-        return this.walkableAreas.Contains(ifcClass);
-    }
-
 
     private void AddElements(XmlNode node, GameObject parent) {
         if(node.Attributes.GetNamedItem("id") != null) {
@@ -120,15 +115,7 @@ public class IfcOpenShellParser : MonoBehaviour {
             }
 
             if(goElement != null) {
-                MeshFilter goMeshFilter = goElement.GetComponent<MeshFilter>();
-                if(goMeshFilter != null && goMeshFilter.sharedMesh != null) {
-                    goElement.AddComponent<MeshCollider>();
-                    if(!IsIfcWalkableArea(node.Name)) {
-                        NavMeshModifier navmeshModifier = goElement.AddComponent<NavMeshModifier>();
-                        navmeshModifier.overrideArea = true;
-                        navmeshModifier.area = NOTWALKABLE_AREATYPE;
-                    }
-                }
+                HandleObjectNavMeshProperty(ref goElement, node);
 
                 goElement.name = name;
                 if(parent != null) {
@@ -142,6 +129,32 @@ public class IfcOpenShellParser : MonoBehaviour {
             }
         }
     }
+
+    private bool IsIfcWalkableArea(string ifcClass) {
+        return this.walkableAreas.Contains(ifcClass);
+    }
+
+    private bool IsIfcIgnoreFromBuildArea(string ifcClass) {
+        return this.navMeshIgnoredAreas.Contains(ifcClass);
+    }
+
+    private void HandleObjectNavMeshProperty(ref GameObject goElement, XmlNode node) {
+        MeshFilter goMeshFilter = goElement.GetComponent<MeshFilter>();
+        if(goMeshFilter != null && goMeshFilter.sharedMesh != null) {
+            goElement.AddComponent<MeshCollider>();
+            if(IsIfcIgnoreFromBuildArea(node.Name)) {
+                NavMeshModifier navmeshModifier = goElement.AddComponent<NavMeshModifier>();
+                navmeshModifier.ignoreFromBuild = true;
+            }
+            else if(!IsIfcWalkableArea(node.Name)) {
+                NavMeshModifier navmeshModifier = goElement.AddComponent<NavMeshModifier>();
+                navmeshModifier.overrideArea = true;
+                navmeshModifier.area = NOTWALKABLE_AREATYPE;
+            }
+            
+        }
+    }
+
     private void AddProperties(XmlNode node, GameObject go) {
         IFCData ifcData = go.AddComponent(typeof(IFCData)) as IFCData;
 
@@ -210,7 +223,7 @@ public class IfcOpenShellParser : MonoBehaviour {
                     break;
                 default:
                     break;
-            } 
+            }
         }
     }
 }
