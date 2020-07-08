@@ -10,8 +10,9 @@ public class AgentCollisionDetection : MonoBehaviour {
     public Collider destination;
 
     void Start() {
-        if(collisionEvent == null)
+        if(collisionEvent == null) {
             collisionEvent = new CollisionEvent();
+        }
     }
 
     private void OnTriggerEnter(Collider other) {
