@@ -4,21 +4,31 @@ using System;
 using System.Collections.Generic;
 
 public static class Utility {
-    public static bool HorizontalPlaneContainsPoint(Mesh aMesh, Vector3 aLocalPoint) {
-        Vector3[] verts = aMesh.vertices;
-        int[] tris = aMesh.triangles;
+
+    public static bool PolyContainsPoint(Vector3[] polyPoints, Vector3 p) {
+        var j = polyPoints.Length - 1;
+        var inside = false;
+        for(int i = 0; i < polyPoints.Length; j = i++) {
+            var pi = polyPoints[i];
+            var pj = polyPoints[j];
+            if(((pi.z <= p.z && p.z < pj.z) || (pj.z <= p.z && p.z < pi.z)) &&
+                (p.x < (pj.x - pi.x) * (p.z - pi.z) / (pj.z - pi.z) + pi.x))
+                inside = !inside;
+        }
+        return inside;
+    }
+
+    public static bool HorizontalPlaneContainsPoint(Mesh mesh, Vector3 aLocalPoint) {
+        Vector3[] verts = mesh.vertices;
+        int[] tris = mesh.triangles;
         int triangleCount = tris.Length / 3;
         for(int i = 0; i < triangleCount; i++) {
-            Vector3 v1 = verts[tris[i * 3]];
-            Vector3 v2 = verts[tris[i * 3 + 1]];
-            Vector3 v3 = verts[tris[i * 3 + 2]];
+            Vector3[] trianglePoly = { verts[tris[i * 3]], verts[tris[i * 3 + 1]], verts[tris[i * 3 + 2]] };
 
-            Barycentric bc = new Barycentric(v1, v2, v3, aLocalPoint);
-            if(bc.IsInside) {
+            if(PolyContainsPoint(trianglePoly, aLocalPoint)) {
                 return true;
             }
         }
-
         return false;
     }
 

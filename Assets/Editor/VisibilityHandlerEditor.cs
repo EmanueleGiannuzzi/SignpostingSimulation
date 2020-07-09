@@ -23,7 +23,7 @@ public class VisibilityHandlerEditor : Editor {
             handler.GenerateVisibilityData();
         }
 
-        GUILayout.BeginHorizontal(/*"box"*/);
+        GUILayout.BeginHorizontal("box");
         if(GUILayout.Button("Show Plane: " + showPlaneSliderValue)) {
             handler.Init();
             handler.GenerateVisibilityData();

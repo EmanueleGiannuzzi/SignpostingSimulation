@@ -127,12 +127,6 @@ public class VisibilityHandler : MonoBehaviour {
                 position[1] = originalFloorHeight + tuple.Value; // the Y value
                 visibilityPlane.transform.position = position;
 
-                //Vector3[] localVertices = visibilityPlane.GetComponent<MeshFilter>().sharedMesh.vertices;
-                //Vector3[] worldVertices = new Vector3[localVertices.Length];
-                //for(int i = 0; i < localVertices.Length; ++i) {
-                //    worldVertices[i] = visibilityPlane.transform.TransformPoint(localVertices[i]);
-                //}
-
                 float signageboardProgress = agentTypeProgress / signageBoards.Length;
                 for(int signageboardID = 0; signageboardID < signageBoards.Length; signageboardID++) {
                     SignageBoard signageboard = signageBoards[signageboardID];
@@ -152,6 +146,7 @@ public class VisibilityHandler : MonoBehaviour {
                             bool isVisible = false;
 
                             if(Utility.HorizontalPlaneContainsPoint(visibilityPlane.GetComponent<MeshFilter>().sharedMesh, visibilityPlane.transform.InverseTransformPoint(vi))) {
+                            //if(Utility.PolyContainsPoint(outerVertices, visibilityPlane.transform.InverseTransformPoint(vi))) {
                                 if(agentTypeID == 0 && signageboardID == 0) {
                                     visibilityPlaneData.ValidMeshPointsCount++;
                                 }
@@ -221,7 +216,6 @@ public class VisibilityHandler : MonoBehaviour {
             for(int agentTypeID = 0; agentTypeID < agentTypes.Length; agentTypeID++) {
                 float coverage = (float)signageboardCoverage[signageboardID, agentTypeID] / visibilityGroupMaxSize;
                 signageboard.coveragePerAgentType[agentTypeID] = coverage;
-                Debug.Log("BANANA " + signageboardID + " " + signageboardCoverage[signageboardID, agentTypeID] + " " + visibilityGroupMaxSize + " " + coverage);
             }
         }
     }

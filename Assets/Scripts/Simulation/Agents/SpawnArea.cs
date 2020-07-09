@@ -14,13 +14,7 @@ public class SpawnArea : MonoBehaviour {
     public Collider Destroyer;
     public Gradient Gradient;
 
-    private GameObject agentPrefab;
-
-    void Start() {
-        agentPrefab = this.GetComponentInParent<AgentsHandler>().GetAgentPrefab();
-    }
-
-    public GameObject SpawnAgent() {
+    public GameObject SpawnAgent(GameObject agentPrefab) {
         if(!this.Enabled) {
             return null;
         }

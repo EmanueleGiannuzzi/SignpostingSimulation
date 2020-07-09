@@ -41,25 +41,26 @@ public class ShowAllVertices : MonoBehaviour {
 
 
 
-        Mesh mesh = this.GetComponent<MeshFilter>().mesh;
-        Bounds meshRendererBounds = this.GetComponent<MeshRenderer>().bounds;
-        Vector3 cornerMin = meshRendererBounds.min;
-        float planeWidth = meshRendererBounds.extents.x * 2;
-        float planeHeight = meshRendererBounds.extents.z * 2;
+        //Mesh mesh = this.GetComponent<MeshFilter>().mesh;
+
+        //Bounds meshRendererBounds = this.GetComponent<MeshRenderer>().bounds;
+        //Vector3 cornerMin = meshRendererBounds.min;
+        //float planeWidth = meshRendererBounds.extents.x * 2;
+        //float planeHeight = meshRendererBounds.extents.z * 2;
 
 
-        Vector3 localMin = this.transform.InverseTransformPoint(meshRendererBounds.min);
-        Vector3 localMax = this.transform.InverseTransformPoint(meshRendererBounds.max) - localMin;
+        //Vector3 localMin = this.transform.InverseTransformPoint(meshRendererBounds.min);
+        //Vector3 localMax = this.transform.InverseTransformPoint(meshRendererBounds.max) - localMin;
 
 
-        int widthResolution = 157;
-        int heightResolution = 197;
-        Vector2[] uvs = mesh.uv;
+        //int widthResolution = 157;
+        //int heightResolution = 197;
+        //Vector2[] uvs = mesh.uv;
 
-        for(int i = 0; i < uvs.Length; i++) {
-            Vector3 v = new Vector3((uvs[i].x / widthResolution) * localMax.x, this.transform.position.y, (uvs[i].y / heightResolution) * localMax.z) ;
-            VerticeListToShow.Add(v);
-        }
+        //for(int i = 0; i < uvs.Length; i++) {
+        //    Vector3 v = new Vector3((uvs[i].x / widthResolution) * localMax.x, this.transform.position.y, (uvs[i].y / heightResolution) * localMax.z) ;
+        //    VerticeListToShow.Add(v);
+        //}
 
 
 
