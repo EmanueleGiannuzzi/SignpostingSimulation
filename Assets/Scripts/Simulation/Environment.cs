@@ -4,10 +4,13 @@ using UnityEngine;
 
 public class Environment : MonoBehaviour
 {
-    // Start is called before the first frame update
+    private VisibilityHandler visbilityHandler;
+    private VisibilityPlaneGenerator visibilityPlaneGenerator;
+
     void Start()
     {
-        
+        visbilityHandler = GetComponentInChildren<VisibilityHandler>();
+        visibilityPlaneGenerator = GetComponentInChildren<VisibilityPlaneGenerator>();
     }
 
     // Update is called once per frame
