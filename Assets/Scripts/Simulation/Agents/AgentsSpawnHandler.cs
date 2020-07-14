@@ -18,6 +18,14 @@ public class AgentsSpawnHandler : MonoBehaviour
     private GameObject AgentsParent;
     private GameObject agentPrefab;
 
+    public int GetAgentsCount() {
+        return AgentsParent.transform.childCount;
+    }
+
+    public Transform GetAgentsTranform(int agentID) {
+        return AgentsParent.transform.GetChild(agentID);
+    }
+
     public GameObject GetAgentPrefab() {
         return agentPrefab;
     }

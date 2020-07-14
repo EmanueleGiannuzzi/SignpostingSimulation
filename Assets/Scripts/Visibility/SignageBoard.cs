@@ -7,15 +7,16 @@ using UnityEditor;
 public class SignageBoard : MonoBehaviour
 {
     [Header("Signage Board Parameters")]
-    public float viewingDistance;
-    public float viewingAngle;
-    public Color color;
+    public float ViewingDistance;
+    public float ViewingAngle;
+    public Color Color;
+    public float MinimumReadingTime;
 
     [Header("Analysys Result")]
     public float[] coveragePerAgentType;//[0,1]
 
     public void Start() {
-        color = new Color(
+        Color = new Color(
          Random.Range(0f, 1f),
          Random.Range(0f, 1f),
          Random.Range(0f, 1f)
@@ -34,15 +35,15 @@ public class SignageBoard : MonoBehaviour
     }
 
     public float GetViewingAngle() {
-        return viewingAngle;
+        return ViewingAngle;
     }
 
     public float GetViewingDistance() {
-        return viewingDistance;
+        return ViewingDistance;
     }
 
     public Color GetColor() {
-        return color;
+        return Color;
     }
 
     void Update() {

@@ -16,7 +16,7 @@ public class VisibilityHandler : MonoBehaviour {
 
     private SignageBoard[] signageBoards;
 
-    private Dictionary<Vector2Int, VisibilityInfo>[][] visibilityInfos;//1 for each visibility plane mesh
+    public Dictionary<Vector2Int, VisibilityInfo>[][] visibilityInfos;//1 for each visibility plane mesh
 
     [HideInInspector]
     public float progressAnalysis = -1f;
@@ -26,7 +26,7 @@ public class VisibilityHandler : MonoBehaviour {
         return FindObjectOfType<VisibilityPlaneGenerator>().GetVisibilityPlanesGroup().transform.GetChild(visPlaneId).gameObject;
     }
 
-    private int GetVisibilityPlaneSize() {
+    public int GetVisibilityPlaneSize() {
         //return visibilityPlaneGroup.transform.childCount;
         return FindObjectOfType<VisibilityPlaneGenerator>().GetVisibilityPlanesGroup().transform.childCount;
     }
@@ -56,9 +56,19 @@ public class VisibilityHandler : MonoBehaviour {
         Debug.Log("Done calculating");
     }
 
-    public Dictionary<Vector2Int, VisibilityInfo>[] GetVisibilityInfo(int id) {
-        return visibilityInfos[id];
-    }
+    //public List<int> GetSignboardIDsInCoord(Vector2Int coord, int agentTypeID) {
+    //    List<int> result = new List<int>();
+
+    //    foreach(Dictionary<Vector2Int, VisibilityInfo>[] visInfos in this.visibilityInfos) {
+    //        VisibilityInfo visInfo = visInfos[agentTypeID][coord];
+    //        if(visInfo != null) {
+    //            result.AddRange(visInfo.GetVisibleBoards());
+    //            break;
+    //        }
+    //    }
+
+    //    return result;
+    //}
 
     public void ShowVisibilityPlane(int agentTypeID) {//TODO: Use enumerator
         for(int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
@@ -170,7 +180,7 @@ public class VisibilityHandler : MonoBehaviour {
                                     visInfos[agentTypeID][coords].AddVisibleBoard(signageboardID);
                                 }
                                 else {
-                                    VisibilityInfo vinfo = new VisibilityInfo();
+                                    VisibilityInfo vinfo = new VisibilityInfo(vi);
                                     vinfo.AddVisibleBoard(signageboardID);
                                     visInfos[agentTypeID].Add(coords, vinfo);
                                 }
