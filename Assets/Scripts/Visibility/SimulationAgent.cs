@@ -6,13 +6,24 @@ using UnityEngine;
 public class SimulationAgent : MonoBehaviour {
     private Environment environment;
 
-    private struct Banana {
-        int agentTypeID;//TODO: ArrayID?
-        Dictionary<int, float> visibleBoards;//Board-First seen time(Time.time)
+    private BoardsEcounter[] boardsEcountersPerAgentType;
+
+    private class BoardsEcounter {
+        public Dictionary<int, float> visibleBoards;//Board-First seen time(Time.time)
+
+        public BoardsEcounter() {
+            visibleBoards = new Dictionary<int, float>();
+        }
     }
 
     void Start() {
         environment = FindObjectOfType<Environment>();
+
+        if(environment == null) {
+            throw new MissingReferenceException("No Environment found!");
+        }
+
+        boardsEcountersPerAgentType = new BoardsEcounter[environment.GetVisibilityHandler().agentTypes.Length];
     }
 
     public void StartSimulation(float repeatRate) {
@@ -34,12 +45,32 @@ public class SimulationAgent : MonoBehaviour {
                 if(visibleBoards != null && visibleBoards.Count > 0) {
                     OnAgentInVisibilityArea(visibleBoards, agentTypeID);
                 }
-
             }
         }
     }
 
     private void OnAgentInVisibilityArea(List<int> visibleBoards, int agentTypeID) {
-        throw new NotImplementedException();
+        BoardsEcounter boardsEcounters = boardsEcountersPerAgentType[agentTypeID];
+        float now = Time.time;
+
+        foreach(int signageBoardID in visibleBoards) {
+            //1) Se non c'è in boardsEcounters viene aggiunta e l'agente entra
+            if(!boardsEcounters.visibleBoards.ContainsKey(signageBoardID)) {
+                boardsEcounters.visibleBoards.Add(signageBoardID, now);
+
+                environment.OnAgentEnterVisibilityArea(this.gameObject, agentTypeID, signageBoardID);
+            }
+            //else { } //2) Se c'è già non fa niente
+        }
+        //3) Se c'è in boardsEcounters, ma non in visibleBoards viene tolta e l'agente esce 
+        foreach(KeyValuePair<int, float> boardEncounter in boardsEcounters.visibleBoards) {
+            int signageBoardID = boardEncounter.Key;
+            if(!visibleBoards.Contains(signageBoardID)) {
+                boardsEcounters.visibleBoards.Remove(signageBoardID);
+
+                float enterTime = boardEncounter.Value;
+                environment.OnAgentExitVisibilityArea(this.gameObject, agentTypeID, signageBoardID, now - enterTime);
+            }
+        }
     }
 }

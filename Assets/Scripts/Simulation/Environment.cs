@@ -16,6 +16,8 @@ public class Environment : MonoBehaviour {
 
     private bool isSimulationRunning = false;
 
+    private int[,] signboardAgentViews; //[agentTypeID, signageBoardID]
+
     void Start() {
         repeatRate = 1 / SimulationUpdateFrequencyHz;
         positionSensitivity = 1 / visibilityHandler.resolution;
@@ -77,26 +79,15 @@ public class Environment : MonoBehaviour {
         return null;
     }
 
-    public void OnAgentEnterVisibilityArea(Transform agent, int signboardID) {
+    public void OnAgentEnterVisibilityArea(GameObject agent, int agentTypeID, int signboardID) {
         //Save agent pos
     }
 
-    public void OnAgentExitVisibilityArea(Transform agent, int signboardID, float elapsedTime) {
-        //remove saved agent pos and if elapsedTime > signageboard.minimumReadingTime set signageboard as seen
+    public void OnAgentExitVisibilityArea(GameObject agent, int agentTypeID, int signboardID, float residenceTime) {
+        SignageBoard signageBoard = visibilityHandler.GetSignageBoard(signboardID);
+
+        signboardAgentViews[agentTypeID, signboardID]++;
+
+        Debug.Log("Agent " + agent.name + " stayed in range of " + signageBoard.name + " for " + residenceTime + " seconds");
     }
-
-    //private void OnAgentInCoord(Transform agent, int agentTypeID, Vector2Int coord) {
-    //    List<int> visibleSignboards = visibilityHandler.GetSignboardIDsInCoord(coord, agentTypeID);
-    //    //handle agent enterd/exited visible
-    //}
-
-    //public void AnalyzeCurrentAgentsStatus() {
-    //    for(int agentID = 0; agentID < agentsSpawnHandler.GetAgentsCount(); agentID++) {
-    //        Transform agent = agentsSpawnHandler.GetAgentsTranform(agentID);
-    //        Vector2Int agentPos = new Vector2Int();//TODO: worldPos TO texturePos
-    //        for(int agentTypeID = 0; agentTypeID < visibilityHandler.agentTypes.Length; agentTypeID++) {
-    //            OnAgentInCoord(agent, agentTypeID, agentPos);
-    //        }
-    //    }
-    //}
 }

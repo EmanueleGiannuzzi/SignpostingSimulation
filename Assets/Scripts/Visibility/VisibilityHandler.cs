@@ -26,6 +26,10 @@ public class VisibilityHandler : MonoBehaviour {
         return FindObjectOfType<VisibilityPlaneGenerator>().GetVisibilityPlanesGroup().transform.GetChild(visPlaneId).gameObject;
     }
 
+    public SignageBoard GetSignageBoard(int signageBoardID) {
+        return signageBoards[signageBoardID];
+    }
+
     public int GetVisibilityPlaneSize() {
         //return visibilityPlaneGroup.transform.childCount;
         return FindObjectOfType<VisibilityPlaneGenerator>().GetVisibilityPlanesGroup().transform.childCount;
