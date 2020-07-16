@@ -2,23 +2,18 @@
 
 using System.Linq;
 
-public class VisibilityPlaneGenerator : MonoBehaviour {
+[System.Serializable]
+public class VisibilityPlaneGenerator {
     public string[] areaToAnalize = { "IfcSlab" };
 
     public GameObject ifcGameObject;
 
-    private GameObject visibilityPlanesGroup;
+    private GameObject visibilityPlanesGroup;//Child of this object are the Visibility Planes Generated
 
     private readonly string VISIBILITY_GROUP_NAME = "VisibilityPlanesGroup";
 
     public GameObject GetVisibilityPlanesGroup() {
         return visibilityPlanesGroup;
-        //int size = visibilityPlanesGroup.transform.childCount;
-        //GameObject[] children = new GameObject[size];
-        //for(int i = 0; i < size; i++) {
-        //    children[i] = visibilityPlanesGroup.transform.GetChild(i).gameObject;
-        //}
-        //return children;
     }
 
     private bool ShoudAnalizeArea(string ifcClass) {
@@ -26,12 +21,10 @@ public class VisibilityPlaneGenerator : MonoBehaviour {
     }
 
     public void GenerateVisibilityPlanes() {
-        DestroyImmediate(GameObject.Find(VISIBILITY_GROUP_NAME));
+        GameObject.DestroyImmediate(GameObject.Find(VISIBILITY_GROUP_NAME));
         visibilityPlanesGroup = new GameObject(VISIBILITY_GROUP_NAME);
 
         GeneratePlaneForGameObject(ifcGameObject);
-
-        Debug.Log("Visibility Planes Generated");
     }
 
     private void GeneratePlaneForGameObject(GameObject goElement) {

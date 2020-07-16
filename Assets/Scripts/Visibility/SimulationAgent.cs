@@ -31,8 +31,8 @@ public class SimulationAgent : MonoBehaviour {
     }
 
     public void StartSimulation(float repeatRate) {
-        Debug.Log("BANANA START");
-        InvokeRepeating(nameof(SimulationUpdate), 1f, repeatRate);
+        Debug.Log("BANANA START " + repeatRate + "s");
+        InvokeRepeating(nameof(SimulationUpdate), 0f, repeatRate);
     }
 
     public void StopSimulation() {
@@ -45,8 +45,9 @@ public class SimulationAgent : MonoBehaviour {
 
     private void SimulationUpdate() {
         if(IsSimulationEnabled()) {
-            Debug.Log("BANANA TICK");
             for(int agentTypeID = 0; agentTypeID < environment.GetVisibilityHandler().agentTypes.Length; agentTypeID++) {
+
+                //Debug.Log("BANANA TICK " + agentTypeID);
                 List<int> visibleBoards = environment.GetSignageBoardsVisible(this.transform.position, agentTypeID);
                 if(visibleBoards != null && visibleBoards.Count > 0) {
                     OnAgentInVisibilityArea(visibleBoards, agentTypeID);
@@ -56,7 +57,11 @@ public class SimulationAgent : MonoBehaviour {
     }
 
     private void OnAgentInVisibilityArea(List<int> visibleBoards, int agentTypeID) {
+        //Debug.Log("BANANA VIS " + visibleBoards.Count);
         BoardsEcounter boardsEcounters = boardsEcountersPerAgentType[agentTypeID];
+        if(boardsEcounters == null) {
+            return;
+        }
         float now = Time.time;
 
         foreach(int signageBoardID in visibleBoards) {

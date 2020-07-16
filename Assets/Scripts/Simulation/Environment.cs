@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Environment : MonoBehaviour {
+    public bool isSimulationEnabled = false;
+
     public KeyCode Keybind;
     public int SimulationUpdateFrequencyHz;
     [HideInInspector]
@@ -11,28 +13,62 @@ public class Environment : MonoBehaviour {
     [HideInInspector]
     public float positionSensitivity;// Cahed value: (1 / visibilityHandler.resolution)
 
-    private VisibilityHandler visibilityHandler;
-    private VisibilityPlaneGenerator visibilityPlaneGenerator;
+    public VisibilityPlaneGenerator visibilityPlaneGenerator;
+    public VisibilityHandler visibilityHandler;
     private AgentsSpawnHandler agentsSpawnHandler;
 
-    private bool isSimulationRunning = false;
 
     private int[,] SignboardAgentViews; //[agentTypeID, signageBoardID]
 
+    public SignageBoard[] signageBoards;
+
+    public Environment() {
+        visibilityHandler = new VisibilityHandler(this);
+        visibilityPlaneGenerator = new VisibilityPlaneGenerator();
+    }
+
     void Start() {
-        visibilityHandler = GetComponentInChildren<VisibilityHandler>();
-        visibilityPlaneGenerator = GetComponentInChildren<VisibilityPlaneGenerator>();
-        agentsSpawnHandler = GetComponentInChildren<AgentsSpawnHandler>();
+        agentsSpawnHandler = FindObjectOfType<AgentsSpawnHandler>();
 
-        repeatRate = 1 / SimulationUpdateFrequencyHz;
+        repeatRate = 1f / (float)SimulationUpdateFrequencyHz;
 
-        positionSensitivity = 1 / visibilityHandler.resolution;
+        positionSensitivity = 1f / (float)visibilityHandler.resolution;
 
-        SignboardAgentViews = new int[GetVisibilityHandler().agentTypes.Length, GetVisibilityHandler().GetSignageBoardCount()];
+        SignboardAgentViews = new int[GetVisibilityHandler().agentTypes.Length, signageBoards.Length];
+
+        InitVisibilityHandlerData();
 
         if(IsSimulationEnabled()) {
             StartSimulation();
         }
+    }
+
+    public void InitVisibilityHandlerData() {
+        signageBoards = FindObjectsOfType<SignageBoard>();
+        Debug.Log(signageBoards.Length + " Signage Boards found.");
+
+        visibilityPlaneGenerator.GenerateVisibilityPlanes();
+        if(visibilityPlaneGenerator.GetVisibilityPlanesGroup() != null && visibilityPlaneGenerator.GetVisibilityPlanesGroup().transform.childCount > 0) {
+            Debug.Log("Visibility Planes Generated");
+        }
+        else {
+            Debug.Log("Unable to generate Visibility Planes");
+            return;
+        }
+
+        visibilityHandler.GenerateVisibilityData();
+        visibilityHandler.ShowVisibilityPlane(0);
+    }
+
+    public void ClearAllData() {
+        if(visibilityPlaneGenerator != null && visibilityPlaneGenerator.GetVisibilityPlanesGroup() != null) {
+            DestroyImmediate(visibilityPlaneGenerator.GetVisibilityPlanesGroup());
+        }
+        visibilityHandler.ClearAllData();
+    }
+
+    public VisibilityHandler GetVisibilityHandler() {
+        return visibilityHandler;
     }
 
     public VisibilityPlaneGenerator GetVisibilityPlaneGenerator() {
@@ -41,8 +77,8 @@ public class Environment : MonoBehaviour {
 
     void Update() {
         if(Input.GetKeyDown(Keybind)) {
-            isSimulationRunning = !isSimulationRunning;
-            if(isSimulationRunning) {
+            isSimulationEnabled = !isSimulationEnabled;
+            if(isSimulationEnabled) {
                 StartSimulation();
             }
             else {
@@ -51,12 +87,8 @@ public class Environment : MonoBehaviour {
         }
     }
 
-    public VisibilityHandler GetVisibilityHandler() {
-        return visibilityHandler;
-    }
-
     public bool IsSimulationEnabled() {
-        return isSimulationRunning;
+        return isSimulationEnabled;
     }
 
     public void StartSimulation() {
@@ -78,9 +110,11 @@ public class Environment : MonoBehaviour {
     public List<int> GetSignageBoardsVisible(Vector3 agentPosition, int agentTypeID) {
         if(visibilityPlaneGenerator == null) {
             Debug.Log("visibilityPlaneGenerator NULL");
+            return null;
         }
         if(visibilityPlaneGenerator.GetVisibilityPlanesGroup() == null) {
             Debug.Log("GetVisibilityPlanesGroup NULL");
+            return null;
         }
         for(int visPlaneId = 0; visPlaneId < visibilityPlaneGenerator.GetVisibilityPlanesGroup().transform.childCount; visPlaneId++) {
             Dictionary<Vector2Int, VisibilityInfo>[] visInfos = visibilityHandler.visibilityInfos[visPlaneId];
@@ -88,7 +122,9 @@ public class Environment : MonoBehaviour {
             foreach(VisibilityInfo value in visInfoDictionary.Values) {
                 Vector2 worldPos2D = new Vector2(value.cachedWorldPos.x, value.cachedWorldPos.z);
                 Vector2 agentPos2D = new Vector2(agentPosition.x, agentPosition.z);
-                if(Vector3.Distance(worldPos2D, agentPos2D) < positionSensitivity) {
+                float distance = Vector3.Distance(worldPos2D, agentPos2D);
+                //Debug.Log(distance + " " + positionSensitivity);
+                if(distance < positionSensitivity) {
                     return value.GetVisibleBoards();
                 }
             }
@@ -102,7 +138,7 @@ public class Environment : MonoBehaviour {
     }
 
     public void OnAgentExitVisibilityArea(GameObject agent, int agentTypeID, int signboardID, float residenceTime) {
-        SignageBoard signageBoard = visibilityHandler.GetSignageBoard(signboardID);
+        SignageBoard signageBoard = signageBoards[signboardID];
 
         SignboardAgentViews[agentTypeID, signboardID]++;
 

@@ -2,6 +2,7 @@
 using UnityEngine.AI;
 using static AgentsPrefabGenerator;
 
+[System.Serializable]
 public class AgentsSpawnHandler : MonoBehaviour
 {
     [Header("Agent Properties")]
@@ -15,24 +16,27 @@ public class AgentsSpawnHandler : MonoBehaviour
     public float SpawRate;
 
     [HideInInspector]
-    private GameObject AgentsParent;
-    private GameObject agentPrefab;
+    private GameObject AgentsGameObjectParent;
+    private GameObject AgentPrefab;
 
     public int GetAgentsCount() {
-        return AgentsParent.transform.childCount;
+        if(AgentsGameObjectParent == null) {
+            return 0;
+        }
+        return AgentsGameObjectParent.transform.childCount;
     }
 
     public Transform GetAgentsTranform(int agentID) {
-        return AgentsParent.transform.GetChild(agentID);
+        return AgentsGameObjectParent.transform.GetChild(agentID);
     }
 
     public GameObject GetAgentPrefab() {
-        return agentPrefab;
+        return AgentPrefab;
     }
 
     void Start() {
-        AgentsParent = new GameObject("Agents");
-        agentPrefab = AgentsPrefabGenerator.GeneratePrefab(PrefabBase, PrefabProperties);
+        AgentsGameObjectParent = new GameObject("Agents");
+        AgentPrefab = AgentsPrefabGenerator.GeneratePrefab(PrefabBase, PrefabProperties);
         if(this.EnableSpawn) {
             StartSpawn();
         }
@@ -64,7 +68,7 @@ public class AgentsSpawnHandler : MonoBehaviour
         foreach(SpawnArea spawnArea in this.GetComponentsInChildren<SpawnArea>()) {
             if(spawnArea.Enabled) {
                 GameObject agent = spawnArea.SpawnAgent(GetAgentPrefab());
-                agent.transform.parent = AgentsParent.transform;
+                agent.transform.parent = AgentsGameObjectParent.transform;
                 //agent.GetComponent<AgentCollisionDetection>().collisionEvent.AddListener(OnAgentCollidedWith);
             }
         }

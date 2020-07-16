@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
 
-public class AgentsPrefabGenerator : MonoBehaviour
+public static class AgentsPrefabGenerator
 {
     [System.Serializable]
     public struct AgentPrefabProperty {

@@ -1,11 +1,10 @@
-﻿
+﻿using UnityEditor;
 using UnityEngine;
-using UnityEditor;
 
 [RequireComponent(typeof(Transform))]
 //[ExecuteInEditMode]
-public class SignageBoard : MonoBehaviour
-{
+//[InitializeOnLoad]
+public class SignageBoard : MonoBehaviour {
     [Header("Signage Board Parameters")]
     public float ViewingDistance;
     public float ViewingAngle;
@@ -15,6 +14,21 @@ public class SignageBoard : MonoBehaviour
     [Header("Analysys Result")]
     public float[] coveragePerAgentType;//[0,1]
 
+    //[Header("Editor Settings")]
+    //public bool autoUpdate;
+    //public SignageBoard() {
+    //    SceneView.duringSceneGui += view => {
+    //        Event e = Event.current;
+    //        if(autoUpdate && e != null && e.type == EventType.MouseUp && e.button == 0 && !EditorApplication.isPlaying && transform.hasChanged) {
+    //            FindObjectOfType<Environment>().InitVisibilityHandlerData();
+    //        }
+    //    };
+    //}
+
+    public void UpdateVisibilityPlane() {
+        
+    }
+
     public void Start() {
         Color = new Color(
          Random.Range(0f, 1f),
@@ -23,8 +37,6 @@ public class SignageBoard : MonoBehaviour
        );
     }
 
-    //[Header("Editor Settings")]
-    //public bool autoUpdate;
 
     public Vector3 GetDirection() {
         return this.transform.up;
@@ -44,11 +56,5 @@ public class SignageBoard : MonoBehaviour
 
     public Color GetColor() {
         return Color;
-    }
-
-    void Update() {
-        //if(autoUpdate && !EditorApplication.isPlaying && transform.hasChanged) {
-        //    FindObjectOfType<VisibilityHandler>().GenerateVisibilityData();
-        //}
     }
 }
