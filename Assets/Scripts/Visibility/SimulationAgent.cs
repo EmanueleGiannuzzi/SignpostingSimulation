@@ -24,9 +24,14 @@ public class SimulationAgent : MonoBehaviour {
         }
 
         boardsEcountersPerAgentType = new BoardsEcounter[environment.GetVisibilityHandler().agentTypes.Length];
+
+        if(environment.IsSimulationEnabled()) {
+            StartSimulation(environment.repeatRate);
+        }
     }
 
     public void StartSimulation(float repeatRate) {
+        Debug.Log("BANANA START");
         InvokeRepeating(nameof(SimulationUpdate), 1f, repeatRate);
     }
 
@@ -40,6 +45,7 @@ public class SimulationAgent : MonoBehaviour {
 
     private void SimulationUpdate() {
         if(IsSimulationEnabled()) {
+            Debug.Log("BANANA TICK");
             for(int agentTypeID = 0; agentTypeID < environment.GetVisibilityHandler().agentTypes.Length; agentTypeID++) {
                 List<int> visibleBoards = environment.GetSignageBoardsVisible(this.transform.position, agentTypeID);
                 if(visibleBoards != null && visibleBoards.Count > 0) {

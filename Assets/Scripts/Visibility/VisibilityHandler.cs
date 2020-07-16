@@ -21,9 +21,20 @@ public class VisibilityHandler : MonoBehaviour {
     [HideInInspector]
     public float progressAnalysis = -1f;
 
+    private Environment environment;
+
+    void Start() {
+        environment = FindObjectOfType<Environment>();
+        Init();
+    }
+
     private GameObject GetVisibilityPlane(int visPlaneId) {//TODO
-        //return visibilityPlaneGroup.transform.GetChild(visPlaneId).gameObject;
+        //return environment.GetVisibilityPlaneGenerator().GetVisibilityPlanesGroup().transform.GetChild(visPlaneId).gameObject;
         return FindObjectOfType<VisibilityPlaneGenerator>().GetVisibilityPlanesGroup().transform.GetChild(visPlaneId).gameObject;
+    }
+
+    public int GetSignageBoardCount() {
+        return signageBoards.Length;
     }
 
     public SignageBoard GetSignageBoard(int signageBoardID) {
@@ -38,11 +49,11 @@ public class VisibilityHandler : MonoBehaviour {
     public void Init() {
         signageBoards = FindObjectsOfType<SignageBoard>();
 
-        Debug.Log(signageBoards.Length + " Signage Boards found.");
+        Debug.Log(GetSignageBoardCount() + " Signage Boards found.");
     }
 
     public void GenerateVisibilityData() {
-        if(signageBoards.Length <= 0) {
+        if(GetSignageBoardCount() <= 0) {
             Debug.LogError("No Signage Boards found, please press Init first.");
             return;
         }
@@ -141,8 +152,8 @@ public class VisibilityHandler : MonoBehaviour {
                 position[1] = originalFloorHeight + tuple.Value; // the Y value
                 visibilityPlane.transform.position = position;
 
-                float signageboardProgress = agentTypeProgress / signageBoards.Length;
-                for(int signageboardID = 0; signageboardID < signageBoards.Length; signageboardID++) {
+                float signageboardProgress = agentTypeProgress / GetSignageBoardCount();
+                for(int signageboardID = 0; signageboardID < GetSignageBoardCount(); signageboardID++) {
                     SignageBoard signageboard = signageBoards[signageboardID];
 
                     Vector3 p = signageboard.GetWorldCenterPoint();
@@ -209,7 +220,7 @@ public class VisibilityHandler : MonoBehaviour {
 
 
     public void CalculateSignCoverage() {
-        int[,] signageboardCoverage = new int[signageBoards.Length, agentTypes.Length];
+        int[,] signageboardCoverage = new int[GetSignageBoardCount(), agentTypes.Length];
         int visibilityGroupMaxSize = 0;
         for(int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
             Dictionary<Vector2Int, VisibilityInfo>[] visInfosPerMesh = this.visibilityInfos[visPlaneId];
@@ -224,7 +235,7 @@ public class VisibilityHandler : MonoBehaviour {
             visibilityGroupMaxSize += GetVisibilityPlane(visPlaneId).GetComponent<VisibilityPlaneData>().ValidMeshPointsCount;
         }
 
-        for(int signageboardID = 0; signageboardID < signageBoards.Length; signageboardID++) {
+        for(int signageboardID = 0; signageboardID < GetSignageBoardCount(); signageboardID++) {
             SignageBoard signageboard = signageBoards[signageboardID];
             signageboard.coveragePerAgentType = new float[agentTypes.Length];
             for(int agentTypeID = 0; agentTypeID < agentTypes.Length; agentTypeID++) {

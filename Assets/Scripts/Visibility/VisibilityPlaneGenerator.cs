@@ -30,6 +30,8 @@ public class VisibilityPlaneGenerator : MonoBehaviour {
         visibilityPlanesGroup = new GameObject(VISIBILITY_GROUP_NAME);
 
         GeneratePlaneForGameObject(ifcGameObject);
+
+        Debug.Log("Visibility Planes Generated");
     }
 
     private void GeneratePlaneForGameObject(GameObject goElement) {
