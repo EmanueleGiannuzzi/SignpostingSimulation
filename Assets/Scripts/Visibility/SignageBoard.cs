@@ -8,7 +8,7 @@ public class SignageBoard : MonoBehaviour {
     [Header("Signage Board Parameters")]
     public float ViewingDistance;
     public float ViewingAngle;
-    public Color Color;
+    public Color Color = Color.black;
     public float MinimumReadingTime;
 
     [Header("Analysys Result")]
@@ -30,11 +30,13 @@ public class SignageBoard : MonoBehaviour {
     }
 
     public void Start() {
-        Color = new Color(
-         Random.Range(0f, 1f),
-         Random.Range(0f, 1f),
-         Random.Range(0f, 1f)
-       );
+        if(Color == Color.black) {
+            Color = new Color(
+             Random.Range(0f, 1f),
+             Random.Range(0f, 1f),
+             Random.Range(0f, 1f)
+           );
+        }
     }
 
 

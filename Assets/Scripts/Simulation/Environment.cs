@@ -109,11 +109,11 @@ public class Environment : MonoBehaviour {
 
     public List<int> GetSignageBoardsVisible(Vector3 agentPosition, int agentTypeID) {
         if(visibilityPlaneGenerator == null) {
-            Debug.Log("visibilityPlaneGenerator NULL");
+            Debug.LogError("visibilityPlaneGenerator NULL");
             return null;
         }
         if(visibilityPlaneGenerator.GetVisibilityPlanesGroup() == null) {
-            Debug.Log("GetVisibilityPlanesGroup NULL");
+            Debug.LogError("GetVisibilityPlanesGroup NULL");
             return null;
         }
         for(int visPlaneId = 0; visPlaneId < visibilityPlaneGenerator.GetVisibilityPlanesGroup().transform.childCount; visPlaneId++) {
@@ -123,24 +123,27 @@ public class Environment : MonoBehaviour {
                 Vector2 worldPos2D = new Vector2(value.cachedWorldPos.x, value.cachedWorldPos.z);
                 Vector2 agentPos2D = new Vector2(agentPosition.x, agentPosition.z);
                 float distance = Vector3.Distance(worldPos2D, agentPos2D);
-                //Debug.Log(distance + " " + positionSensitivity);
                 if(distance < positionSensitivity) {
+                    //Debug.Log("DISTANCE: " + distance);
                     return value.GetVisibleBoards();
                 }
             }
 
         }
-        return null;
+        return new List<int>();
     }
 
     public void OnAgentEnterVisibilityArea(GameObject agent, int agentTypeID, int signboardID) {
-        //Save agent pos
+        SignageBoard signageBoard = signageBoards[signboardID];
+        Debug.Log("Agent " + agent.name + " enter in range of " + signageBoard.name);
     }
 
     public void OnAgentExitVisibilityArea(GameObject agent, int agentTypeID, int signboardID, float residenceTime) {
         SignageBoard signageBoard = signageBoards[signboardID];
 
-        SignboardAgentViews[agentTypeID, signboardID]++;
+        if(residenceTime >= signageBoard.MinimumReadingTime) {
+            SignboardAgentViews[agentTypeID, signboardID]++;
+        }
 
         Debug.Log("Agent " + agent.name + " stayed in range of " + signageBoard.name + " for " + residenceTime + " seconds");
     }
