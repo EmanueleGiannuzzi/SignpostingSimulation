@@ -8,6 +8,7 @@ public class Environment : MonoBehaviour {
 
     public KeyCode Keybind;
     public int SimulationUpdateFrequencyHz;
+    public float AgentFOVDegrees;
     [HideInInspector]
     public float repeatRate;// cached value: (1 / SimulationUpdateFrequencyHz)
     [HideInInspector]

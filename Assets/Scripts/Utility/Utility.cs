@@ -151,4 +151,8 @@ public static class Utility {
 
         return mesh;
     }
+
+    public static Vector2 Vector3ToVerctor2NoY(Vector3 v3) {
+        return new Vector2(v3.x, v3.z);
+    }
 }

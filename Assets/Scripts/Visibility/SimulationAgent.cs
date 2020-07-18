@@ -47,11 +47,17 @@ public class SimulationAgent : MonoBehaviour {
         if(IsSimulationEnabled()) {
             for(int agentTypeID = 0; agentTypeID < environment.GetVisibilityHandler().agentTypes.Length; agentTypeID++) {
 
-                //Debug.Log("BANANA TICK " + agentTypeID);
                 List<int> visibleBoards = environment.GetSignageBoardsVisible(this.transform.position, agentTypeID);
-                if(visibleBoards != null) {
-                    //Debug.Log("BANANA TICK " + agentTypeID + " " + visibleBoards.Count);
+
+                for(int i = 0; i < visibleBoards.Count; i++) {
+                    int signageBoardID = visibleBoards[i];
+
+                    if(!IsSignboardInFOV(signageBoardID)) {
+                        visibleBoards.Remove(signageBoardID);
+                        Debug.Log("BANANA REMOVED");
+                    }
                 }
+
                 if(visibleBoards != null) {
                     OnAgentInVisibilityArea(visibleBoards, agentTypeID);
                 }
@@ -92,5 +98,28 @@ public class SimulationAgent : MonoBehaviour {
         }
 
         boardsEcountersPerAgentType[agentTypeID] = boardsEcounters;
+    }
+
+    private bool IsSignboardInFOV(int signboardID) {
+        SignageBoard signageBoard = environment.signageBoards[signboardID];
+        Vector2 signboardPos = Utility.Vector3ToVerctor2NoY(signageBoard.transform.position);
+
+        Vector2 agentPos = Utility.Vector3ToVerctor2NoY(this.transform.position);
+
+        Vector2 directionLooking = Utility.Vector3ToVerctor2NoY(this.transform.forward);
+        Vector2 directionSignboard = (signboardPos - agentPos).normalized;
+
+        float angleToPoint = Mathf.Rad2Deg * Mathf.Acos(Vector2.Dot(directionLooking, directionSignboard));
+        float angleFOV = environment.AgentFOVDegrees;
+
+        Debug.Log("ANGLE: " + angleToPoint + " " + angleFOV);
+        return angleToPoint <= (angleFOV / 2);
+    }
+
+    private void OnDrawGizmos() {
+        float angleFOV = environment.AgentFOVDegrees / 2;
+        Color color = Color.cyan;
+        Debug.DrawRay(this.transform.position, Quaternion.Euler(0, angleFOV, 0) * this.transform.forward, color);
+        Debug.DrawRay(this.transform.position, Quaternion.Euler(0, -angleFOV, 0) * this.transform.forward, color);
     }
 }
