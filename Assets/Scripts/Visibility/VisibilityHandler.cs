@@ -8,7 +8,7 @@ public class VisibilityHandler {
     public StringFloatTuple[] agentTypes;
 
     [Header("Texture Color")]
-    public Color nonVisibleColor;
+    public Color nonVisibleColor = new Color(1f, 0f, 0f, 0.5f);//red
 
     [Header("Resolution (point/meter)")]
     public int resolution = 10;
@@ -28,17 +28,16 @@ public class VisibilityHandler {
         visibilityInfos = null;
     }
 
-    private GameObject GetVisibilityPlane(int visPlaneId) {
+    private GameObject GetVisibilityPlane(int visPlaneId) {//TODO: Unificare con SignboardGridGenerator
         return environment.GetVisibilityPlaneGenerator().GetVisibilityPlanesGroup().transform.GetChild(visPlaneId).gameObject;
+    }
+
+    private int GetVisibilityPlaneSize() {
+        return environment.GetVisibilityPlaneGenerator().GetVisibilityPlanesGroup().transform.childCount;
     }
 
     private SignageBoard[] GetSignageBoardArray() {
         return environment.signageBoards;
-    }
-
-    public int GetVisibilityPlaneSize() {
-        return environment.GetVisibilityPlaneGenerator().GetVisibilityPlanesGroup().transform.childCount;
-        //return FindObjectOfType<VisibilityPlaneGenerator>().GetVisibilityPlanesGroup().transform.childCount;
     }
 
     public void GenerateVisibilityData() {
@@ -126,6 +125,7 @@ public class VisibilityHandler {
                 Vector3 position = visibilityPlane.transform.position;
                 position[1] = originalFloorHeight + tuple.Value; // the Y value
                 visibilityPlane.transform.position = position;
+                Mesh visibilityPlaneMesh = visibilityPlane.GetComponent<MeshFilter>().sharedMesh;
 
                 float signageboardProgress = agentTypeProgress / GetSignageBoardArray().Length;
                 for(int signageboardID = 0; signageboardID < GetSignageBoardArray().Length; signageboardID++) {
@@ -145,8 +145,7 @@ public class VisibilityHandler {
 
                             bool isVisible = false;
 
-                            if(Utility.HorizontalPlaneContainsPoint(visibilityPlane.GetComponent<MeshFilter>().sharedMesh, visibilityPlane.transform.InverseTransformPoint(vi))) {
-                            //if(Utility.PolyContainsPoint(outerVertices, visibilityPlane.transform.InverseTransformPoint(vi))) {
+                            if(Utility.HorizontalPlaneContainsPoint(visibilityPlaneMesh, visibilityPlane.transform.InverseTransformPoint(vi))) {
                                 if(agentTypeID == 0 && signageboardID == 0) {
                                     visibilityPlaneData.ValidMeshPointsCount++;
                                 }

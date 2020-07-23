@@ -59,4 +59,11 @@ public class SignageBoard : MonoBehaviour {
     public Color GetColor() {
         return Color;
     }
+
+    public void CopyDataFrom(SignageBoard source) {
+        this.ViewingDistance = source.ViewingDistance;
+        this.ViewingAngle = source.ViewingAngle;
+        this.Color = source.Color;
+        this.MinimumReadingTime = source.MinimumReadingTime;
+}
 }

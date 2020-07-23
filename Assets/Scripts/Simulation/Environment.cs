@@ -17,6 +17,7 @@ public class Environment : MonoBehaviour {
     public VisibilityPlaneGenerator visibilityPlaneGenerator;
     public VisibilityHandler visibilityHandler;
     private AgentsSpawnHandler agentsSpawnHandler;
+    public SignboardGridGenerator signboardGridGenerator;
 
     private int agentSpawnedCount;
     private int[,] SignboardAgentViews; //[agentTypeID, signageBoardID]
@@ -26,6 +27,7 @@ public class Environment : MonoBehaviour {
     public Environment() {
         visibilityHandler = new VisibilityHandler(this);
         visibilityPlaneGenerator = new VisibilityPlaneGenerator();
+        signboardGridGenerator = new SignboardGridGenerator(this);
     }
 
     void Start() {
@@ -51,7 +53,16 @@ public class Environment : MonoBehaviour {
         return visibilityPlaneGenerator;
     }
 
+    public SignboardGridGenerator GetSignboardGridGenerator() {
+        return signboardGridGenerator;
+    }
+
     public void InitVisibilityHandlerData() {
+        if(visibilityHandler.agentTypes.Length <= 0) {
+            Debug.LogError("No Agent Types found");
+            return;
+        }
+
         signageBoards = FindObjectsOfType<SignageBoard>();
         Debug.Log(signageBoards.Length + " Signage Boards found.");
 
