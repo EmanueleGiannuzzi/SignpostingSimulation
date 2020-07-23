@@ -57,16 +57,8 @@ public class Environment : MonoBehaviour {
         return signboardGridGenerator;
     }
 
-    public void InitVisibilityHandlerData() {
-        if(visibilityHandler.agentTypes.Length <= 0) {
-            Debug.LogError("No Agent Types found");
-            return;
-        }
-
-        signageBoards = FindObjectsOfType<SignageBoard>();
-        Debug.Log(signageBoards.Length + " Signage Boards found.");
-
-        visibilityPlaneGenerator.GenerateVisibilityPlanes();
+    public void GenerateVisibilityPlanes() {
+        visibilityPlaneGenerator.GenerateVisibilityPlanes(visibilityHandler.resolution);
         if(visibilityPlaneGenerator.GetVisibilityPlanesGroup() != null && visibilityPlaneGenerator.GetVisibilityPlanesGroup().transform.childCount > 0) {
             Debug.Log("Visibility Planes Generated");
         }
@@ -74,6 +66,21 @@ public class Environment : MonoBehaviour {
             Debug.Log("Unable to generate Visibility Planes");
             return;
         }
+    }
+
+    public void InitVisibilityHandlerData() {
+        if(visibilityHandler.agentTypes.Length <= 0) {
+            Debug.LogError("No Agent Types found");
+            return;
+        }
+
+        if(GetVisibilityPlaneGenerator().GetVisibilityPlanesGroup() == null) {
+            Debug.LogError("Generate Visibility Planes first");
+            return;
+        }
+
+        signageBoards = FindObjectsOfType<SignageBoard>();
+        Debug.Log(signageBoards.Length + " Signage Boards found.");
 
         visibilityHandler.GenerateVisibilityData();
         visibilityHandler.ShowVisibilityPlane(0);

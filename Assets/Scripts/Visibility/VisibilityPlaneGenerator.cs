@@ -20,14 +20,14 @@ public class VisibilityPlaneGenerator {
         return this.areaToAnalize.Contains(ifcClass);
     }
 
-    public void GenerateVisibilityPlanes() {
+    public void GenerateVisibilityPlanes(int analysisResolution) {
         GameObject.DestroyImmediate(GameObject.Find(VISIBILITY_GROUP_NAME));
         visibilityPlanesGroup = new GameObject(VISIBILITY_GROUP_NAME);
 
-        GeneratePlaneForGameObject(ifcGameObject);
+        GeneratePlaneForGameObject(analysisResolution, ifcGameObject);
     }
 
-    private void GeneratePlaneForGameObject(GameObject goElement) {
+    private void GeneratePlaneForGameObject(int analysisResolution, GameObject goElement) {
         IFCData ifcData = goElement.GetComponent<IFCData>();
 
         if(ifcData != null) {
@@ -37,14 +37,9 @@ public class VisibilityPlaneGenerator {
                 MeshFilter meshFilter = plane.AddComponent<MeshFilter>();
                 MeshRenderer meshRenderer = plane.AddComponent<MeshRenderer>();
 
-                //plane.transform.position = goElement.transform.position;
-                //plane.transform.rotation = goElement.transform.rotation;
-                //plane.transform.localScale = goElement.transform.localScale;
-
                 meshRenderer.material = new Material(Shader.Find("Unlit/Transparent"));
 
                 Mesh topMesh = Utility.GetTopMeshFromGameObject(goElement, out float floorHeight);
-                //Debug.Log("FH: " + floorHeight);
 
                 Vector3 position = goElement.transform.position;
                 position[1] = floorHeight; // the Y value
@@ -56,11 +51,21 @@ public class VisibilityPlaneGenerator {
 
                 VisibilityPlaneData planeData = plane.AddComponent<VisibilityPlaneData>();
                 planeData.OriginalFloorHeight = floorHeight;
+
+                Bounds meshRendererBounds = plane.GetComponent<MeshRenderer>().bounds;
+                float planeWidth = meshRendererBounds.extents.x * 2;
+                float planeHeight = meshRendererBounds.extents.z * 2;
+
+                int widthResolution = (int)Mathf.Floor(planeWidth * analysisResolution);
+                int heightResolution = (int)Mathf.Floor(planeHeight * analysisResolution);
+
+                planeData.SetResolution(widthResolution, heightResolution);
+                planeData.GenerateAnalyzablePoints();
             }
         }
         foreach(Transform childTransform in goElement.transform) {
             GameObject child = childTransform.gameObject;
-            GeneratePlaneForGameObject(child);
+            GeneratePlaneForGameObject(analysisResolution, child);
         }
     }
 }

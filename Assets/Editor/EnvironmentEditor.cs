@@ -9,6 +9,10 @@ public class EnvironmentEditor : Editor {
     public override void OnInspectorGUI() {
         DrawDefaultInspector();
 
+        if(GUILayout.Button("Generate Visibility Planes")) {
+            handler.GenerateVisibilityPlanes();
+        }
+
         if(GUILayout.Button("Generate Signboard Grid")) {
             handler.GetSignboardGridGenerator().GenerateGrid();
         }
