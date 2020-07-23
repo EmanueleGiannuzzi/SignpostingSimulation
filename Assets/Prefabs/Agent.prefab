@@ -164,3 +164,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2e95380946badf438a8465ac1899763, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DebugFOV: 0

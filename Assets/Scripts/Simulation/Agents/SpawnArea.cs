@@ -14,6 +14,12 @@ public class SpawnArea : MonoBehaviour {
     public Collider Destroyer;
     public Gradient Gradient;
 
+    private Environment environment;
+
+    private void Start() {
+        environment = FindObjectOfType<Environment>();
+    }
+
     public GameObject SpawnAgentMoveTo(GameObject agentPrefab, Vector3 destination) {
         if(!this.Enabled) {
             return null;
@@ -31,6 +37,10 @@ public class SpawnArea : MonoBehaviour {
         GameObject agent = Object.Instantiate(agentPrefab, spawnPoint, Quaternion.identity);
         agent.GetComponent<MeshRenderer>().material.color = agentColor;
         agent.GetComponent<AgentCollisionDetection>().destination = Destroyer;
+
+        if(environment != null) {
+            environment.OnAgentSpawned();
+        }
 
         NavMeshAgent navMeshAgent = agent.GetComponent<NavMeshAgent>();
         navMeshAgent.SetDestination(destination);

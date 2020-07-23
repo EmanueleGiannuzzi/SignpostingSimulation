@@ -18,7 +18,7 @@ public class Environment : MonoBehaviour {
     public VisibilityHandler visibilityHandler;
     private AgentsSpawnHandler agentsSpawnHandler;
 
-
+    private int agentSpawnedCount;
     private int[,] SignboardAgentViews; //[agentTypeID, signageBoardID]
 
     public SignageBoard[] signageBoards;
@@ -42,6 +42,13 @@ public class Environment : MonoBehaviour {
         if(IsSimulationEnabled()) {
             StartSimulation();
         }
+    }
+    public VisibilityHandler GetVisibilityHandler() {
+        return visibilityHandler;
+    }
+
+    public VisibilityPlaneGenerator GetVisibilityPlaneGenerator() {
+        return visibilityPlaneGenerator;
     }
 
     public void InitVisibilityHandlerData() {
@@ -68,14 +75,6 @@ public class Environment : MonoBehaviour {
         visibilityHandler.ClearAllData();
     }
 
-    public VisibilityHandler GetVisibilityHandler() {
-        return visibilityHandler;
-    }
-
-    public VisibilityPlaneGenerator GetVisibilityPlaneGenerator() {
-        return visibilityPlaneGenerator;
-    }
-
     void Update() {
         if(Input.GetKeyDown(Keybind)) {
             isSimulationEnabled = !isSimulationEnabled;
@@ -93,6 +92,7 @@ public class Environment : MonoBehaviour {
     }
 
     public void StartSimulation() {
+        this.agentSpawnedCount = 0;
         for(int agentID = 0; agentID < agentsSpawnHandler.GetAgentsCount(); agentID++) {
             SimulationAgent agent = agentsSpawnHandler.GetAgentsTranform(agentID).gameObject.GetComponent<SimulationAgent>();
             agent.StartSimulation(SimulationUpdateFrequencyHz);
@@ -105,7 +105,14 @@ public class Environment : MonoBehaviour {
             SimulationAgent agent = agentsSpawnHandler.GetAgentsTranform(agentID).gameObject.GetComponent<SimulationAgent>();
             agent.StopSimulation();
         }
-        Debug.Log("Simulation Stopped");
+        Debug.Log("Simulation Results:");
+
+        for(int agentTypeID = 0; agentTypeID < GetVisibilityHandler().agentTypes.Length; agentTypeID++) {
+            print("Agent Type: " + GetVisibilityHandler().agentTypes[agentTypeID].Key + "(" + GetVisibilityHandler().agentTypes[agentTypeID].Value + ")");
+            for(int signageBoardID = 0; signageBoardID < signageBoards.Length; signageBoardID++) {
+                print("SignageBoard: " + signageBoards[signageBoardID].gameObject.name + ": " + (((float)SignboardAgentViews[agentTypeID, signageBoardID] / (float)agentSpawnedCount) * 100) + "%");
+            }
+        }
     }
 
     public List<int> GetSignageBoardsVisible(Vector3 agentPosition, int agentTypeID) {
@@ -134,9 +141,13 @@ public class Environment : MonoBehaviour {
         return new List<int>();
     }
 
+    public void OnAgentSpawned() {
+        this.agentSpawnedCount++;
+    }
+
     public void OnAgentEnterVisibilityArea(GameObject agent, int agentTypeID, int signboardID) {
         SignageBoard signageBoard = signageBoards[signboardID];
-        Debug.Log("Agent " + agent.name + " enter in range of " + signageBoard.name);
+        //Debug.Log("Agent " + agent.name + " enter in range of " + signageBoard.name);
     }
 
     public void OnAgentExitVisibilityArea(GameObject agent, int agentTypeID, int signboardID, float residenceTime) {
@@ -146,6 +157,6 @@ public class Environment : MonoBehaviour {
             SignboardAgentViews[agentTypeID, signboardID]++;
         }
 
-        Debug.Log("Agent " + agent.name + " stayed in range of " + signageBoard.name + " for " + residenceTime + " seconds");
+        //Debug.Log("Agent " + agent.name + " stayed in range of " + signageBoard.name + " for " + residenceTime + " seconds");
     }
 }

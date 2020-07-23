@@ -8,6 +8,8 @@ public class SimulationAgent : MonoBehaviour {
 
     private BoardsEcounter[] boardsEcountersPerAgentType;
 
+    public bool DebugFOV = false;
+
     private class BoardsEcounter {
         public Dictionary<int, float> visibleBoards;//Board-First seen time(Time.time)
 
@@ -54,7 +56,6 @@ public class SimulationAgent : MonoBehaviour {
 
                     if(!IsSignboardInFOV(signageBoardID)) {
                         visibleBoards.Remove(signageBoardID);
-                        Debug.Log("BANANA REMOVED");
                     }
                 }
 
@@ -112,14 +113,15 @@ public class SimulationAgent : MonoBehaviour {
         float angleToPoint = Mathf.Rad2Deg * Mathf.Acos(Vector2.Dot(directionLooking, directionSignboard));
         float angleFOV = environment.AgentFOVDegrees;
 
-        Debug.Log("ANGLE: " + angleToPoint + " " + angleFOV);
         return angleToPoint <= (angleFOV / 2);
     }
 
     private void OnDrawGizmos() {
-        float angleFOV = environment.AgentFOVDegrees / 2;
-        Color color = Color.cyan;
-        Debug.DrawRay(this.transform.position, Quaternion.Euler(0, angleFOV, 0) * this.transform.forward, color);
-        Debug.DrawRay(this.transform.position, Quaternion.Euler(0, -angleFOV, 0) * this.transform.forward, color);
+        if(DebugFOV) {
+            float angleFOV = environment.AgentFOVDegrees / 2;
+            Color color = Color.cyan;
+            Debug.DrawRay(this.transform.position, Quaternion.Euler(0, angleFOV, 0) * this.transform.forward, color);
+            Debug.DrawRay(this.transform.position, Quaternion.Euler(0, -angleFOV, 0) * this.transform.forward, color);
+        }
     }
 }
