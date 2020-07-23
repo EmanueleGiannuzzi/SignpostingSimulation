@@ -127,60 +127,63 @@ public class VisibilityHandler {
                 visibilityPlane.transform.position = position;
                 Mesh visibilityPlaneMesh = visibilityPlane.GetComponent<MeshFilter>().sharedMesh;
 
-                float signageboardProgress = agentTypeProgress / GetSignageBoardArray().Length;
-                for(int signageboardID = 0; signageboardID < GetSignageBoardArray().Length; signageboardID++) {
-                    SignageBoard signageboard = GetSignageBoardArray()[signageboardID];
 
-                    Vector3 p = signageboard.GetWorldCenterPoint();
-                    Vector3 n = signageboard.GetDirection();
-                    float theta = (signageboard.GetViewingAngle() * Mathf.PI) / 180;
-                    float d = signageboard.GetViewingDistance();
+                float resolutionProgress = agentTypeProgress / (heightResolution * widthResolution);
+                float signageboardProgress = resolutionProgress / GetSignageBoardArray().Length;
+                for(int z = 0; z < heightResolution; z++) {
+                    for(int x = 0; x < widthResolution; x++) {
+                        Vector3 vi = new Vector3(cornerMax.x - ((planeWidth / widthResolution) * x), visibilityPlane.transform.position.y, cornerMax.z - ((planeHeight / heightResolution) * z));
+                        //Debug.DrawLine(vi, p, Color.green);
 
-                    float resolutionProgress = signageboardProgress / (heightResolution * widthResolution);
-                    for(int z = 0; z < heightResolution; z++) {
-                        for(int x = 0; x < widthResolution; x++) {
-                            Vector3 vi = new Vector3(cornerMax.x - ((planeWidth / widthResolution) * x), visibilityPlane.transform.position.y, cornerMax.z - ((planeHeight / heightResolution) * z));
-                            Vector3 pToViDirection = vi - p;
-                            //Debug.DrawLine(vi, p, Color.green);
+                        bool isVisible = false;
 
-                            bool isVisible = false;
+                        if(Utility.HorizontalPlaneContainsPoint(visibilityPlaneMesh, visibilityPlane.transform.InverseTransformPoint(vi))) {
+                            for(int signageboardID = 0; signageboardID < GetSignageBoardArray().Length; signageboardID++) {
+                                SignageBoard signageboard = GetSignageBoardArray()[signageboardID];
 
-                            if(Utility.HorizontalPlaneContainsPoint(visibilityPlaneMesh, visibilityPlane.transform.InverseTransformPoint(vi))) {
+                                Vector3 p = signageboard.GetWorldCenterPoint();
+                                Vector3 n = signageboard.GetDirection();
+                                float theta = (signageboard.GetViewingAngle() * Mathf.PI) / 180;
+                                float d = signageboard.GetViewingDistance();
+
+                                Vector3 pToViDirection = vi - p;
+
                                 if(agentTypeID == 0 && signageboardID == 0) {
                                     visibilityPlaneData.ValidMeshPointsCount++;
                                 }
-                                if((Vector3.Dot((vi - p), n) / ((vi - p).magnitude * n.magnitude)) >= Mathf.Cos(theta / 2)
-                                && ((vi - p).magnitude <= d)) {
+
+                                if((Vector3.Dot((vi - p), n) / ((vi - p).magnitude * n.magnitude)) >= Mathf.Cos(theta / 2) && ((vi - p).magnitude <= d)) {
                                     Ray ray = new Ray(p, pToViDirection);
                                     float maxDistance = Vector3.Distance(p, vi);
-                                    RaycastHit hit;
-                                    if(!Physics.Raycast(ray, out hit, maxDistance)) {//(ray, out hit, maxDistance)
+                                    //RaycastHit hit;
+                                    if(!Physics.Raycast(ray, out _, maxDistance)) {//(ray, out hit, maxDistance)
                                         isVisible = true;
                                     }
                                     //else {
                                     //    Debug.DrawRay(p, pToViDirection, Color.red);
                                     //}
                                 }
-                            }
 
-                            if(isVisible) {
-                                Vector2Int coords = new Vector2Int(x, z);
-                                if(visInfos[agentTypeID].ContainsKey(coords)) {
-                                    visInfos[agentTypeID][coords].AddVisibleBoard(signageboardID);
-                                }
-                                else {
-                                    VisibilityInfo vinfo = new VisibilityInfo(vi);
-                                    vinfo.AddVisibleBoard(signageboardID);
-                                    visInfos[agentTypeID].Add(coords, vinfo);
+                                if(isVisible) {
+                                    Vector2Int coords = new Vector2Int(x, z);
+                                    if(visInfos[agentTypeID].ContainsKey(coords)) {
+                                        visInfos[agentTypeID][coords].AddVisibleBoard(signageboardID);
+                                    }
+                                    else {
+                                        VisibilityInfo vinfo = new VisibilityInfo(vi);
+                                        vinfo.AddVisibleBoard(signageboardID);
+                                        visInfos[agentTypeID].Add(coords, vinfo);
+                                    }
                                 }
                             }
-                            this.progressAnalysis -= resolutionProgress;
                         }
-                        if(EditorUtility.DisplayCancelableProgressBar("Simple Progress Bar", "Shows a progress bar for the given seconds", 1f - progressAnalysis)) {
-                            EditorUtility.ClearProgressBar();
-                            this.progressAnalysis = -1f;
-                            return;
-                        }
+
+                        this.progressAnalysis -= signageboardProgress;
+                    }
+                    if(EditorUtility.DisplayCancelableProgressBar("Simple Progress Bar", "Shows a progress bar for the given seconds", 1f - progressAnalysis)) {
+                        EditorUtility.ClearProgressBar();
+                        this.progressAnalysis = -1f;
+                        return;
                     }
                 }
             }
