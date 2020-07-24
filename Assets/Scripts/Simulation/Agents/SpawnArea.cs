@@ -10,8 +10,8 @@ public class SpawnArea : MonoBehaviour {
     [ConditionalField(nameof(OverrideSpawnRate))]
     public int SpawnRate;
 
-    public Transform Destination;
-    public Collider Destroyer;
+    public SpawnAreaDestination[] goals;
+
     public Gradient Gradient;
 
     private Environment environment;
@@ -19,9 +19,14 @@ public class SpawnArea : MonoBehaviour {
     private void Start() {
         environment = FindObjectOfType<Environment>();
     }
+    public GameObject SpawnAgentMoveTo(GameObject agentPrefab, SpawnAreaDestination goal) {
+        Transform destination = goal.Destination;
+        Collider destroyer = goal.Destroyer;
+        return SpawnAgentMoveTo(agentPrefab, destination.position, destroyer);
+    }
 
-    public GameObject SpawnAgentMoveTo(GameObject agentPrefab, Vector3 destination) {
-        if(!this.Enabled) {
+    public GameObject SpawnAgentMoveTo(GameObject agentPrefab, Vector3 destination, Collider destroyer) {
+        if(!this.Enabled || goals == null || goals.Length <= 0) {
             return null;
         }
 
@@ -36,7 +41,7 @@ public class SpawnArea : MonoBehaviour {
 
         GameObject agent = Object.Instantiate(agentPrefab, spawnPoint, Quaternion.identity);
         agent.GetComponent<MeshRenderer>().material.color = agentColor;
-        agent.GetComponent<AgentCollisionDetection>().destination = Destroyer;
+        agent.GetComponent<AgentCollisionDetection>().destroyer = destroyer;
 
         if(environment != null) {
             environment.OnAgentSpawned();
@@ -49,7 +54,28 @@ public class SpawnArea : MonoBehaviour {
     }
 
     public GameObject SpawnAgent(GameObject agentPrefab) {
-        return SpawnAgentMoveTo(agentPrefab, Destination.position);
+        if(goals.Length == 0) {
+            print("BANAN" + this.gameObject.name);
+        }
+        return SpawnAgentMoveTo(agentPrefab, goals[Random.Range(0, goals.Length)]);
     }
 
+}
+
+
+[System.Serializable]
+public class SpawnAreaDestination {
+    [SerializeField]
+    private Transform destination;
+
+    [SerializeField]
+    private Collider destroyer;
+
+    public Transform Destination => destination;
+    public Collider Destroyer => destroyer;
+
+    public SpawnAreaDestination(Transform destination, Collider destroyer) {
+        this.destination = destination;
+        this.destroyer = destroyer;
+    }
 }

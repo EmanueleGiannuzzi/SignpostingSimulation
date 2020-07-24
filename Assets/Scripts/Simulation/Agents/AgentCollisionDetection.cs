@@ -7,7 +7,7 @@ public class CollisionEvent : UnityEvent<NavMeshAgent, Collider> { }
 
 public class AgentCollisionDetection : MonoBehaviour {
     public CollisionEvent collisionEvent;
-    public Collider destination;
+    public Collider destroyer;
 
     void Start() {
         if(collisionEvent == null) {
@@ -18,7 +18,7 @@ public class AgentCollisionDetection : MonoBehaviour {
     private void OnTriggerEnter(Collider other) {
         collisionEvent.Invoke(this.gameObject.GetComponent<NavMeshAgent>(), other);
 
-        if(destination.Equals(other)) {
+        if(destroyer != null && destroyer.Equals(other)) {
             Destroy(this.gameObject);
         }
     }

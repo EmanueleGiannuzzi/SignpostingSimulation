@@ -18,7 +18,7 @@ public class TestSpawnArea : SpawnArea
             Ray ray = PlayerCamera.ScreenPointToRay(Input.mousePosition);
 
             if(Physics.Raycast(ray, out RaycastHit hit)) {
-                SpawnAgentMoveTo(AgentPrefab, hit.point);
+                SpawnAgentMoveTo(AgentPrefab, hit.point, null);
             }
         }
     }

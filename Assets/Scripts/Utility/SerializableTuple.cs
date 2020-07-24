@@ -23,3 +23,4 @@ public class SerializableTuple<T1, T2> {
 public class StringFloatTuple : SerializableTuple<string, float> {
     public StringFloatTuple(string key, float item2) : base(key, item2) { }
 }
+

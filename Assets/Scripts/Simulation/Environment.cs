@@ -39,6 +39,7 @@ public class Environment : MonoBehaviour {
 
         SignboardAgentViews = new int[GetVisibilityHandler().agentTypes.Length, signageBoards.Length];
 
+        GenerateVisibilityPlanes();
         InitVisibilityHandlerData();
 
         if(IsSimulationEnabled()) {

@@ -121,7 +121,7 @@ MonoBehaviour:
   collisionEvent:
     m_PersistentCalls:
       m_Calls: []
-  destination: {fileID: 0}
+  destroyer: {fileID: 0}
 --- !u!54 &6018972779277305201
 Rigidbody:
   m_ObjectHideFlags: 0
