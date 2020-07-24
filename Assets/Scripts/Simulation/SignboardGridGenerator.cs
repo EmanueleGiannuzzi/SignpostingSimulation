@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [System.Serializable]
 public class SignboardGridGenerator {
@@ -67,6 +65,11 @@ public class SignboardGridGenerator {
 
                         SignageBoard signageboard = signageboardObj.GetComponent<SignageBoard>();
                         signageboard.CopyDataFrom(SignboardTemplate);
+                        signageboard.Color = new Color(
+                         Random.Range(0f, 1f),
+                         Random.Range(0f, 1f),
+                         Random.Range(0f, 1f)
+                       );
                     }
                 }
             }

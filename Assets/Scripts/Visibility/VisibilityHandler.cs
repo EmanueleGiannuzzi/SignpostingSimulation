@@ -101,7 +101,7 @@ public class VisibilityHandler {
     private void AnalyzeSignboards() {
         this.progressAnalysis = 1f;
 
-        float planesProgress = progressAnalysis / GetVisibilityPlaneSize();
+        float progressBarStep = 1f / GetVisibilityPlaneSize() / agentTypes.Length / GetSignageBoardArray().Length;
         for(int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
             GameObject visibilityPlane = GetVisibilityPlane(visPlaneId);
             Dictionary<Vector2Int, VisibilityInfo>[] visInfos = this.visibilityInfos[visPlaneId];
@@ -109,31 +109,26 @@ public class VisibilityHandler {
             VisibilityPlaneData visibilityPlaneData = visibilityPlane.GetComponent<VisibilityPlaneData>();
             float originalFloorHeight = visibilityPlaneData.OriginalFloorHeight;
 
-            float agentTypeProgress = planesProgress / agentTypes.Length;
+            //float agentTypeProgress = planesProgress / agentTypes.Length;
             for(int agentTypeID = 0; agentTypeID < agentTypes.Length; agentTypeID++) {
                 StringFloatTuple tuple = agentTypes[agentTypeID];
 
                 Vector3 position = visibilityPlane.transform.position;
                 position[1] = originalFloorHeight + tuple.Value; // the Y value
                 visibilityPlane.transform.position = position;
-                Mesh visibilityPlaneMesh = visibilityPlane.GetComponent<MeshFilter>().sharedMesh;
 
+                for(int signageboardID = 0; signageboardID < GetSignageBoardArray().Length; signageboardID++) {
+                    SignageBoard signageboard = GetSignageBoardArray()[signageboardID];
+                    Vector3 p = signageboard.GetWorldCenterPoint();
+                    Vector3 n = signageboard.GetDirection();
+                    float theta = (signageboard.GetViewingAngle() * Mathf.PI) / 180;
+                    float d = signageboard.GetViewingDistance();
 
-                float resolutionProgress = agentTypeProgress / visibilityPlaneData.GetPointsForAnalysis().Count;
-                float signageboardProgress = resolutionProgress / GetSignageBoardArray().Length;
-                foreach(Vector2 vi2 in visibilityPlaneData.GetPointsForAnalysis().Keys) {
-                    Vector3 vi = new Vector3(vi2.x, visibilityPlane.transform.position.y, vi2.y);
-                    //Debug.DrawLine(vi, p, Color.green);
+                    foreach(Vector2 vi2 in visibilityPlaneData.GetPointsForAnalysis().Keys) {
+                        Vector3 vi = new Vector3(vi2.x, visibilityPlane.transform.position.y, vi2.y);
+                        //Debug.DrawLine(vi, p, Color.green);
 
-                    bool isVisible = false;
-
-                    for(int signageboardID = 0; signageboardID < GetSignageBoardArray().Length; signageboardID++) {
-                        SignageBoard signageboard = GetSignageBoardArray()[signageboardID];
-
-                        Vector3 p = signageboard.GetWorldCenterPoint();
-                        Vector3 n = signageboard.GetDirection();
-                        float theta = (signageboard.GetViewingAngle() * Mathf.PI) / 180;
-                        float d = signageboard.GetViewingDistance();
+                        bool isVisible = false;
 
                         Vector3 pToViDirection = vi - p;
 
@@ -162,19 +157,19 @@ public class VisibilityHandler {
                         }
                     }
 
-                    this.progressAnalysis -= signageboardProgress;
+                    this.progressAnalysis -= progressBarStep;
+                    if(EditorUtility.DisplayCancelableProgressBar("Visibility Handler", "Generating Signboard Visibility Data", 1f - progressAnalysis)) {
+                        EditorUtility.ClearProgressBar();
+                        this.progressAnalysis = -1f;
+                        return;
+                    }
                 }
 
-                if(EditorUtility.DisplayCancelableProgressBar("Simple Progress Bar", "Shows a progress bar for the given seconds", 1f - progressAnalysis)) {
-                    EditorUtility.ClearProgressBar();
-                    this.progressAnalysis = -1f;
-                    return;
-                }
             }
         }
 
         CalculateSignCoverage();
-        this.progressAnalysis = 0f;
+        //this.progressAnalysis = 0f;
         EditorUtility.ClearProgressBar();
 
         this.progressAnalysis = -1f;
