@@ -128,7 +128,7 @@ public class VisibilityHandler {
                         Vector3 vi = new Vector3(vi2.x, visibilityPlane.transform.position.y, vi2.y);
                         //Debug.DrawLine(vi, p, Color.green);
 
-                        bool isVisible = true;
+                        bool isVisible = false;
 
                         Vector3 pToViDirection = vi - p;
 
