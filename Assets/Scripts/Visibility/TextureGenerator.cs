@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class VisibilityTextureGenerator : MonoBehaviour
+public class VisibilityTextureGenerator
 {
 	public static Texture2D TextureFromColourMap(Color[] colourMap, int width, int height) {
 		Texture2D texture = new Texture2D(width, height);
@@ -27,6 +27,16 @@ public class VisibilityTextureGenerator : MonoBehaviour
 			}
 			colourMap[coords.y * width + coords.x] = visibleColor;
 		}
+
+		//TODO: Remove Debug code
+  //      for(int i = 0; i < width * height; i++) {
+		//	colourMap[i] = new Color(
+  //           UnityEngine.Random.Range(0f, 1f),
+		//	 UnityEngine.Random.Range(0f, 1f),
+		//	 UnityEngine.Random.Range(0f, 1f)
+		//   );
+
+		//}
 
 		return TextureFromColourMap(colourMap, width, height);
 	}

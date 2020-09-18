@@ -55,7 +55,7 @@ public class VisibilityPlaneData : MonoBehaviour {
         for(int z = 0; z < heightResolution; z++) {
             for(int x = 0; x < widthResolution; x++) {
                 Vector3 vi = new Vector3(cornerMax.x - ((planeWidth / widthResolution) * x), 0f, cornerMax.z - ((planeHeight / heightResolution) * z));
-                if(Utility.HorizontalPlaneContainsPoint(visibilityPlaneMesh, visibilityPlane.transform.InverseTransformPoint(vi))) {
+                if(Utility.HorizontalPlaneContainsPoint(visibilityPlaneMesh, visibilityPlane.transform.InverseTransformPoint(vi), (planeWidth / widthResolution), (planeHeight / heightResolution))) {
                     AnalyzablePoints.Add(new Vector2(vi.x, vi.z), new Vector2Int(x, z));
                 }
                 progress += progressStep;

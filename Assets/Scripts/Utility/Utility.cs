@@ -18,14 +18,19 @@ public static class Utility {
         return inside;
     }
 
-    public static bool HorizontalPlaneContainsPoint(Mesh mesh, Vector3 aLocalPoint) {
+    public static bool HorizontalPlaneContainsPoint(Mesh mesh, Vector3 aLocalPoint, float squareWidthLength, float squareHeightLenght) {
         Vector3[] verts = mesh.vertices;
         int[] tris = mesh.triangles;
         int triangleCount = tris.Length / 3;
         for(int i = 0; i < triangleCount; i++) {
             Vector3[] trianglePoly = { verts[tris[i * 3]], verts[tris[i * 3 + 1]], verts[tris[i * 3 + 2]] };
 
-            if(PolyContainsPoint(trianglePoly, aLocalPoint)) {
+            if(PolyContainsPoint(trianglePoly, aLocalPoint)
+                || PolyContainsPoint(trianglePoly, new Vector3(aLocalPoint.x + squareWidthLength, aLocalPoint.y, aLocalPoint.z + squareHeightLenght))
+                || PolyContainsPoint(trianglePoly, new Vector3(aLocalPoint.x - squareWidthLength, aLocalPoint.y, aLocalPoint.z + squareHeightLenght))
+                || PolyContainsPoint(trianglePoly, new Vector3(aLocalPoint.x + squareWidthLength, aLocalPoint.y, aLocalPoint.z - squareHeightLenght))
+                || PolyContainsPoint(trianglePoly, new Vector3(aLocalPoint.x - squareWidthLength, aLocalPoint.y, aLocalPoint.z - squareHeightLenght))
+                ) {
                 return true;
             }
         }

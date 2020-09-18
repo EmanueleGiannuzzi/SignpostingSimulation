@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-
+using UnityEngine.AI;
 using System.Linq;
 
 [System.Serializable]
@@ -34,6 +34,9 @@ public class VisibilityPlaneGenerator {
             string ifClass = ifcData.IFCClass;
             if(ShoudAnalizeArea(ifClass)) {
                 GameObject plane = new GameObject(ifcData.STEPName);
+                plane.layer = 8;//VisibilityLayer - To be ignored from NavMesh
+                NavMeshModifier navmeshModifier = plane.AddComponent<NavMeshModifier>();
+                navmeshModifier.ignoreFromBuild = true;
                 MeshFilter meshFilter = plane.AddComponent<MeshFilter>();
                 MeshRenderer meshRenderer = plane.AddComponent<MeshRenderer>();
 
