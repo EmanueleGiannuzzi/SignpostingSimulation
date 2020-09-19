@@ -18,6 +18,7 @@ public class Environment : MonoBehaviour {
     public VisibilityHandler visibilityHandler;
     private AgentsSpawnHandler agentsSpawnHandler;
     public SignboardGridGenerator signboardGridGenerator;
+    public BestSignboardPosition bestSignboardPosition;
 
     private int agentSpawnedCount;
     private int[,] SignboardAgentViews; //[agentTypeID, signageBoardID]
@@ -28,6 +29,7 @@ public class Environment : MonoBehaviour {
         visibilityHandler = new VisibilityHandler(this);
         visibilityPlaneGenerator = new VisibilityPlaneGenerator();
         signboardGridGenerator = new SignboardGridGenerator(this);
+        bestSignboardPosition = new BestSignboardPosition(this);
     }
 
     void Start() {
@@ -58,6 +60,10 @@ public class Environment : MonoBehaviour {
         return signboardGridGenerator;
     }
 
+    public BestSignboardPosition GetBestSignboardPosition() {
+        return bestSignboardPosition;
+    }
+
     public void GenerateVisibilityPlanes() {
         visibilityPlaneGenerator.GenerateVisibilityPlanes(visibilityHandler.resolution);
         if(visibilityPlaneGenerator.GetVisibilityPlanesGroup() != null && visibilityPlaneGenerator.GetVisibilityPlanesGroup().transform.childCount > 0) {
@@ -84,7 +90,6 @@ public class Environment : MonoBehaviour {
         Debug.Log(signageBoards.Length + " Signage Boards found.");
 
         visibilityHandler.GenerateVisibilityData();
-        visibilityHandler.ShowVisibilityPlane(0);
     }
 
     public void ClearAllData() {

@@ -39,6 +39,10 @@ public class SignboardGridGenerator {
 
         for(int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
             GameObject visibilityPlane = GetVisibilityPlane(visPlaneId);
+
+            GameObject visPlaneParent = new GameObject(visibilityPlane.name);
+            visPlaneParent.transform.parent = parent.transform;
+
             float visibilityPlaneHeight = visibilityPlane.GetComponent<VisibilityPlaneData>().OriginalFloorHeight;
 
             Bounds meshRendererBounds = visibilityPlane.GetComponent<MeshRenderer>().bounds;
@@ -59,10 +63,9 @@ public class SignboardGridGenerator {
                         signageboardObj.transform.position = position;
                         signageboardObj.transform.rotation = Quaternion.Euler(-90f, 0f, 90);
                         signageboardObj.transform.localScale = new Vector3(-0.08f, 1f, 0.08f);
-                        signageboardObj.transform.parent = parent.transform;
+                        signageboardObj.transform.parent = visPlaneParent.transform;
+
                         signageboardObj.AddComponent<SignageBoard>();
-
-
                         SignageBoard signageboard = signageboardObj.GetComponent<SignageBoard>();
                         signageboard.CopyDataFrom(SignboardTemplate);
                         signageboard.Color = new Color(
@@ -70,6 +73,10 @@ public class SignboardGridGenerator {
                          Random.Range(0f, 1f),
                          Random.Range(0f, 1f)
                        );
+
+                        signageboardObj.AddComponent<GridSignageboard>();
+                        GridSignageboard gridSignageboard = signageboardObj.GetComponent<GridSignageboard>();
+                        gridSignageboard.planeLocalIndex = new Vector2Int(x, z);
                     }
                 }
             }

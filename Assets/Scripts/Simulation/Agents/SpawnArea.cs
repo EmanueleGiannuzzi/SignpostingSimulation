@@ -55,7 +55,7 @@ public class SpawnArea : MonoBehaviour {
 
     public GameObject SpawnAgent(GameObject agentPrefab) {
         if(goals.Length == 0) {
-            print("BANAN" + this.gameObject.name);
+            Debug.Log("SpawnArea [" + this.gameObject.name + "]: No destination set");
         }
         return SpawnAgentMoveTo(agentPrefab, goals[Random.Range(0, goals.Length)]);
     }

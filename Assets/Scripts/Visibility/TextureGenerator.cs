@@ -6,10 +6,11 @@ using UnityEngine;
 public class VisibilityTextureGenerator
 {
 	public static Texture2D TextureFromColourMap(Color[] colourMap, int width, int height) {
-		Texture2D texture = new Texture2D(width, height);
-		texture.filterMode = FilterMode.Point;
-		texture.wrapMode = TextureWrapMode.Clamp;
-		texture.SetPixels(colourMap);
+        Texture2D texture = new Texture2D(width, height) {
+            filterMode = FilterMode.Point,
+            wrapMode = TextureWrapMode.Clamp
+        };
+        texture.SetPixels(colourMap);
 		texture.Apply();
 		return texture;
 	}
@@ -28,17 +29,26 @@ public class VisibilityTextureGenerator
 			colourMap[coords.y * width + coords.x] = visibleColor;
 		}
 
-		//TODO: Remove Debug code
-  //      for(int i = 0; i < width * height; i++) {
-		//	colourMap[i] = new Color(
-  //           UnityEngine.Random.Range(0f, 1f),
-		//	 UnityEngine.Random.Range(0f, 1f),
-		//	 UnityEngine.Random.Range(0f, 1f)
-		//   );
-
-		//}
-
 		return TextureFromColourMap(colourMap, width, height);
+	}
+
+	public static Texture2D BestSignboardTexture(GameObject signboardGridGroup, int agentTypeID, int visPlaneID, int width, int height, float minVisibility, float maxVisibility, Gradient gradient) {
+		Color[] colorMap = new Color[width * height];
+		Utility.FillArray(colorMap, gradient.Evaluate(0f));
+
+		
+
+		foreach(Transform child in signboardGridGroup.transform.GetChild(visPlaneID)) {
+			SignageBoard signboard = child.gameObject.GetComponent<SignageBoard>();
+			GridSignageboard gridSignboard = child.gameObject.GetComponent<GridSignageboard>();
+
+			float visibility = signboard.coveragePerAgentType[agentTypeID];
+			float visiblityNorm = (visibility / (maxVisibility - minVisibility)) + minVisibility;
+			
+			colorMap[gridSignboard.planeLocalIndex.x * height + gridSignboard.planeLocalIndex.y] = gradient.Evaluate(visiblityNorm);
+		}
+
+		return TextureFromColourMap(colorMap, width, height);
 	}
 
 }

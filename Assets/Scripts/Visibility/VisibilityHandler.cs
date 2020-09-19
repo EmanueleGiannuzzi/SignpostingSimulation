@@ -28,11 +28,11 @@ public class VisibilityHandler {
         visibilityInfos = null;
     }
 
-    private GameObject GetVisibilityPlane(int visPlaneId) {//TODO: Unificare con SignboardGridGenerator
+    public GameObject GetVisibilityPlane(int visPlaneId) {//TODO: Unificare con SignboardGridGenerator
         return environment.GetVisibilityPlaneGenerator().GetVisibilityPlanesGroup().transform.GetChild(visPlaneId).gameObject;
     }
 
-    private int GetVisibilityPlaneSize() {
+    public int GetVisibilityPlaneSize() {
         return environment.GetVisibilityPlaneGenerator().GetVisibilityPlanesGroup().transform.childCount;
     }
 
@@ -59,7 +59,7 @@ public class VisibilityHandler {
         Debug.Log("Done Calculating Visibility Areas");
     }
 
-    public void ShowVisibilityPlane(int agentTypeID) {//TODO: Use enumerator
+    public void ShowVisibilityPlane(int agentTypeID) {
         for(int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
             GameObject visibilityPlane = GetVisibilityPlane(visPlaneId);
             Dictionary<Vector2Int, VisibilityInfo>[] visInfos = this.visibilityInfos[visPlaneId];
