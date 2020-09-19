@@ -26,10 +26,10 @@ public static class Utility {
             Vector3[] trianglePoly = { verts[tris[i * 3]], verts[tris[i * 3 + 1]], verts[tris[i * 3 + 2]] };
 
             if(PolyContainsPoint(trianglePoly, aLocalPoint)
-                || PolyContainsPoint(trianglePoly, new Vector3(aLocalPoint.x + squareWidthLength, aLocalPoint.y, aLocalPoint.z + squareHeightLenght))
+                || PolyContainsPoint(trianglePoly, new Vector3(aLocalPoint.x - squareWidthLength, aLocalPoint.y, aLocalPoint.z - squareHeightLenght))
                 || PolyContainsPoint(trianglePoly, new Vector3(aLocalPoint.x - squareWidthLength, aLocalPoint.y, aLocalPoint.z + squareHeightLenght))
                 || PolyContainsPoint(trianglePoly, new Vector3(aLocalPoint.x + squareWidthLength, aLocalPoint.y, aLocalPoint.z - squareHeightLenght))
-                || PolyContainsPoint(trianglePoly, new Vector3(aLocalPoint.x - squareWidthLength, aLocalPoint.y, aLocalPoint.z - squareHeightLenght))
+                //|| PolyContainsPoint(trianglePoly, new Vector3(aLocalPoint.x + squareWidthLength, aLocalPoint.y, aLocalPoint.z + squareHeightLenght))
                 ) {
                 return true;
             }
