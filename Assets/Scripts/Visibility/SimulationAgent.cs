@@ -37,7 +37,7 @@ public class SimulationAgent : MonoBehaviour {
         InvokeRepeating(nameof(SimulationUpdate), 0f, repeatRate);
     }
 
-    public void StopSimulation() {
+    public void OnSimulationStopped() {
         CancelInvoke(nameof(SimulationUpdate));
     }
 
