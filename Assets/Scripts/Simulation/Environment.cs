@@ -9,6 +9,7 @@ public class Environment : MonoBehaviour {
     public KeyCode Keybind;
     public int SimulationUpdateFrequencyHz;
     public float AgentFOVDegrees;
+    public float SimulationDurationSeconds;
     [HideInInspector]
     public float repeatRate;// cached value: (1 / SimulationUpdateFrequencyHz)
     [HideInInspector]
@@ -97,6 +98,9 @@ public class Environment : MonoBehaviour {
             DestroyImmediate(visibilityPlaneGenerator.GetVisibilityPlanesGroup());
         }
         visibilityHandler.ClearAllData();
+        if(signboardGridGenerator != null && signboardGridGenerator.GetSignboardGridGroup() != null) {
+            signboardGridGenerator.DeleteObjects();
+        }
     }
 
     void Update() {
@@ -107,12 +111,29 @@ public class Environment : MonoBehaviour {
             }
             else {
                 StopSimulation();
+                StopAllCoroutines();
             }
         }
     }
 
     public bool IsSimulationEnabled() {
         return isSimulationEnabled;
+    }
+
+    public void RunSimulationForInspectorDuration() {
+        RunSimulationForSeconds(this.SimulationDurationSeconds);
+    }
+
+    public void RunSimulationForSeconds(float dT) {
+        StartCoroutine(CoroutineRunSimulationForSeconds(dT));
+    }
+
+    private IEnumerator CoroutineRunSimulationForSeconds(float dT) {
+        isSimulationEnabled = true;
+        StartSimulation();
+        yield return new WaitForSecondsRealtime(dT);
+        StopSimulation();
+        isSimulationEnabled = false;
     }
 
     public void StartSimulation() {

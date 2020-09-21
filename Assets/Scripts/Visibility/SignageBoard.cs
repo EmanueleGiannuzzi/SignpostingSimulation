@@ -40,6 +40,10 @@ public class SignageBoard : MonoBehaviour {
         }
     }
 
+    public float[] GetVisiblityForHeatmap() {
+        return visibilityPerAgentType;
+    }
+
 
     public Vector3 GetDirection() {
         return this.transform.up;

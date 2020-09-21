@@ -17,6 +17,8 @@ public class BestSignboardPosition {
         environment.GetSignboardGridGenerator().GenerateGrid();
 
         environment.InitVisibilityHandlerData();
+
+        environment.RunSimulationForInspectorDuration();
     }
 
     public void ShowVisibilityPlane(int agentTypeID) {
@@ -28,7 +30,7 @@ public class BestSignboardPosition {
             foreach(Transform child in signboardGridGroup.transform.GetChild(visPlaneId)) {
                 SignageBoard signboard = child.gameObject.GetComponent<SignageBoard>();
 
-                float visibility = signboard.coveragePerAgentType[agentTypeID];
+                float visibility = signboard.GetVisiblityForHeatmap()[agentTypeID];
                 if(visibility > maxVisibility) {
                     maxVisibility = visibility;
                 }

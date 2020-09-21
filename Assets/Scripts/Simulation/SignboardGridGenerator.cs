@@ -28,8 +28,12 @@ public class SignboardGridGenerator {
         return environment.GetVisibilityPlaneGenerator().GetVisibilityPlanesGroup().transform.childCount;
     }
 
-    public void GenerateGrid() {
+    public void DeleteObjects() {
         GameObject.DestroyImmediate(GameObject.Find(SIGNBOARDS_GRID_NAME));
+    }
+
+    public void GenerateGrid() {
+        DeleteObjects();
         signboardGridGroup = new GameObject(SIGNBOARDS_GRID_NAME);
 
         GenerateGrid(signboardGridGroup);
