@@ -15,6 +15,7 @@ public class VisibilityTextureGenerator
 		return texture;
 	}
 
+	
 	public static Texture2D TextureFromVisibilityData(Dictionary<Vector2Int, VisibilityInfo> visibilityData, SignageBoard[] signageBoards, int width, int height, Color nonVisibleColor) {
 		Color[] colourMap = new Color[width * height];
 		Utility.FillArray(colourMap, nonVisibleColor);
@@ -22,10 +23,14 @@ public class VisibilityTextureGenerator
 		foreach(KeyValuePair<Vector2Int, VisibilityInfo> entry in visibilityData) {
 			Vector2Int coords = entry.Key;
 
-			Color visibleColor = Color.white;
+			Color visibleColor = new Color(0, 0, 0, 0);
 			foreach(int signageboardID in entry.Value.GetVisibleBoards()) {
-				visibleColor *= signageBoards[signageboardID].GetColor();
+				visibleColor += signageBoards[signageboardID].GetColor();
 			}
+			visibleColor /= entry.Value.GetVisibleBoards().Count;
+
+			visibleColor.a = nonVisibleColor.a;
+
 			colourMap[coords.y * width + coords.x] = visibleColor;
 		}
 

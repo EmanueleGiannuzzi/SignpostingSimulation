@@ -65,7 +65,7 @@ public class SignboardGridGenerator {
                         GameObject signageboardObj = GameObject.CreatePrimitive(PrimitiveType.Plane);
                         signageboardObj.name = "Signboard [" + x + ", " + z + "]";
                         signageboardObj.transform.position = position;
-                        signageboardObj.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
+                        signageboardObj.transform.rotation = Quaternion.Euler(-90f, 0f, -90f);
                         signageboardObj.transform.localScale = new Vector3(-0.08f, 1f, 0.08f);
                         signageboardObj.transform.parent = visPlaneParent.transform;
 
