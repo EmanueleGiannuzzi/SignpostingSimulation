@@ -18,7 +18,7 @@ public class VisibilityHandler {
     [HideInInspector]
     public float progressAnalysis = -1f;
 
-    private Environment environment;
+    private readonly Environment environment;
 
     public VisibilityHandler(Environment environment) {
         this.environment = environment;

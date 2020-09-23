@@ -45,7 +45,7 @@ public class EnvironmentEditor : Editor {
 
         if(GUILayout.Button("Generate Signboard Grid")) {
             handler.GetBestSignboardPosition().StartEvalutation();
-            handler.GetBestSignboardPosition().ShowVisibilityPlane(0);
+            //handler.GetBestSignboardPosition().ShowVisibilityPlane(0); Must be at the end of the corutine
         }
         if(handler.GetBestSignboardPosition() == null || handler.GetSignboardGridGenerator().GetSignboardGridGroup() == null) {
             GUI.enabled = false;

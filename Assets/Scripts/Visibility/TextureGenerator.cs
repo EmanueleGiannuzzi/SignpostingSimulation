@@ -41,9 +41,9 @@ public class VisibilityTextureGenerator
 			GridSignageboard gridSignboard = child.gameObject.GetComponent<GridSignageboard>();
 
 			float visibility = signboard.GetVisiblityForHeatmap()[agentTypeID];
-			float visiblityNorm = (visibility / (maxVisibility - minVisibility)) + minVisibility;
-			
-			colorMap[gridSignboard.planeLocalIndex.x * height + gridSignboard.planeLocalIndex.y] = gradient.Evaluate(visiblityNorm);
+            float visiblityNorm = (visibility / (maxVisibility - minVisibility)) + minVisibility;
+
+            colorMap[gridSignboard.planeLocalIndex.y * width + gridSignboard.planeLocalIndex.x] = gradient.Evaluate(visiblityNorm);
 		}
 
 		return TextureFromColourMap(colorMap, width, height);

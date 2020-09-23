@@ -28,8 +28,11 @@ public class VisibilityPlaneGenerator {
     }
 
     private void GeneratePlaneForGameObject(int analysisResolution, GameObject goElement) {
-        IFCData ifcData = goElement.GetComponent<IFCData>();
+        if(!goElement.activeSelf) {
+            return;
+        }
 
+        IFCData ifcData = goElement.GetComponent<IFCData>();
         if(ifcData != null) {
             string ifClass = ifcData.IFCClass;
             if(ShoudAnalizeArea(ifClass)) {

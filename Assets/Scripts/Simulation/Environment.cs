@@ -43,7 +43,7 @@ public class Environment : MonoBehaviour {
         SignboardAgentViews = new int[GetVisibilityHandler().agentTypes.Length, signageBoards.Length];
 
         GenerateVisibilityPlanes();
-        InitVisibilityHandlerData();
+        //InitVisibilityHandlerData();
 
         if(IsSimulationEnabled()) {
             StartSimulation();
@@ -131,9 +131,10 @@ public class Environment : MonoBehaviour {
     private IEnumerator CoroutineRunSimulationForSeconds(float dT) {
         isSimulationEnabled = true;
         StartSimulation();
-        yield return new WaitForSecondsRealtime(dT);
+        yield return new WaitForSeconds(dT);
         StopSimulation();
         isSimulationEnabled = false;
+        this.GetBestSignboardPosition().ShowVisibilityPlane(0);
     }
 
     public void StartSimulation() {
@@ -152,10 +153,13 @@ public class Environment : MonoBehaviour {
         }
         Debug.Log("Simulation Results:");
 
-        for(int agentTypeID = 0; agentTypeID < GetVisibilityHandler().agentTypes.Length; agentTypeID++) {
-            print("Agent Type: " + GetVisibilityHandler().agentTypes[agentTypeID].Key + "(" + GetVisibilityHandler().agentTypes[agentTypeID].Value + ")");
-            for(int signageBoardID = 0; signageBoardID < signageBoards.Length; signageBoardID++) {
-                SignageBoard signboard = signageBoards[signageBoardID];
+        int agentTypeSize = GetVisibilityHandler().agentTypes.Length;
+
+        for(int signageBoardID = 0; signageBoardID < signageBoards.Length; signageBoardID++) {
+            SignageBoard signboard = signageBoards[signageBoardID];
+            signboard.visibilityPerAgentType = new float[agentTypeSize];
+            for(int agentTypeID = 0; agentTypeID < agentTypeSize; agentTypeID++) {
+            //  print("Agent Type: " + GetVisibilityHandler().agentTypes[agentTypeID].Key + "(" + GetVisibilityHandler().agentTypes[agentTypeID].Value + ")");
                 print("SignageBoard: " + signboard.gameObject.name + ": " + (((float)SignboardAgentViews[agentTypeID, signageBoardID] / (float)agentSpawnedCount) * 100) + "%");
                 signboard.visibilityPerAgentType[agentTypeID] = (float)SignboardAgentViews[agentTypeID, signageBoardID] / (float)agentSpawnedCount;
             }

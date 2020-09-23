@@ -17,8 +17,10 @@ public class BestSignboardPosition {
         environment.GetSignboardGridGenerator().GenerateGrid();
 
         environment.InitVisibilityHandlerData();
+        environment.GetVisibilityHandler().ShowVisibilityPlane(0);
 
         environment.RunSimulationForInspectorDuration();
+        //environment.GetBestSignboardPosition().ShowVisibilityPlane(0);
     }
 
     public void ShowVisibilityPlane(int agentTypeID) {
