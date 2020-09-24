@@ -6,6 +6,7 @@ using UnityEngine;
 public class SimulationAgent : MonoBehaviour {
     private Environment environment;
 
+    private List<int>[] signboardEncounteredPerAgentType;
     private BoardsEcounter[] boardsEcountersPerAgentType;
 
     public bool DebugFOV = false;
@@ -28,17 +29,23 @@ public class SimulationAgent : MonoBehaviour {
         boardsEcountersPerAgentType = new BoardsEcounter[environment.GetVisibilityHandler().agentTypes.Length];
 
         if(environment.IsSimulationEnabled()) {
-            StartSimulation(environment.repeatRate);
+            OnStartSimulation(environment.repeatRate);
         }
     }
 
-    public void StartSimulation(float repeatRate) {
-        //Debug.Log("BANANA START " + repeatRate + "s");
+    public void OnStartSimulation(float repeatRate) {
+        int agentTypeSize = environment.GetVisibilityHandler().agentTypes.Length;
+        signboardEncounteredPerAgentType = new List<int>[agentTypeSize];
+        for(int i = 0; i < agentTypeSize; i++) {
+            signboardEncounteredPerAgentType[i] = new List<int>();
+        }
+
         InvokeRepeating(nameof(SimulationUpdate), 0f, repeatRate);
     }
 
     public void OnSimulationStopped() {
         CancelInvoke(nameof(SimulationUpdate));
+        signboardEncounteredPerAgentType = null;
     }
 
     private bool IsSimulationEnabled() {
@@ -79,6 +86,7 @@ public class SimulationAgent : MonoBehaviour {
                 boardsEcounters.visibleBoards.Add(signageBoardID, now);
 
                 environment.OnAgentEnterVisibilityArea(this.gameObject, agentTypeID, signageBoardID);
+
             }
             //else { } //2) Se c'è già non fa niente
         }
@@ -89,8 +97,12 @@ public class SimulationAgent : MonoBehaviour {
             if(!visibleBoards.Contains(signageBoardID)) {
                 signBoardsToRemove.Add(signageBoardID);
 
-                float enterTime = boardEncounter.Value;
-                environment.OnAgentExitVisibilityArea(this.gameObject, agentTypeID, signageBoardID, now - enterTime);
+                List<int> signboardEncountered = signboardEncounteredPerAgentType[agentTypeID];
+                if(!signboardEncountered.Contains(signageBoardID)) {
+                    float enterTime = boardEncounter.Value;
+                    signboardEncountered.Add(signageBoardID);
+                    environment.OnAgentExitVisibilityArea(this.gameObject, agentTypeID, signageBoardID, now - enterTime);
+                }
             }
         }
 

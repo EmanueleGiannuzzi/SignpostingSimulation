@@ -15,6 +15,10 @@ public class SignageBoard : MonoBehaviour {
     public float[] coveragePerAgentType;//[0,1]
     public float[] visibilityPerAgentType;//[0,1]
 
+    [Header("Debug")]
+    public int views = 0;
+    public int agentsSpawned = 0;
+
     //[Header("Editor Settings")]
     //public bool autoUpdate;
     //public SignageBoard() {

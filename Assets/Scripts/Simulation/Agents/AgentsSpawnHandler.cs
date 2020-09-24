@@ -12,7 +12,7 @@ public class AgentsSpawnHandler : MonoBehaviour
     [Header("Agent Spawn Settings")]
     public bool EnableSpawn = true;
     [Tooltip("Agents per second.")]
-    [Range(0.0f, 5.0f)]
+    [Range(0.0f, 100.0f)]
     public float SpawRate;
 
     [HideInInspector]
