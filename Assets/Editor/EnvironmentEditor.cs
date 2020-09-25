@@ -26,8 +26,8 @@ public class EnvironmentEditor : Editor {
             GUILayout.Button("Show Plane: 0");
             GUI.enabled = true;
         }
-        else { 
-            GUILayout.BeginHorizontal("box");
+        else {
+            EditorGUILayout.BeginHorizontal("box");
             if(GUILayout.Button("Show Plane: " + showPlaneSliderValue)) {
                 handler.GetVisibilityHandler().ShowVisibilityPlane((int)showPlaneSliderValue);
             }
@@ -35,12 +35,11 @@ public class EnvironmentEditor : Editor {
                 showPlaneSliderValue = GUILayout.HorizontalSlider(showPlaneSliderValue, 0, handler.GetVisibilityHandler().agentTypes.Length - 1);
                 showPlaneSliderValue = Mathf.Round(showPlaneSliderValue);
             }
-            GUILayout.EndHorizontal();
+            EditorGUILayout.EndHorizontal();
         }
         if(GUILayout.Button("Clear Data")) {
             handler.ClearAllData();
         }
-
 
 
         if(GUILayout.Button("Generate Signboard Grid")) {
@@ -53,7 +52,7 @@ public class EnvironmentEditor : Editor {
             GUI.enabled = true;
         }
         else {
-            GUILayout.BeginHorizontal("box");
+            EditorGUILayout.BeginHorizontal("box");
             if(GUILayout.Button("Show Heatmap: " + showHeatmapSliderValue)) {
                 handler.GetBestSignboardPosition().ShowVisibilityPlane((int)showHeatmapSliderValue);
             }
@@ -61,7 +60,7 @@ public class EnvironmentEditor : Editor {
                 showHeatmapSliderValue = GUILayout.HorizontalSlider(showHeatmapSliderValue, 0, handler.GetVisibilityHandler().agentTypes.Length - 1);
                 showHeatmapSliderValue = Mathf.Round(showHeatmapSliderValue);
             }
-            GUILayout.EndHorizontal();
+            EditorGUILayout.EndHorizontal();
         }
     }
 

@@ -20,6 +20,7 @@ public class Environment : MonoBehaviour {
     private AgentsSpawnHandler agentsSpawnHandler;
     public SignboardGridGenerator signboardGridGenerator;
     public BestSignboardPosition bestSignboardPosition;
+    private CSVExporter csvExporter;
 
     private int agentSpawnedCount;
     private int[,] SignboardAgentViews; //[agentTypeID, signageBoardID]
@@ -31,6 +32,7 @@ public class Environment : MonoBehaviour {
         visibilityPlaneGenerator = new VisibilityPlaneGenerator();
         signboardGridGenerator = new SignboardGridGenerator(this);
         bestSignboardPosition = new BestSignboardPosition(this);
+        csvExporter = new CSVExporter(this);
     }
 
     void Start() {
