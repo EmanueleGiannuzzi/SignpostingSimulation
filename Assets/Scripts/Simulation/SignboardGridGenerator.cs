@@ -60,10 +60,14 @@ public class SignboardGridGenerator {
 
             for(int z = 0; z < heightResolution; z++) {
                 for(int x = 0; x < widthResolution; x++) {
-                    Vector3 position = new Vector3(cornerMax.x - ((planeWidth / widthResolution) * x), visibilityPlaneHeight + signboardHeight, cornerMax.z - ((planeHeight / heightResolution) * z));
+                    float sideWidth = planeWidth / widthResolution;
+                    float sideHeight = planeHeight / heightResolution;
+                    Vector3 position = new Vector3(cornerMax.x - (sideWidth * x), visibilityPlaneHeight + signboardHeight, cornerMax.z - (sideHeight * z));
                     if(Utility.HorizontalPlaneContainsPoint(visibilityPlane.GetComponent<MeshFilter>().sharedMesh, visibilityPlane.transform.InverseTransformPoint(position), (planeWidth / widthResolution), (planeHeight / heightResolution))) {
                         GameObject signageboardObj = GameObject.CreatePrimitive(PrimitiveType.Plane);
                         signageboardObj.name = "Signboard [" + x + ", " + z + "]";
+                        position.x -= sideWidth / 2;
+                        position.z -= sideHeight / 2;
                         signageboardObj.transform.position = position;
                         signageboardObj.transform.rotation = Quaternion.Euler(-90f, 0f, -90f);
                         signageboardObj.transform.localScale = new Vector3(-0.08f, 1f, 0.08f);
