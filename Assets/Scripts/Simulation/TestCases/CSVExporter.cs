@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using CsvHelper;
+using CsvHelper.Configuration;
 
 public class CSVExporter
 {
@@ -16,7 +17,7 @@ public class CSVExporter
         int agentTypeSize = environment.GetVisibilityHandler().agentTypes.Length;
 
         foreach(SignageBoard signboard in signboards) {
-            string name = signboard.name;
+            string name = signboard.name + "(" + signboard.transform.parent.name + ")";
             float[] coverage = new float[agentTypeSize];
             float[] visibility = new float[agentTypeSize];
 
@@ -30,21 +31,49 @@ public class CSVExporter
     }
 
     public void ExportCSV(string pathToFile) {
-        using(var writer = new StreamWriter(pathToFile))
-        using(var csv = new CsvWriter(writer, CultureInfo.InvariantCulture)) {
+        using(StreamWriter writer = new StreamWriter(pathToFile))
+        using(CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture)) {
+            csv.Configuration.RegisterClassMap(new SignboardDataMap());
+            csv.Configuration.HasHeaderRecord = false;
+
+            csv.WriteField("sep=" + csv.Configuration.Delimiter, false);
+            csv.NextRecord();
+            string header = "Name";
+            for(int i = 0; i < environment.GetVisibilityHandler().agentTypes.Length; i++) {
+                header += csv.Configuration.Delimiter + "Coverage[" + environment.GetVisibilityHandler().agentTypes[i].Key + "]";
+            }
+            for(int i = 0; i < environment.GetVisibilityHandler().agentTypes.Length; i++) {
+                header += csv.Configuration.Delimiter + "Visibility[" + environment.GetVisibilityHandler().agentTypes[i].Key + "]";
+            }
+            csv.WriteField(header, false);
+            csv.NextRecord();
             csv.WriteRecords(createSignboardsData());
         }
     }
 
     class SignboardData {
-        string signageboardName;
-        float[] coverage;
-        float[] visibility;
+        public readonly string signageboardName;
+        public readonly float[] coverage;
+        public readonly float[] visibility;
 
         public SignboardData(string signageboardName, float[] coverage, float[] visibility) {
             this.signageboardName = signageboardName;
             this.coverage = coverage;
             this.visibility = visibility;
+        }
+    }
+    class SignboardDataMap : ClassMap<SignboardData> {
+        public SignboardDataMap() {
+            Map(m => m.signageboardName).Name("Name");
+            Map(m => m.coverage).Name("Coverage");
+            //Map(m => {
+            //    for(int i = 0; i < m.coverage.Length; i++) {
+            //        return m.coverage[i];
+            //    }
+            //}
+            //);
+
+            Map(m => m.visibility).Name("Visibility");
         }
     }
 }

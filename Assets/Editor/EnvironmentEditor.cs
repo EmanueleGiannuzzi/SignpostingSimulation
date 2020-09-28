@@ -7,6 +7,8 @@ public class EnvironmentEditor : Editor {
     float showPlaneSliderValue = 0;
     float showHeatmapSliderValue = 0;
 
+    string pathToCSV = "C:/Users/emagi/Desktop/export.csv";
+
     public override void OnInspectorGUI() {
         DrawDefaultInspector();
 
@@ -42,7 +44,7 @@ public class EnvironmentEditor : Editor {
         }
 
 
-        if(GUILayout.Button("Generate Signboard Grid")) {
+        if(GUILayout.Button("Calculate Visibility")) {
             handler.GetBestSignboardPosition().StartEvalutation();
             //handler.GetBestSignboardPosition().ShowVisibilityPlane(0); Must be at the end of the corutine
         }
@@ -62,6 +64,13 @@ public class EnvironmentEditor : Editor {
             }
             EditorGUILayout.EndHorizontal();
         }
+
+        pathToCSV = EditorGUILayout.TextField("Path to CSV: ", pathToCSV);
+        GUI.enabled = handler.bestSignboardPosition.isVisibilityReady();
+        if(GUILayout.Button("Export Visibility to CSV")) {
+            handler.bestSignboardPosition.ExportCSV(pathToCSV);
+        }
+        GUI.enabled = true;
     }
 
     void OnEnable() {

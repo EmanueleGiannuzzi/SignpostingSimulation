@@ -6,9 +6,13 @@ public class BestSignboardPosition {
     public Gradient Gradient;
 
     private readonly Environment environment;
+    private readonly CSVExporter csvExporter;
+
+    private bool done = false;
 
     public BestSignboardPosition(Environment e) {
         environment = e;
+        csvExporter = new CSVExporter(environment);
     }
 
     public void StartEvalutation() {
@@ -20,10 +24,16 @@ public class BestSignboardPosition {
         environment.GetVisibilityHandler().ShowVisibilityPlane(0);
 
         environment.RunSimulationForInspectorDuration();
+
+        done = true;
         //environment.GetBestSignboardPosition().ShowVisibilityPlane(0);
     }
 
     public void ShowVisibilityPlane(int agentTypeID) {
+        if(!isVisibilityReady()) {
+            return;
+        }
+
         GameObject signboardGridGroup = environment.signboardGridGenerator.GetSignboardGridGroup();
 
         float minVisibility = float.PositiveInfinity;
@@ -79,6 +89,16 @@ public class BestSignboardPosition {
             MeshRenderer meshRenderer = visibilityPlane.GetComponent<MeshRenderer>();
             //meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Transparent"));
             meshRenderer.sharedMaterial.mainTexture = texture;
+        }
+    }
+
+    public bool isVisibilityReady() {
+        return done;
+    }
+
+    public void ExportCSV(string pathToFile) {
+        if(isVisibilityReady()) {
+            csvExporter.ExportCSV(pathToFile);
         }
     }
 
