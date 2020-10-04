@@ -56,11 +56,11 @@ public class BestSignboardPosition {
             GameObject visibilityPlane = environment.visibilityHandler.GetVisibilityPlane(visPlaneId);
             //Dictionary<Vector2Int, VisibilityInfo>[] visInfos = environment.visibilityHandler.visibilityInfos[visPlaneId];
 
-            //Vector3 position = visibilityPlane.transform.position;
-            //VisibilityPlaneData planeData = visibilityPlane.GetComponent<VisibilityPlaneData>();
-            //float originalFloorHeight = planeData.OriginalFloorHeight;
-            //position[1] = originalFloorHeight + environment.visibilityHandler.agentTypes[agentTypeID].Value; // the Y value
-            //visibilityPlane.transform.position = position;
+            Vector3 position = visibilityPlane.transform.position;
+            VisibilityPlaneData planeData = visibilityPlane.GetComponent<VisibilityPlaneData>();
+            float originalFloorHeight = planeData.OriginalFloorHeight;
+            position[1] = originalFloorHeight; // the Y value
+            visibilityPlane.transform.position = position;
 
             float signboardGridResolution = environment.signboardGridGenerator.resolution;
 

@@ -66,13 +66,6 @@ public class CSVExporter
         public SignboardDataMap() {
             Map(m => m.signageboardName).Name("Name");
             Map(m => m.coverage).Name("Coverage");
-            //Map(m => {
-            //    for(int i = 0; i < m.coverage.Length; i++) {
-            //        return m.coverage[i];
-            //    }
-            //}
-            //);
-
             Map(m => m.visibility).Name("Visibility");
         }
     }

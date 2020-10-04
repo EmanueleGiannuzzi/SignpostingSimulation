@@ -6,6 +6,7 @@ public class SignboardGridGenerator {
     public float resolution; // point/meter
 
     public float signboardHeight;
+    public float sigboardOrientation;
 
     private readonly Environment environment;
 
@@ -69,7 +70,7 @@ public class SignboardGridGenerator {
                         position.x -= sideWidth / 2;
                         position.z -= sideHeight / 2;
                         signageboardObj.transform.position = position;
-                        signageboardObj.transform.rotation = Quaternion.Euler(-90f, 0f, -90f);
+                        signageboardObj.transform.rotation = Quaternion.Euler(-90f, 0f, sigboardOrientation);
                         signageboardObj.transform.localScale = new Vector3(-0.08f, 1f, 0.08f);
                         signageboardObj.transform.parent = visPlaneParent.transform;
 

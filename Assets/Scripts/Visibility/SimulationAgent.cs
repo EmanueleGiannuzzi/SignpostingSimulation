@@ -56,6 +56,9 @@ public class SimulationAgent : MonoBehaviour {
         if(IsSimulationEnabled()) {
             for(int agentTypeID = 0; agentTypeID < environment.GetVisibilityHandler().agentTypes.Length; agentTypeID++) {
                 List<int> visibleBoards = environment.GetSignageBoardsVisible(this.transform.position, agentTypeID);
+                if(visibleBoards == null) {
+                    return;
+                }
 
                 for(int i = 0; i < visibleBoards.Count; i++) {
                     int signageBoardID = visibleBoards[i];

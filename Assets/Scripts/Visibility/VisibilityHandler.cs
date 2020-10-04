@@ -60,6 +60,10 @@ public class VisibilityHandler {
     }
 
     public void ShowVisibilityPlane(int agentTypeID) {
+        if(this.visibilityInfos == null) {
+            return;
+        }
+
         for(int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
             GameObject visibilityPlane = GetVisibilityPlane(visPlaneId);
             Dictionary<Vector2Int, VisibilityInfo>[] visInfos = this.visibilityInfos[visPlaneId];
