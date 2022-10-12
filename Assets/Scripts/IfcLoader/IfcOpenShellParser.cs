@@ -13,6 +13,8 @@ public class IfcOpenShellParser : MonoBehaviour {
     [Header("Walkable Areas")]
     public string[] walkableAreas = { "IfcSlab", "IfcStair", "IfcStairFlight", "IfcWallStandardCase" };
     public string[] navMeshIgnoredAreas = { "IfcDoor" };
+    public string ifcSignTag = "IfcSign";
+
 
     [Header("Loader")]
     public bool deleteTemporaryFiles = true;
@@ -20,7 +22,7 @@ public class IfcOpenShellParser : MonoBehaviour {
     private GameObject loadedOBJ;
     private XmlDocument loadedXML;
 
-    private static readonly int NOTWALKABLE_AREATYPE = 1;
+    private static readonly int NAVMESH_NOTWALKABLE_AREATYPE = 1;
 
     private readonly Dummiesman.OBJLoader objLoader = new Dummiesman.OBJLoader {
         SplitMode = Dummiesman.SplitMode.Object,
@@ -115,7 +117,7 @@ public class IfcOpenShellParser : MonoBehaviour {
             }
 
             if(goElement != null) {
-                HandleObjectNavMeshProperty(ref goElement, node);
+                HandleSpecialObjects(ref goElement, node);
 
                 goElement.name = name;
                 if(parent != null) {
@@ -138,7 +140,11 @@ public class IfcOpenShellParser : MonoBehaviour {
         return this.navMeshIgnoredAreas.Contains(ifcClass);
     }
 
-    private void HandleObjectNavMeshProperty(ref GameObject goElement, XmlNode node) {
+    private bool IsIfcSign(string ifcClass) {
+        return ifcClass.Equals(ifcSignTag);
+    }
+
+    private void HandleSpecialObjects(ref GameObject goElement, XmlNode node) {
         MeshFilter goMeshFilter = goElement.GetComponent<MeshFilter>();
         if(goMeshFilter != null && goMeshFilter.sharedMesh != null) {
             goElement.AddComponent<MeshCollider>();
@@ -149,9 +155,12 @@ public class IfcOpenShellParser : MonoBehaviour {
             else if(!IsIfcWalkableArea(node.Name)) {
                 NavMeshModifier navmeshModifier = goElement.AddComponent<NavMeshModifier>();
                 navmeshModifier.overrideArea = true;
-                navmeshModifier.area = NOTWALKABLE_AREATYPE;
+                navmeshModifier.area = NAVMESH_NOTWALKABLE_AREATYPE;
             }
-            
+            else if(IsIfcSign(node.Name)) {
+                SignageBoard signBoard = goElement.AddComponent<SignageBoard>();
+                //TODO: Get Viewing Distance, Viewing Angle, Color, Minimum Reading Time
+            }
         }
     }
 

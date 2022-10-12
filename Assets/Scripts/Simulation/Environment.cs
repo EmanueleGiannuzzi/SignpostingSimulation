@@ -49,6 +49,7 @@ public class Environment : MonoBehaviour {
             StartSimulation();
         }
     }
+
     public VisibilityHandler GetVisibilityHandler() {
         return visibilityHandler;
     }
