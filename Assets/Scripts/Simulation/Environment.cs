@@ -9,6 +9,8 @@ public class Environment : MonoBehaviour {
     public KeyCode Keybind;
     public int SimulationUpdateFrequencyHz;
     public float AgentFOVDegrees;
+    public float WarmupDurationSeconds;
+    public float SimulationDurationSeconds;
     [HideInInspector]
     public float repeatRate;// cached value: (1 / SimulationUpdateFrequencyHz)
     [HideInInspector]
@@ -126,6 +128,22 @@ public class Environment : MonoBehaviour {
 
     public bool IsSimulationEnabled() {
         return isSimulationEnabled;
+    }
+
+    public void RunSimulationForInspectorDuration() {
+        RunSimulationForSeconds(this.SimulationDurationSeconds);
+    }
+
+    public void RunSimulationForSeconds(float dT) {
+        StartCoroutine(CoroutineRunSimulationForSeconds(dT));
+    }
+
+    public void SimulationWarmup() {
+        SimulationWarmup(this.WarmupDurationSeconds);
+    }
+
+    public void SimulationWarmup(float dT) {
+        StartCoroutine(CoroutineSimulationWarmup(dT));
     }
 
     public IEnumerator CoroutineSimulationWarmup(float dT) {

@@ -4,9 +4,6 @@ using UnityEngine;
 
 [System.Serializable]
 public class BestSignboardPosition {
-    public float WarmupDurationSeconds;
-    public float SimulationDurationSeconds;
-
     public Gradient Gradient;
 
     private readonly Environment environment;
@@ -20,13 +17,13 @@ public class BestSignboardPosition {
     }
 
     public IEnumerator CoroutineWarmupAndSimulate() {
-        yield return environment.CoroutineSimulationWarmup(WarmupDurationSeconds);
-        yield return environment.CoroutineRunSimulationForSeconds(SimulationDurationSeconds);
+        yield return environment.CoroutineSimulationWarmup(environment.WarmupDurationSeconds);
+        yield return environment.CoroutineRunSimulationForSeconds(environment.SimulationDurationSeconds);
         environment.StopSpawnAgents();
         done = true;
 
-        Debug.Log("Warmup and Sim done");
         ShowVisibilityPlane(0);
+        Debug.Log("Warmup and Sim done");
     }
 
     public void WarmupAndSimulate() {
