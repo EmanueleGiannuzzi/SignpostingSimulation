@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
 public class BestSignboardPosition {
+    public float WarmupDurationSeconds;
+    public float SimulationDurationSeconds;
+
     public Gradient Gradient;
 
     private readonly Environment environment;
@@ -15,6 +19,20 @@ public class BestSignboardPosition {
         csvExporter = new CSVExporter(environment);
     }
 
+    public IEnumerator CoroutineWarmupAndSimulate() {
+        yield return environment.CoroutineSimulationWarmup(WarmupDurationSeconds);
+        yield return environment.CoroutineRunSimulationForSeconds(SimulationDurationSeconds);
+        environment.StopSpawnAgents();
+        done = true;
+
+        Debug.Log("Warmup and Sim done");
+        ShowVisibilityPlane(0);
+    }
+
+    public void WarmupAndSimulate() {
+        environment.StartCoroutine(CoroutineWarmupAndSimulate());
+    }
+
     public void StartEvalutation() {
         environment.GenerateVisibilityPlanes();
 
@@ -23,10 +41,7 @@ public class BestSignboardPosition {
         environment.InitVisibilityHandlerData();
         environment.GetVisibilityHandler().ShowVisibilityPlane(0);
 
-        environment.RunSimulationForInspectorDuration();
-
-        done = true;
-        //environment.GetBestSignboardPosition().ShowVisibilityPlane(0);
+        WarmupAndSimulate();
     }
 
     public void ShowVisibilityPlane(int agentTypeID) {

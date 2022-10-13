@@ -44,7 +44,7 @@ public class EnvironmentEditor : Editor {
         }
 
 
-        if(GUILayout.Button("Calculate Visibility")) {
+        if(GUILayout.Button("Calculate Best Signboard Data")) {
             handler.GetBestSignboardPosition().StartEvalutation();
             //handler.GetBestSignboardPosition().ShowVisibilityPlane(0); Must be at the end of the corutine
         }

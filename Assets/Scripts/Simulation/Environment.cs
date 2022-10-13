@@ -9,7 +9,6 @@ public class Environment : MonoBehaviour {
     public KeyCode Keybind;
     public int SimulationUpdateFrequencyHz;
     public float AgentFOVDegrees;
-    public float SimulationDurationSeconds;
     [HideInInspector]
     public float repeatRate;// cached value: (1 / SimulationUpdateFrequencyHz)
     [HideInInspector]
@@ -64,6 +63,14 @@ public class Environment : MonoBehaviour {
 
     public BestSignboardPosition GetBestSignboardPosition() {
         return bestSignboardPosition;
+    }
+
+    public void StartSpawnAgents() {
+        agentsSpawnHandler.StartSpawn();
+    }
+
+    public void StopSpawnAgents() {
+        agentsSpawnHandler.StopSpawn();
     }
 
     public void GenerateVisibilityPlanes() {
@@ -121,21 +128,19 @@ public class Environment : MonoBehaviour {
         return isSimulationEnabled;
     }
 
-    public void RunSimulationForInspectorDuration() {
-        RunSimulationForSeconds(this.SimulationDurationSeconds);
+    public IEnumerator CoroutineSimulationWarmup(float dT) {
+        Debug.Log("Warmup Started");
+        StartSpawnAgents();
+        yield return new WaitForSeconds(dT);
+        Debug.Log("Warmup Done");
     }
 
-    public void RunSimulationForSeconds(float dT) {
-        StartCoroutine(CoroutineRunSimulationForSeconds(dT));
-    }
-
-    private IEnumerator CoroutineRunSimulationForSeconds(float dT) {
+    public IEnumerator CoroutineRunSimulationForSeconds(float dT) {
         isSimulationEnabled = true;
         StartSimulation();
         yield return new WaitForSeconds(dT);
         StopSimulation();
         isSimulationEnabled = false;
-        this.GetBestSignboardPosition().ShowVisibilityPlane(0);
     }
 
     public void StartSimulation() {
