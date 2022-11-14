@@ -7,13 +7,21 @@ using System.IO;
 using System.Xml;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.GraphView;
+using System.Globalization;
 
 public class IfcOpenShellParser : MonoBehaviour {
     //private string fileName;
     [Header("Walkable Areas")]
-    public string[] walkableAreas = { "IfcSlab", "IfcStair", "IfcStairFlight", "IfcWallStandardCase" };
-    public string[] navMeshIgnoredAreas = { "IfcDoor" };
-    public string ifcSignTag = "IfcSign";
+    [SerializeField] private string[] walkableAreas = { "IfcSlab", "IfcStair", "IfcStairFlight", "IfcWallStandardCase" };
+    [SerializeField] private string[] navMeshIgnoredAreas = { "IfcDoor" };
+
+    [Header("IFCSignboard Standard")]
+    [SerializeField] private string ifcSignTag = "IfcSign";
+    [SerializeField] private string ifcSignboardPropertiesName = "Pset_SignboardCommon";
+    [SerializeField] private string ifcSignViewingDistanceProperty = "ViewingDistance";
+    [SerializeField] private string ifcSignViewingAngleProperty = "ViewingAngle";
+    [SerializeField] private string ifcSignMinimumReadingTimeProperty = "MinimumReadingTime";
 
 
     [Header("Loader")]
@@ -117,13 +125,14 @@ public class IfcOpenShellParser : MonoBehaviour {
             }
 
             if(goElement != null) {
-                HandleSpecialObjects(ref goElement, node);
 
                 goElement.name = name;
                 if(parent != null) {
                     goElement.transform.SetParent(parent.transform);
                 }
+
                 AddProperties(node, goElement);
+                HandleSpecialObjects(ref goElement, node);
 
                 foreach(XmlNode child in node.ChildNodes) {
                     AddElements(child, goElement);
@@ -158,9 +167,31 @@ public class IfcOpenShellParser : MonoBehaviour {
                 navmeshModifier.area = NAVMESH_NOTWALKABLE_AREATYPE;
             }
             else if(IsIfcSign(node.Name)) {
-                SignageBoard signBoard = goElement.AddComponent<SignageBoard>();
-                //TODO: Get Viewing Distance, Viewing Angle, Color, Minimum Reading Time
+                LoadSigboardData(ref goElement);
             }
+        }
+    }
+
+    private void LoadSigboardData(ref GameObject goElement) {
+        if(goElement.TryGetComponent<IFCData>(out IFCData signboardIFCData)) {
+            List<IFCProperty> signboardProperties = signboardIFCData.propertySets.Find(property => property.propSetName == ifcSignboardPropertiesName).properties;
+            if(signboardProperties != null) {
+                SignageBoard signBoard = goElement.AddComponent<SignageBoard>();
+                try {
+                    signBoard.ViewingDistance = StringToFloat(signboardProperties.Find(property => property.propName == ifcSignViewingDistanceProperty).propValue);
+                    signBoard.ViewingAngle = StringToFloat(signboardProperties.Find(property => property.propName == ifcSignViewingAngleProperty).propValue);
+                    signBoard.MinimumReadingTime = StringToFloat(signboardProperties.Find(property => property.propName == ifcSignMinimumReadingTimeProperty).propValue);
+                }
+                catch(Exception e) {
+                    Debug.LogError($"Error parsing properties from Signboard {goElement.name} ({e.Message}).");
+                }
+            }
+            else {
+                Debug.LogError($"No IFCPropertySet named {ifcSignboardPropertiesName} in Signboard {goElement.name}.");
+            }
+        }
+        else {
+            Debug.LogError($"No IFCData in Signboard {goElement.name}.");
         }
     }
 
@@ -234,5 +265,9 @@ public class IfcOpenShellParser : MonoBehaviour {
                     break;
             }
         }
+    }
+
+    private float StringToFloat(string str) {
+        return float.Parse(str, CultureInfo.InvariantCulture.NumberFormat);
     }
 }
