@@ -12,7 +12,7 @@ public class SpawnArea : MonoBehaviour {
 
     public SpawnAreaDestination[] goals;
 
-    public Gradient Gradient;
+    public Gradient AgentColorGradient;
 
     private Environment environment;
 
@@ -37,7 +37,7 @@ public class SpawnArea : MonoBehaviour {
 
         Vector3 spawnPoint = new Vector3(position.x + randX, position.y, position.z + randZ);
         float gradientTime = (Mathf.Sin(Mathf.RoundToInt(Time.fixedTime / Time.fixedDeltaTime)) + 1) / 2;//[0,1]
-        Color agentColor = Gradient.Evaluate(gradientTime);
+        Color agentColor = AgentColorGradient.Evaluate(gradientTime);
 
         GameObject agent = Object.Instantiate(agentPrefab, spawnPoint, Quaternion.identity);
         agent.GetComponent<MeshRenderer>().material.color = agentColor;
