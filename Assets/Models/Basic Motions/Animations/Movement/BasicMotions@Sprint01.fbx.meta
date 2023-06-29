@@ -1,7 +1,7 @@
 fileFormatVersion: 2
-guid: bd1c2e9064da28e4fb0fe4a3f6ff4e33
+guid: 7eebd174ff53112419b27f9d903573d7
 ModelImporter:
-  serializedVersion: 19301
+  serializedVersion: 20200
   internalIDToNameTable:
   - first:
       1: 100000
@@ -497,28 +497,19 @@ ModelImporter:
     second: BasicMotions@Run01 - BackwardsRight [RM]
   - first:
       74: 7400048
-    second: BasicMotions@Walk01 - Forwards [RM]
+    second: BasicMotions@Sprint01 - Forwards [RM]
   - first:
       74: 7400050
-    second: BasicMotions@Walk01 - ForwardsLeft [RM]
+    second: BasicMotions@Sprint01 - ForwardsLeft [RM]
   - first:
       74: 7400052
-    second: BasicMotions@Walk01 - ForwardsRight [RM]
+    second: BasicMotions@Sprint01 - ForwardsRight [RM]
   - first:
       74: 7400054
-    second: BasicMotions@Walk01 - Left [RM]
+    second: BasicMotions@Sprint01 - Left [RM]
   - first:
       74: 7400056
-    second: BasicMotions@Walk01 - Right [RM]
-  - first:
-      74: 7400058
-    second: BasicMotions@Walk01 - Backwards [RM]
-  - first:
-      74: 7400060
-    second: BasicMotions@Walk01 - BackwardsLeft [RM]
-  - first:
-      74: 7400062
-    second: BasicMotions@Walk01 - BackwardsRight [RM]
+    second: BasicMotions@Sprint01 - Right [RM]
   - first:
       95: 9500000
     second: //RootNode
@@ -526,29 +517,20 @@ ModelImporter:
       41386430: 2186277476908879412
     second: ImportLogs
   - first:
-      74: 1695192892109923712
-    second: BasicMotions@Walk01 - Forwards
+      74: 7832394241297634407
+    second: BasicMotions@Sprint01 - Forwards
   - first:
-      74: -4806549469666548942
-    second: BasicMotions@Walk01 - ForwardsLeft
+      74: 8488718140882879573
+    second: BasicMotions@Sprint01 - ForwardsLeft
   - first:
-      74: 1922147897020755831
-    second: BasicMotions@Walk01 - ForwardsRight
+      74: -6886268956249851627
+    second: BasicMotions@Sprint01 - ForwardsRight
   - first:
-      74: 5659637821263495846
-    second: BasicMotions@Walk01 - Left
+      74: -526742019657851752
+    second: BasicMotions@Sprint01 - Left
   - first:
-      74: 5265780745243343361
-    second: BasicMotions@Walk01 - Right
-  - first:
-      74: 122471509461140758
-    second: BasicMotions@Walk01 - Backwards
-  - first:
-      74: -596700691782342955
-    second: BasicMotions@Walk01 - BackwardsLeft
-  - first:
-      74: -9013019248230706172
-    second: BasicMotions@Walk01 - BackwardsRight
+      74: 4961537051176895841
+    second: BasicMotions@Sprint01 - Right
   externalObjects: {}
   materials:
     materialImportMode: 0
@@ -578,11 +560,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: BasicMotions@Walk01 - Forwards
-      takeName: BasicMotions@Walk01 - Forwards
+      name: BasicMotions@Sprint01 - Forwards
+      takeName: BasicMotions@Sprint01 - Forwards
       internalID: 0
       firstFrame: 0
-      lastFrame: 24
+      lastFrame: 16
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -607,11 +589,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: BasicMotions@Walk01 - ForwardsLeft
-      takeName: BasicMotions@Walk01 - ForwardsLeft
+      name: BasicMotions@Sprint01 - ForwardsLeft
+      takeName: BasicMotions@Sprint01 - ForwardsLeft
       internalID: 0
       firstFrame: 0
-      lastFrame: 24
+      lastFrame: 16
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -636,11 +618,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: BasicMotions@Walk01 - ForwardsRight
-      takeName: BasicMotions@Walk01 - ForwardsRight
+      name: BasicMotions@Sprint01 - ForwardsRight
+      takeName: BasicMotions@Sprint01 - ForwardsRight
       internalID: 0
       firstFrame: 0
-      lastFrame: 24
+      lastFrame: 16
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -665,11 +647,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: BasicMotions@Walk01 - Left
-      takeName: BasicMotions@Walk01 - Left
+      name: BasicMotions@Sprint01 - Left
+      takeName: BasicMotions@Sprint01 - Left
       internalID: 0
       firstFrame: 0
-      lastFrame: 24
+      lastFrame: 16
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -694,98 +676,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: BasicMotions@Walk01 - Right
-      takeName: BasicMotions@Walk01 - Right
+      name: BasicMotions@Sprint01 - Right
+      takeName: BasicMotions@Sprint01 - Right
       internalID: 0
       firstFrame: 0
-      lastFrame: 24
-      wrapMode: 0
-      orientationOffsetY: 0
-      level: 0
-      cycleOffset: 0
-      loop: 0
-      hasAdditiveReferencePose: 0
-      loopTime: 1
-      loopBlend: 1
-      loopBlendOrientation: 1
-      loopBlendPositionY: 1
-      loopBlendPositionXZ: 0
-      keepOriginalOrientation: 1
-      keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 1
-      heightFromFeet: 0
-      mirror: 0
-      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
-      events: []
-      transformMask: []
-      maskType: 3
-      maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
-    - serializedVersion: 16
-      name: BasicMotions@Walk01 - Backwards
-      takeName: BasicMotions@Walk01 - Backwards
-      internalID: 0
-      firstFrame: 0
-      lastFrame: 24
-      wrapMode: 0
-      orientationOffsetY: 0
-      level: 0
-      cycleOffset: 0
-      loop: 0
-      hasAdditiveReferencePose: 0
-      loopTime: 1
-      loopBlend: 1
-      loopBlendOrientation: 1
-      loopBlendPositionY: 1
-      loopBlendPositionXZ: 0
-      keepOriginalOrientation: 1
-      keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 1
-      heightFromFeet: 0
-      mirror: 0
-      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
-      events: []
-      transformMask: []
-      maskType: 3
-      maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
-    - serializedVersion: 16
-      name: BasicMotions@Walk01 - BackwardsLeft
-      takeName: BasicMotions@Walk01 - BackwardsLeft
-      internalID: 0
-      firstFrame: 0
-      lastFrame: 24
-      wrapMode: 0
-      orientationOffsetY: 0
-      level: 0
-      cycleOffset: 0
-      loop: 0
-      hasAdditiveReferencePose: 0
-      loopTime: 1
-      loopBlend: 1
-      loopBlendOrientation: 1
-      loopBlendPositionY: 1
-      loopBlendPositionXZ: 0
-      keepOriginalOrientation: 1
-      keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 1
-      heightFromFeet: 0
-      mirror: 0
-      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
-      events: []
-      transformMask: []
-      maskType: 3
-      maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
-    - serializedVersion: 16
-      name: BasicMotions@Walk01 - BackwardsRight
-      takeName: BasicMotions@Walk01 - BackwardsRight
-      internalID: 0
-      firstFrame: 0
-      lastFrame: 24
+      lastFrame: 16
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -827,6 +722,7 @@ ModelImporter:
     useFileUnits: 1
     keepQuads: 0
     weldVertices: 1
+    bakeAxisConversion: 0
     preserveHierarchy: 0
     skinWeightsMode: 0
     maxBonesPerVertex: 4
@@ -836,6 +732,9 @@ ModelImporter:
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 0
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
   tangentSpace:
@@ -1619,6 +1518,7 @@ ModelImporter:
   animationType: 3
   humanoidOversampling: 1
   avatarSetup: 2
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 0
   additionalBone: 0
   userData: 
   assetBundleName: 

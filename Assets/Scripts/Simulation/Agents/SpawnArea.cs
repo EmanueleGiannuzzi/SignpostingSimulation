@@ -40,7 +40,7 @@ public class SpawnArea : MonoBehaviour {
         Color agentColor = AgentColorGradient.Evaluate(gradientTime);
 
         GameObject agent = Object.Instantiate(agentPrefab, spawnPoint, Quaternion.identity);
-        agent.GetComponent<MeshRenderer>().material.color = agentColor;
+        //agent.GetComponent<MeshRenderer>().material.color = agentColor; //TODO: Agent color?
         agent.GetComponent<AgentCollisionDetection>().destroyer = destroyer;
 
         if(environment != null) {

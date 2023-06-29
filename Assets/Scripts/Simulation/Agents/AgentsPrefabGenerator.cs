@@ -35,16 +35,16 @@ public static class AgentsPrefabGenerator
         Transform transform = prefabBase.transform;
         transform.localScale = Vector3.one;
 
-        Vector3 boundsSize = prefabBase.GetComponent<MeshRenderer>().bounds.extents * 2;
+        //TODO: Resize model?
+        // Vector3 boundsSize = prefabBase.GetComponent<MeshRenderer>().bounds.extents * 2;
+        // float radiusTransformValue = MetersToTransformValue(prefabProperties.radius, boundsSize.x);
+        // float heightTransformValue = MetersToTransformValue(prefabProperties.height, boundsSize.y);
+        // transform.localScale = new Vector3(radiusTransformValue, heightTransformValue, radiusTransformValue);
 
-        float radiusTransformValue = MetersToTransformValue(prefabProperties.radius, boundsSize.x);
-        float heightTransformValue = MetersToTransformValue(prefabProperties.height, boundsSize.y);
-        transform.localScale = new Vector3(radiusTransformValue, heightTransformValue, radiusTransformValue);
-
-        //CapsuleCollider collider = prefabBase.GetComponent<CapsuleCollider>();
-        //collider.height = prefabProperties.height;
-        //collider.radius = prefabProperties.radius;
-        //collider.center = Vector3.zero;
+        CapsuleCollider collider = prefabBase.GetComponent<CapsuleCollider>();
+        collider.height = prefabProperties.height;
+        collider.radius = prefabProperties.radius;
+        collider.center = new Vector3(0f, 0.95f, 0f);
 
         NavMeshAgent navMeshAgent = prefabBase.GetComponent<NavMeshAgent>();
         navMeshAgent.radius = prefabProperties.radius * 1.2f;//+20% to account for some distancing
