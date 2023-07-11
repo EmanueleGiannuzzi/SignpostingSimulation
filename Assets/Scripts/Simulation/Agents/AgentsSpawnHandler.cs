@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.AI;
 using static AgentsPrefabGenerator;
 
 [System.Serializable]
@@ -15,7 +14,6 @@ public class AgentsSpawnHandler : MonoBehaviour
     [Range(0.0f, 100.0f)]
     public float SpawRate;
 
-    [HideInInspector]
     private GameObject AgentsGameObjectParent;
     private GameObject AgentPrefab;
 

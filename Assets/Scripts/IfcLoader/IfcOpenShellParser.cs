@@ -167,12 +167,12 @@ public class IfcOpenShellParser : MonoBehaviour {
                 navmeshModifier.area = NAVMESH_NOTWALKABLE_AREATYPE;
             }
             else if(IsIfcSign(node.Name)) {
-                LoadSigboardData(ref goElement);
+                LoadSignboardData(ref goElement);
             }
         }
     }
 
-    private void LoadSigboardData(ref GameObject goElement) {
+    private void LoadSignboardData(ref GameObject goElement) {
         if(goElement.TryGetComponent<IFCData>(out IFCData signboardIFCData)) {
             List<IFCProperty> signboardProperties = signboardIFCData.propertySets.Find(property => property.propSetName == ifcSignboardPropertiesName).properties;
             if(signboardProperties != null) {

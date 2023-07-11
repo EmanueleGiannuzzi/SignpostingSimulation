@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class TestSpawnArea : SpawnArea
 {
@@ -11,7 +9,6 @@ public class TestSpawnArea : SpawnArea
     public int mouseButton = 0;
 
 
-    // Update is called once per frame
     void Update()
     {
         if(Input.GetMouseButtonDown(mouseButton)) {
