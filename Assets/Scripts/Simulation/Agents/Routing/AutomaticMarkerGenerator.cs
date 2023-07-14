@@ -34,7 +34,8 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
                 Vector3 traversableCenter = traversableRendererBounds.center;
 
                 Vector3 projectionOnNavmesh;
-                if(TraversableCenterProjectionOnNavMesh(traversableCenter, out projectionOnNavmesh)) {
+                if(TraversableCenterProjectionOnNavMesh(traversableCenter, out projectionOnNavmesh)
+                   && traversableCenter.y > projectionOnNavmesh.y) {
                     float widthX = Mathf.Max(0.5f, traversableRendererBounds.extents.x*2);
                     float widthZ = Mathf.Max(0.5f, traversableRendererBounds.extents.z*2);
                     SpawnMarker(projectionOnNavmesh, widthX, widthZ);
@@ -60,16 +61,18 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
     }
 
     private void SpawnMarker(Vector3 pos, float widthX, float widthZ) {
-        // throw new System.NotImplementedException();
-        Debug.Log($"New Marker P:{pos} [{widthX}, {widthZ}]");
-        
+        //Debug.Log($"New Marker P:{pos} [{widthX}, {widthZ}]");
         GameObject marker  = GameObject.CreatePrimitive(PrimitiveType.Quad);
         marker.transform.parent = markerParent.transform;
+        pos += new Vector3(0f, 0.01f, 0f);
         marker.transform.position = pos;
         marker.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-        marker.transform.localScale = new Vector3(widthX, 1f, widthZ);
+        marker.transform.localScale = new Vector3(widthX, widthZ, 1.0f);
         marker.GetComponent<Renderer>().sharedMaterial.color = Color.white;
         marker.AddComponent<RouteMarker>();
+        MeshCollider markerCollider = marker.GetComponent<MeshCollider>();
+        markerCollider.convex = true;
+        markerCollider.isTrigger = true;
 
 
     }

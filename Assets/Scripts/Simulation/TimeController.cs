@@ -31,7 +31,7 @@ public class TimeController : MonoBehaviour {
 
             float currentFPSAvg = CurrentFPSAverage();
             AdjustTimeScale(currentFPSAvg);
-            Debug.Log($"CurrentFPSAVG: {currentFPSAvg}");
+            //Debug.Log($"CurrentFPSAVG: {currentFPSAvg}");
         }
     }
 

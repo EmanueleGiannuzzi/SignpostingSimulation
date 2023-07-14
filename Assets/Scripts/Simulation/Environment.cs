@@ -208,19 +208,9 @@ public class Environment : MonoBehaviour {
             Dictionary<Vector2Int, VisibilityInfo>[] visInfos = visibilityHandler.visibilityInfos[visPlaneId];
             Dictionary<Vector2Int, VisibilityInfo> visInfoDictionary = visInfos[agentTypeID];
             foreach(VisibilityInfo value in visInfoDictionary.Values) {
-                //Vector2 worldPos2D = new Vector2(value.cachedWorldPos.x, value.cachedWorldPos.z);
-                //Vector2 agentPos2D = new Vector2(agentPosition.x, agentPosition.z);
-                //float distance = Vector2.Distance(worldPos2D, agentPos2D);
-
-                //float distance = Vector2.Distance(new Vector2(value.cachedWorldPos.x, value.cachedWorldPos.z), new Vector2(agentPosition.x, agentPosition.z));
-
-                //float distance = Mathf.Sqrt(
-                //  Mathf.Pow(value.cachedWorldPos.x - agentPosition.x, 2f) +
-                //  Mathf.Pow(value.cachedWorldPos.z - agentPosition.z, 2f));
 
                 Vector2 heading;
-                float distanceSquared;
-                //float distance;
+                float distanceSquared;  
 
                 heading.x = value.cachedWorldPos.x - agentPosition.x;
                 heading.y = value.cachedWorldPos.z - agentPosition.z;
