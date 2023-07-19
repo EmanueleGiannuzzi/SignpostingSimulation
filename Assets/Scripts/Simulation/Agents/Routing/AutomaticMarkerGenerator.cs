@@ -1,7 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using MyBox.Internal;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -80,6 +80,7 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
     }
 
     private void ResetMarkers() {
+        routingGraph = new RoutingGraph();
         DestroyImmediate(GameObject.Find(MARKERS_GROUP_NAME));
         markerParent = new GameObject(MARKERS_GROUP_NAME);
     }
@@ -92,11 +93,22 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
         markerGO.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         markerGO.transform.localScale = new Vector3(widthX, widthZ, 1.0f);
         markerGO.GetComponent<Renderer>().sharedMaterial.color = Color.white;
+        markerGO.layer = 10;
         RouteMarker marker = markerGO.AddComponent<RouteMarker>();
         MeshCollider markerCollider = markerGO.GetComponent<MeshCollider>();
         markerCollider.convex = true;
         markerCollider.isTrigger = true;
 
         return marker;
+    }
+
+    private void DrawLineBetweenMarkers(RouteMarker marker1, RouteMarker marker2) {
+        Debug.DrawLine(marker1.transform.position, marker2.transform.position, Color.blue);
+    }
+
+    private void OnDrawGizmos() {
+        foreach (var edge in routingGraph.Edges) {
+            DrawLineBetweenMarkers(edge.Vertex1, edge.Vertex2);
+        }
     }
 }

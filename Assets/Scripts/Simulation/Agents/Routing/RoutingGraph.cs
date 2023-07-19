@@ -2,26 +2,27 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 public class RoutingGraph {
-    private readonly Dictionary<int, HashSet<Vertex>> vertices = new ();
-    private readonly HashSet<Edge> edges = new ();
+    public Dictionary<int, HashSet<Vertex>> Vertices { get; } = new();
+    public HashSet<Edge> Edges { get; } = new();
 
     public void AddVertex(RouteMarker marker, string storeyName) {
         Vertex vertex= new Vertex(marker);
         int storeyHash = HashFunction(storeyName);
         
-        if (!vertices.ContainsKey(storeyHash)) {
-            vertices.Add(storeyHash, new HashSet<Vertex>());
+        if (!Vertices.ContainsKey(storeyHash)) {
+            Vertices.Add(storeyHash, new HashSet<Vertex>());
         }
         
-        vertices[storeyHash].Add(vertex);
+        Vertices[storeyHash].Add(vertex);
         GenerateEdges(vertex);
     }
 
     private void GenerateEdges(Vertex vertex1) {
         HashSet<Vertex> allVertices = new ();
-        foreach (HashSet<Vertex> storeyVertices in vertices.Values) {
+        foreach (HashSet<Vertex> storeyVertices in Vertices.Values) {
             allVertices.UnionWith(storeyVertices);
         }
 
@@ -29,18 +30,54 @@ public class RoutingGraph {
             if (vertex1 == vertex2) {
                 continue;
             }
-            if (DoesPathExistsBetweenPoints(vertex1.Marker.transform.position, vertex2.Marker.transform.position)) {
+            if (DoesDirectPathExistsBetweenPoints(vertex1.Marker, vertex2.Marker)) {
                 AddEdge(vertex1, vertex2);
             }
         }
     }
 
     private void AddEdge(Vertex vertex1, Vertex vertex2) {
-        edges.Add(new Edge(vertex1, vertex2));
+        Edges.Add(new Edge(vertex1, vertex2));
     }
 
-    private bool DoesPathExistsBetweenPoints(Vector3 start, Vector3 destination) {
-        return NavMesh.CalculatePath(start, destination, NavMesh.AllAreas, new NavMeshPath());
+    private bool DoesDirectPathExistsBetweenPoints(RouteMarker startmarker, RouteMarker destinationMarker) {
+        Vector3 start = startmarker.transform.position;
+        Vector3 destination = destinationMarker.transform.position;
+        
+        NavMeshPath path = new ();
+        NavMesh.CalculatePath(start, destination, NavMesh.AllAreas, path);
+        bool doesPathExists = path.status == NavMeshPathStatus.PathComplete;
+        bool isDirect = !DoesPathIntersectOtherMarkers(path, startmarker, destinationMarker);
+
+        // if (doesPathExists) {
+        //     DrawPathGizmos(path);
+        // }
+        return doesPathExists && isDirect;
+    }
+
+    private void DrawPathGizmos(NavMeshPath path) {
+        for (int i = 1; i < path.corners.Length; i++) {
+            Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.red, 30f, false);
+        }
+    }
+
+    private bool DoesPathIntersectOtherMarkers(NavMeshPath path, RouteMarker startmarker, RouteMarker destinationMarker) {
+        const int MARKER_LAYER_MASK = 1 << 10;
+
+        for (int i = 1; i < path.corners.Length; i++) {
+            Vector3 directionTowardsNextCorner = (path.corners[i - 1] - path.corners[i]).normalized;
+            float distanceToNextCorner = Vector3.Distance(path.corners[i - 1], path.corners[i]);
+            if (Physics.SphereCast(path.corners[i - 1], 0.5f, directionTowardsNextCorner, out RaycastHit hit, distanceToNextCorner + 0.3f, MARKER_LAYER_MASK)) {
+                RouteMarker markerHit = hit.collider.GetComponent<RouteMarker>();
+                if (markerHit && markerHit != startmarker && markerHit != destinationMarker) {
+                    Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.red, 60f, false);
+                    return true;
+                }
+            }
+            Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.green, 60f, false);
+        }
+
+        return false;
     }
 
     private int HashFunction(string str) {
@@ -48,7 +85,7 @@ public class RoutingGraph {
     }
 
 
-    private class Vertex {
+    public class Vertex {
         public RouteMarker Marker { get; }
 
         public Vertex(RouteMarker marker) {
@@ -56,13 +93,17 @@ public class RoutingGraph {
         }
     }
 
-    private class Edge {
+    public class Edge {
         private Tuple<Vertex, Vertex> vertices;
+        //private float weight;
+        
+        public RouteMarker Vertex1 => vertices.Item1.Marker;
+        public RouteMarker Vertex2 => vertices.Item2.Marker;
 
         public Edge(Vertex vertex1, Vertex vertex2) {
             vertices = new Tuple<Vertex, Vertex>(vertex1, vertex2);
         }
-        //private float weight;
+
     }
     
 }
