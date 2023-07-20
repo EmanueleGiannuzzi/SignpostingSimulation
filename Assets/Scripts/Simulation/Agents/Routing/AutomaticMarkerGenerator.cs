@@ -12,12 +12,12 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
     private GameObject markerParent;
     private readonly string MARKERS_GROUP_NAME = "MarkersGroup";
 
-    private string[] ifcTraversableTags = { "IfcDoor" };
+    public string[] IfcTraversableTags = { "IfcDoor" };
 
     private RoutingGraph routingGraph = new ();
 
     private bool IsTraversableTag(string ifcTag) {
-        return ifcTraversableTags.Contains(ifcTag);
+        return IfcTraversableTags.Contains(ifcTag);
     }
 
     private IEnumerable<IFCData> IfcTraversables() {
