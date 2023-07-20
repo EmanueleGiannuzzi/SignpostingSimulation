@@ -63,18 +63,29 @@ public class RoutingGraph {
 
     private bool DoesPathIntersectOtherMarkers(NavMeshPath path, RouteMarker startmarker, RouteMarker destinationMarker) {
         const int MARKER_LAYER_MASK = 1 << 10;
+        const float SPHERE_RADIUS = 0.5f;
+        const bool DEBUG = false;
 
         for (int i = 1; i < path.corners.Length; i++) {
             Vector3 directionTowardsNextCorner = (path.corners[i - 1] - path.corners[i]).normalized;
             float distanceToNextCorner = Vector3.Distance(path.corners[i - 1], path.corners[i]);
-            if (Physics.SphereCast(path.corners[i - 1], 0.5f, directionTowardsNextCorner, out RaycastHit hit, distanceToNextCorner + 0.3f, MARKER_LAYER_MASK)) {
+            if (Physics.SphereCast(path.corners[i], SPHERE_RADIUS, directionTowardsNextCorner, out RaycastHit hit, distanceToNextCorner + 0.3f, MARKER_LAYER_MASK)) {
                 RouteMarker markerHit = hit.collider.GetComponent<RouteMarker>();
-                if (markerHit && markerHit != startmarker && markerHit != destinationMarker) {
-                    Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.red, 60f, false);
+                if (markerHit != null && markerHit != startmarker && markerHit != destinationMarker) {
+                    if (DEBUG) {
+                        Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.red, 60f, false);
+                        DebugExtension.DebugWireSphere(path.corners[i], Color.red, SPHERE_RADIUS, 60f, false);
+                        DebugExtension.DebugWireSphere(path.corners[i-1], Color.green, SPHERE_RADIUS, 60f, false);
+                        Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.magenta, 60f, false);
+                        DebugExtension.DebugWireSphere(markerHit.transform.position, Color.blue, SPHERE_RADIUS, 60f, false);
+                    }
                     return true;
                 }
             }
-            Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.green, 60f, false);
+
+            if (DEBUG) {
+                Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.green, 60f, false);
+            }
         }
 
         return false;
