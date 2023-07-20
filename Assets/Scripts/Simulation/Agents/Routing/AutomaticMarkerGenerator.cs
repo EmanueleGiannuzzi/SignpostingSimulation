@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -30,7 +31,11 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
             Debug.LogError("[AutomaticMarkerGenerator]: No IFC Object found");
             return;
         }
-        
+
+        float progress = 0f;
+        IEnumerable<IFCData> traversables = IfcTraversables();
+        float progressBarStep = 1f / traversables.Count();
+
         foreach (IFCData traversable in IfcTraversables()) {
             Renderer traversableRenderer = traversable.GetComponent<Renderer>();
             if (!traversableRenderer) {
@@ -52,7 +57,12 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
                     routingGraph.AddVertex(marker, storeyName);
                 }
             } 
+            if(EditorUtility.DisplayCancelableProgressBar("Automatic Marker Generator", "Generating Routing Markers", 1f - progress)) {
+                EditorUtility.ClearProgressBar();
+                return;
+            }
         }
+        EditorUtility.ClearProgressBar();
     }
 
     [CanBeNull]
@@ -81,8 +91,11 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
 
     private void ResetMarkers() {
         routingGraph = new RoutingGraph();
-        DestroyImmediate(GameObject.Find(MARKERS_GROUP_NAME));
+        foreach (var markerGroup in GameObject.FindGameObjectsWithTag(MARKERS_GROUP_NAME)) {
+            DestroyImmediate(markerGroup);
+        }
         markerParent = new GameObject(MARKERS_GROUP_NAME);
+        markerParent.tag = MARKERS_GROUP_NAME;
     }
 
     private RouteMarker SpawnMarker(Vector3 pos, float widthX, float widthZ) {
