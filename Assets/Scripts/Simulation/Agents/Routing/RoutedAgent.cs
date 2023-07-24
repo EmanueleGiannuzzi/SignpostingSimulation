@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -7,21 +8,21 @@ using UnityEngine.AI;
 public class RoutedAgent : MonoBehaviour {
     private NavMeshAgent agent;
 
-    private Queue<RouteMarker> route;
+    private Queue<IRouteMarker> route;
     
-    void Start() {
+    void Awake() {
         agent = GetComponent<NavMeshAgent>();
-        route = new Queue<RouteMarker>();
+        route = new Queue<IRouteMarker>();
     }
 
     private void OnTriggerEnter(Collider other) {
-        RouteMarker marker = other.GetComponent<RouteMarker>();
+        IRouteMarker marker = other.GetComponent<IRouteMarker>();
         if (marker == null) {
             return;
         }
 
         if(route.Count > 0 && marker == route.Peek()) {
-            RouteMarker reachedMarker = route.Dequeue();
+            IRouteMarker reachedMarker = route.Dequeue();
             if (route.Count > 0) {
                 OnExitReached(reachedMarker);
             }
@@ -31,17 +32,24 @@ public class RoutedAgent : MonoBehaviour {
         }
     }
 
-    private void OnIntermediateMarkerReached([NotNull] RouteMarker marker) {
-        agent.SetDestination(route.Peek().transform.position);
+    private void OnIntermediateMarkerReached([NotNull] IRouteMarker marker) {
+        agent.SetDestination(route.Peek().Position);
     }
 
-    private void OnExitReached([NotNull] RouteMarker exit) {
+    private void OnExitReached([NotNull] IRouteMarker exit) {
         Destroy(this.gameObject);
     }
     
-    
+    public void SetRoute(List<IRouteMarker> newRoute) {
+        route = new Queue<IRouteMarker>(newRoute);
+        if (route.TryPeek(out IRouteMarker destination)) {
+            agent.SetDestination(destination.Position);
+        }
+    }
 
-    public void SetRoute(IEnumerable<RouteMarker> newRoute) {
-        route = new Queue<RouteMarker>(newRoute);
+    private void OnDrawGizmos() {
+        if (route?.Count > 0) {
+            Gizmos.DrawLine(transform.position, route.Peek().Position);
+        }
     }
 }

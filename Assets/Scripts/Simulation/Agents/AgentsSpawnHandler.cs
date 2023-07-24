@@ -63,9 +63,9 @@ public class AgentsSpawnHandler : MonoBehaviour
     }
 
     private void SpawnAgents() {
-        foreach(SpawnArea spawnArea in this.GetComponentsInChildren<SpawnArea>()) {
+        foreach(SpawnAreaBase spawnArea in this.GetComponentsInChildren<SpawnAreaBase>()) {
             if(spawnArea.Enabled) {
-                GameObject agent = spawnArea.SpawnAgent(GetAgentPrefab());
+                GameObject agent = spawnArea.SpawnAgentEvent(GetAgentPrefab());
                 agent.transform.parent = AgentsGameObjectParent.transform;
                 //agent.GetComponent<AgentCollisionDetection>().collisionEvent.AddListener(OnAgentCollidedWith);
             }

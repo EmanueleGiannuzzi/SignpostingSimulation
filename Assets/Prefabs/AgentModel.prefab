@@ -1357,6 +1357,7 @@ GameObject:
   - component: {fileID: 6580415084732983093}
   - component: {fileID: -6522487438430822139}
   - component: {fileID: 1747863919095830018}
+  - component: {fileID: 3000946305865788446}
   m_Layer: 0
   m_Name: AgentModel
   m_TagString: Untagged
@@ -1516,6 +1517,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   navMeshAgent: {fileID: 6580415084732983093}
+--- !u!114 &3000946305865788446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6580415084732983092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e987a2e0488448747a667d34a7766409, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6580415084732983098
 GameObject:
   m_ObjectHideFlags: 0

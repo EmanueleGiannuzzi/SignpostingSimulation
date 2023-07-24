@@ -5,16 +5,22 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 public class AutomaticMarkerGenerator : MonoBehaviour {
     public GameObject ifcGameObject;
+    public Material markerMaterial;
 
     private GameObject markerParent;
-    private readonly string MARKERS_GROUP_NAME = "MarkersGroup";
+    private const string MARKERS_GROUP_NAME = "MarkersGroup";
 
     public string[] IfcTraversableTags = { "IfcDoor" };
 
-    private RoutingGraph routingGraph = new ();
+    private RoutingGraph routingGraph;
+
+    private void Start() {
+        AddMarkersToTraversables();
+    }
 
     private bool IsTraversableTag(string ifcTag) {
         return IfcTraversableTags.Contains(ifcTag);
@@ -26,6 +32,14 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
 
     public void AddMarkersToTraversables() {
         ResetMarkers();
+
+        foreach (InputArea existingMarker in FindObjectsOfType<InputArea>()) {
+            string storeyName = GetStoreyName(existingMarker.gameObject);
+            if (storeyName == null) {
+                storeyName = "Start";
+            }
+            routingGraph.AddVertex(existingMarker, storeyName);
+        }
         
         if (!ifcGameObject) {
             Debug.LogError("[AutomaticMarkerGenerator]: No IFC Object found");
@@ -36,6 +50,7 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
         IEnumerable<IFCData> traversables = IfcTraversables();
         float progressBarStep = 1f / traversables.Count();
 
+        int spawnedMarkers = 0;
         foreach (IFCData traversable in IfcTraversables()) {
             Renderer traversableRenderer = traversable.GetComponent<Renderer>();
             if (!traversableRenderer) {
@@ -48,10 +63,11 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
             Vector3 projectionOnNavmesh;
             if(TraversableCenterProjectionOnNavMesh(traversableCenter, out projectionOnNavmesh)
                && traversableCenter.y > projectionOnNavmesh.y) {
-                float widthX = Mathf.Max(0.5f, traversableRendererBounds.extents.x*2);
-                float widthZ = Mathf.Max(0.5f, traversableRendererBounds.extents.z*2);
-                RouteMarker marker = SpawnMarker(projectionOnNavmesh, widthX, widthZ);
-
+                float widthX = Mathf.Max(1f, traversableRendererBounds.extents.x*2);
+                float widthZ = Mathf.Max(1f, traversableRendererBounds.extents.z*2);
+                IntermediateMarker marker = SpawnMarker(projectionOnNavmesh, widthX, widthZ, $"IntermediateMarker-{spawnedMarkers}");
+                spawnedMarkers++;
+                
                 string storeyName = GetStoreyName(traversable.gameObject);
                 if (storeyName != null) {
                     routingGraph.AddVertex(marker, storeyName);
@@ -67,17 +83,20 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
 
     [CanBeNull]
     private string GetStoreyName(GameObject traversableGO) {
-        Transform parent = traversableGO.transform.parent;
-        if (!parent) {
-            return null;
-        }
-        
-        IFCData parentData = parent.GetComponent<IFCData>();
-        if (!parentData || parentData.IFCClass != "IfcBuildingStorey") {
-            return GetStoreyName(parent.gameObject);
-        }
+        while (true) {
+            Transform parent = traversableGO.transform.parent;
+            if (!parent) {
+                return null;
+            }
 
-        return parentData.STEPName;
+            IFCData parentData = parent.GetComponent<IFCData>();
+            if (!parentData || parentData.IFCClass != "IfcBuildingStorey") {
+                traversableGO = parent.gameObject;
+                continue;
+            }
+
+            return parentData.STEPName;
+        }
     }
 
     private bool TraversableCenterProjectionOnNavMesh(Vector3 traversableCenter, out Vector3 result) {
@@ -94,20 +113,22 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
         foreach (var markerGroup in GameObject.FindGameObjectsWithTag(MARKERS_GROUP_NAME)) {
             DestroyImmediate(markerGroup);
         }
-        markerParent = new GameObject(MARKERS_GROUP_NAME);
-        markerParent.tag = MARKERS_GROUP_NAME;
+        markerParent = new GameObject(MARKERS_GROUP_NAME) {
+            tag = MARKERS_GROUP_NAME
+        };
     }
 
-    private RouteMarker SpawnMarker(Vector3 pos, float widthX, float widthZ) {
+    private IntermediateMarker SpawnMarker(Vector3 pos, float widthX, float widthZ, string name) {
         GameObject markerGO = GameObject.CreatePrimitive(PrimitiveType.Quad);
         markerGO.transform.parent = markerParent.transform;
         pos += new Vector3(0f, 0.01f, 0f);
         markerGO.transform.position = pos;
         markerGO.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         markerGO.transform.localScale = new Vector3(widthX, widthZ, 1.0f);
-        markerGO.GetComponent<Renderer>().sharedMaterial.color = Color.white;
+        markerGO.GetComponent<Renderer>().sharedMaterial = markerMaterial;
         markerGO.layer = 10;
-        RouteMarker marker = markerGO.AddComponent<RouteMarker>();
+        markerGO.name = name;
+        IntermediateMarker marker = markerGO.AddComponent<IntermediateMarker>();
         MeshCollider markerCollider = markerGO.GetComponent<MeshCollider>();
         markerCollider.convex = true;
         markerCollider.isTrigger = true;
@@ -115,13 +136,22 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
         return marker;
     }
 
-    private void DrawLineBetweenMarkers(RouteMarker marker1, RouteMarker marker2) {
-        Debug.DrawLine(marker1.transform.position, marker2.transform.position, Color.blue);
+    private void DrawLineBetweenMarkers(IRouteMarker marker1, IRouteMarker marker2) {
+        Debug.DrawLine(marker1.Position, marker2.Position, Color.blue);
     }
 
     private void OnDrawGizmos() {
-        foreach (var edge in routingGraph.Edges) {
-            DrawLineBetweenMarkers(edge.Vertex1, edge.Vertex2);
+        if (routingGraph?.AdjacencyList == null) {
+            return;
         }
+        foreach (var vertex in routingGraph.AdjacencyList.Keys) {
+            foreach (var neighbour in routingGraph.AdjacencyList[vertex]) {
+                DrawLineBetweenMarkers(vertex, neighbour);
+            }
+        }
+    }
+
+    public List<IRouteMarker> GetNewAgentRoute(IRouteMarker start) {
+        return routingGraph.GeneratePath(start);
     }
 }
