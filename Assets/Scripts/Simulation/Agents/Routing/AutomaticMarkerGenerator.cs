@@ -145,7 +145,7 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
         }
         foreach (var vertex in routingGraph.AdjacencyList.Keys) {
             foreach (var edge in routingGraph.AdjacencyList[vertex]) {
-                DrawLineBetweenMarkers(vertex, edge.Item1);
+                DrawLineBetweenMarkers(vertex, edge.Marker);
             }
         }
     }

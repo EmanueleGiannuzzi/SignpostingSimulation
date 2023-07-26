@@ -5,27 +5,38 @@ using UnityEngine;
 using UnityEngine.AI;
 
 public class RoutingGraph {
-    public Dictionary<int, HashSet<IRouteMarker>> Vertices { get; } = new();
-    public Dictionary<IRouteMarker, List<Tuple<IRouteMarker, float>>> AdjacencyList { get; } = new();
+
+    public class EdgeTo {
+        public IRouteMarker Marker { get; }
+        public float cost { get; }
+        public EdgeTo(IRouteMarker marker, float cost) {
+            Marker = marker;
+            this.cost = cost;
+        }
+    }
+    
+    // private Dictionary<int, HashSet<IRouteMarker>> Vertices { get; } = new();//TODO: Delete?
+    public Dictionary<IRouteMarker, List<EdgeTo>> AdjacencyList { get; } = new();
     
     public void AddVertex(IRouteMarker marker, string storeyName) {
-        int storeyHash = hashFunction(storeyName);
+        // int storeyHash = hashFunction(storeyName);
         
-        if (!Vertices.ContainsKey(storeyHash)) {
-            Vertices.Add(storeyHash, new HashSet<IRouteMarker>());
-        }
-        
-        Vertices[storeyHash].Add(marker);
+        // if (!Vertices.ContainsKey(storeyHash)) {
+        //     Vertices.Add(storeyHash, new HashSet<IRouteMarker>());
+        // }
+        //
+        // Vertices[storeyHash].Add(marker);
         generateEdges(marker);
     }
 
     private void generateEdges(IRouteMarker vertex1) {
-        HashSet<IRouteMarker> allVertices = new ();
-        foreach (HashSet<IRouteMarker> storeyVertices in Vertices.Values) {
-            allVertices.UnionWith(storeyVertices);
-        }
+        // HashSet<IRouteMarker> allVertices = new ();
+        // foreach (HashSet<IRouteMarker> storeyVertices in Vertices.Values) {
+        //     allVertices.UnionWith(storeyVertices);
+        // }
         
-        AdjacencyList.Add(vertex1, new List<Tuple<IRouteMarker, float>>());
+        var allVertices = AdjacencyList.Keys;
+        AdjacencyList.Add(vertex1, new List<EdgeTo>());
         foreach (IRouteMarker vertex2 in allVertices) {
             if (vertex1 == vertex2) {
                 continue;
@@ -37,8 +48,8 @@ public class RoutingGraph {
     }
 
     private void addEdge(IRouteMarker vertex1, IRouteMarker vertex2, float cost) {
-        AdjacencyList[vertex1].Add(new Tuple<IRouteMarker, float>(vertex2, cost));
-        AdjacencyList[vertex2].Add(new Tuple<IRouteMarker, float>(vertex1, cost));
+        AdjacencyList[vertex1].Add(new EdgeTo(vertex2, cost));
+        AdjacencyList[vertex2].Add(new EdgeTo(vertex1, cost));
     }
 
     private static float GetPathLengthSquared(NavMeshPath path) {
@@ -85,11 +96,11 @@ public class RoutingGraph {
             }
             visitedNodes++;
             
-            List<Tuple<IRouteMarker, float>> neighbors = AdjacencyList[currentNode];
-            neighbors.Shuffle();
+            List<EdgeTo> edges = AdjacencyList[currentNode];
+            edges.Shuffle();
 
-            foreach (var edge in neighbors.Where(edge => !visited[edge.Item1])) {
-                var neighbor = edge.Item1;
+            foreach (var edge in edges.Where(edge => !visited[edge.Marker])) {
+                var neighbor = edge.Marker;
                 queue.Enqueue(neighbor);
                 visited[neighbor] = true;
             }
