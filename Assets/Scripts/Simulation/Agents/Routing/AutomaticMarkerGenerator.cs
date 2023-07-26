@@ -5,7 +5,6 @@ using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
-using Random = UnityEngine.Random;
 
 public class AutomaticMarkerGenerator : MonoBehaviour {
     public GameObject ifcGameObject;
@@ -145,8 +144,8 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
             return;
         }
         foreach (var vertex in routingGraph.AdjacencyList.Keys) {
-            foreach (var neighbour in routingGraph.AdjacencyList[vertex]) {
-                DrawLineBetweenMarkers(vertex, neighbour);
+            foreach (var edge in routingGraph.AdjacencyList[vertex]) {
+                DrawLineBetweenMarkers(vertex, edge.Item1);
             }
         }
     }

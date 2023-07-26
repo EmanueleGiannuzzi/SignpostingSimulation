@@ -1,17 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.AI;
-using Random = System.Random;
 
 public class RoutingGraph {
     public Dictionary<int, HashSet<IRouteMarker>> Vertices { get; } = new();
-    public Dictionary<IRouteMarker, List<IRouteMarker>> AdjacencyList { get; } = new();
+    public Dictionary<IRouteMarker, List<Tuple<IRouteMarker, float>>> AdjacencyList { get; } = new();
     
-    private readonly Random random = new ();
-
     public void AddVertex(IRouteMarker marker, string storeyName) {
         int storeyHash = hashFunction(storeyName);
         
@@ -29,35 +25,42 @@ public class RoutingGraph {
             allVertices.UnionWith(storeyVertices);
         }
         
-        AdjacencyList.Add(vertex1, new List<IRouteMarker>());
+        AdjacencyList.Add(vertex1, new List<Tuple<IRouteMarker, float>>());
         foreach (IRouteMarker vertex2 in allVertices) {
             if (vertex1 == vertex2) {
                 continue;
             }
-            if (doesDirectPathExistsBetweenPoints(vertex1, vertex2)) {
-                addEdge(vertex1, vertex2);
+            if (doesDirectPathExistsBetweenPoints(vertex1, vertex2, out float cost)) {
+                addEdge(vertex1, vertex2, cost);
             }
         }
     }
 
-    private void addEdge(IRouteMarker vertex1, IRouteMarker vertex2) {
-
-        if (!AdjacencyList[vertex1].Contains(vertex2)) {
-            AdjacencyList[vertex1].Add(vertex2);
-        }
-        if (!AdjacencyList[vertex2].Contains(vertex1)) {
-            AdjacencyList[vertex2].Add(vertex1);
-        }
+    private void addEdge(IRouteMarker vertex1, IRouteMarker vertex2, float cost) {
+        AdjacencyList[vertex1].Add(new Tuple<IRouteMarker, float>(vertex2, cost));
+        AdjacencyList[vertex2].Add(new Tuple<IRouteMarker, float>(vertex1, cost));
     }
 
-    private static bool doesDirectPathExistsBetweenPoints(IRouteMarker startmarker, IRouteMarker destinationMarker) {
-        Vector3 start = startmarker.Position;
+    private static float GetPathLengthSquared(NavMeshPath path) {
+        Vector3[] corners = path.corners;
+
+        float length = 0f;
+        for (int i = 1; i < corners.Length; i++) {
+            length += (corners[i] -  corners[i - 1]).sqrMagnitude;
+        }
+
+        return length;
+    }
+
+    private static bool doesDirectPathExistsBetweenPoints(IRouteMarker startMarker, IRouteMarker destinationMarker, out float cost) {
+        Vector3 start = startMarker.Position;
         Vector3 destination = destinationMarker.Position;
         
         NavMeshPath path = new ();
         NavMesh.CalculatePath(start, destination, NavMesh.AllAreas, path);
+        cost = GetPathLengthSquared(path);
         bool doesPathExists = path.status == NavMeshPathStatus.PathComplete;
-        bool isDirect = !doesPathIntersectOtherMarkers(path, startmarker, destinationMarker);
+        bool isDirect = !doesPathIntersectOtherMarkers(path, startMarker, destinationMarker);
 
         // if (doesPathExists) {
         //     DrawPathGizmos(path);
@@ -82,10 +85,11 @@ public class RoutingGraph {
             }
             visitedNodes++;
             
-            List<IRouteMarker> neighbors = AdjacencyList[currentNode];
+            List<Tuple<IRouteMarker, float>> neighbors = AdjacencyList[currentNode];
             neighbors.Shuffle();
 
-            foreach (var neighbor in neighbors.Where(neighbor => !visited[neighbor])) {
+            foreach (var edge in neighbors.Where(edge => !visited[edge.Item1])) {
+                var neighbor = edge.Item1;
                 queue.Enqueue(neighbor);
                 visited[neighbor] = true;
             }
