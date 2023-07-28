@@ -15,25 +15,13 @@ public class RoutingGraph {
         }
     }
     
-    // private Dictionary<int, HashSet<IRouteMarker>> Vertices { get; } = new();//TODO: Delete?
     public Dictionary<IRouteMarker, List<EdgeTo>> AdjacencyList { get; } = new();
     
     public void AddVertex(IRouteMarker marker, string storeyName) {
-        // int storeyHash = hashFunction(storeyName);
-        
-        // if (!Vertices.ContainsKey(storeyHash)) {
-        //     Vertices.Add(storeyHash, new HashSet<IRouteMarker>());
-        // }
-        //
-        // Vertices[storeyHash].Add(marker);
         generateEdges(marker);
     }
 
     private void generateEdges(IRouteMarker vertex1) {
-        // HashSet<IRouteMarker> allVertices = new ();
-        // foreach (HashSet<IRouteMarker> storeyVertices in Vertices.Values) {
-        //     allVertices.UnionWith(storeyVertices);
-        // }
         
         var allVertices = AdjacencyList.Keys;
         AdjacencyList.Add(vertex1, new List<EdgeTo>());
@@ -48,6 +36,9 @@ public class RoutingGraph {
     }
 
     private void addEdge(IRouteMarker vertex1, IRouteMarker vertex2, float cost) {
+        if (cost < 0) {
+            throw new ArgumentOutOfRangeException($"Edge can't have negative cost [{cost}]");
+        }
         AdjacencyList[vertex1].Add(new EdgeTo(vertex2, cost));
         AdjacencyList[vertex2].Add(new EdgeTo(vertex1, cost));
     }
