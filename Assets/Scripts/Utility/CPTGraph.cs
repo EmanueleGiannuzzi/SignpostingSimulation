@@ -4,20 +4,22 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class CPTGraph<T> {
-    protected int N; // number of vertices
-    private int[] delta; // deltas of vertices
-    internal int[] neg; // unbalanced vertices
-    private int[] pos; // unbalanced vertices
-    private int[,] arcs; // adjacency matrix, counts arcs between vertices
-    private List<string>[,] label; // vectors of labels of arcs (for each vertex pair)
-    private int[,] f; // repeated arcs in CPT
-    private float[,] c; // costs of cheapest arcs or paths
-    private string[,] cheapestLabel; // labels of cheapest arcs
-    private bool[,] defined; // whether path cost is defined between vertices
-    private int[,] path; // spanning tree of the graph
-    internal float basicCost; // total cost of traversing each arc once
+    private T[] vertLabels;
     
-    const int NONE = -1; // anything < 0
+    protected int nVertices; // number of vertices
+    private int[] vertDeltas; // deltas of vertices
+    internal int[] umbalancedVerticesNeg; // unbalanced vertices
+    private int[] umbalancedVerticesPos; // unbalanced vertices
+    private int[,] adjMat; // adjacency matrix, counts arcs between vertices
+    private List<string>[,] arcLabels; // vectors of labels of arcs (for each vertex pair)
+    private int[,] repeatedArcs; // repeated arcs in CPT
+    private float[,] arcCosts; // costs of cheapest arcs or paths
+    private string[,] cheapestLabel; // labels of cheapest arcs
+    private bool[,] pathDefined; // whether path cost is defined between vertices
+    private int[,] spanningTree; // spanning tree of the graph
+    internal float basicCost; // total cost of traversing each arc once
+
+    private const int NONE = -1; // anything < 0
     
     public void solve() {
         do {
@@ -29,48 +31,53 @@ public class CPTGraph<T> {
     }
     
     public CPTGraph(int vertices) {
-        if ((N = vertices) <= 0) {
+        if ((nVertices = vertices) <= 0) {
             throw new Exception("Graph is empty");
         }
-        delta = new int[N];
-        defined = new bool[N, N];
-        label = new List<string>[N, N];
-        c = new float[N, N];
-        f = new int[N, N];
-        arcs = new int[N, N];
-        cheapestLabel = new String[N, N];
-        path = new int[N, N];
+
+        vertLabels = new T[nVertices];
+        vertDeltas = new int[nVertices];
+        pathDefined = new bool[nVertices, nVertices];
+        arcLabels = new List<string>[nVertices, nVertices];
+        arcCosts = new float[nVertices, nVertices];
+        repeatedArcs = new int[nVertices, nVertices];
+        adjMat = new int[nVertices, nVertices];
+        cheapestLabel = new string[nVertices, nVertices];
+        spanningTree = new int[nVertices, nVertices];
         basicCost = 0;
     }
+
+    public void AddVertex() {
+        
+    }
     
-    public CPTGraph<T> addArc(String lab, int u, int v, float cost) {
-        if (!defined[u,v]) {
-            label[u,v] = new List<string>();
+    protected internal void addArc(string lab, int u, int v, float cost) {
+        if (!pathDefined[u,v]) {
+            arcLabels[u,v] = new List<string>();
         }
-        label[u,v].Add(lab);
+        arcLabels[u,v].Add(lab);
         basicCost += cost;
-        if( !defined[u,v] || c[u,v] > cost )
-        { c[u,v] = cost;
+        if( !pathDefined[u,v] || arcCosts[u,v] > cost )
+        { arcCosts[u,v] = cost;
             cheapestLabel[u,v] = lab;
-            defined[u,v] = true;
-            path[u,v] = v;
+            pathDefined[u,v] = true;
+            spanningTree[u,v] = v;
         }
-        arcs[u,v]++;
-        delta[u]++;
-        delta[v]--;
-        return this;
+        adjMat[u,v]++;
+        vertDeltas[u]++;
+        vertDeltas[v]--;
     }
 
     private void leastCostPaths() {
-        for (int k = 0; k < N; k++) {
-            for (int i = 0; i < N; i++) {
-                if (defined[i, k])
-                    for (int j = 0; j < N; j++) {
-                        if (defined[k, j] && (!defined[i, j] || c[i, j] > c[i, k] + c[k, j])) {
-                            path[i, j] = path[i, k];
-                            c[i, j] = c[i, k] + c[k, j];
-                            defined[i, j] = true;
-                            if (i == j && c[i, j] < 0) return; // stop on negative cycle
+        for (int k = 0; k < nVertices; k++) {
+            for (int i = 0; i < nVertices; i++) {
+                if (pathDefined[i, k])
+                    for (int j = 0; j < nVertices; j++) {
+                        if (pathDefined[k, j] && (!pathDefined[i, j] || arcCosts[i, j] > arcCosts[i, k] + arcCosts[k, j])) {
+                            spanningTree[i, j] = spanningTree[i, k];
+                            arcCosts[i, j] = arcCosts[i, k] + arcCosts[k, j];
+                            pathDefined[i, j] = true;
+                            if (i == j && arcCosts[i, j] < 0) return; // stop on negative cycle
                         }
                     }
             }
@@ -78,12 +85,12 @@ public class CPTGraph<T> {
     }
     
     private void checkValid() { 
-        for(int i = 0; i < N; i++) { 
-            for(int j = 0; j < N; j++){
-                if (!defined[i, j]) {
+        for(int i = 0; i < nVertices; i++) { 
+            for(int j = 0; j < nVertices; j++){
+                if (!pathDefined[i, j]) {
                     throw new Exception("Graph is not strongly connected");
                 }
-                if (c[i, i] < 0) {
+                if (arcCosts[i, i] < 0) {
                     throw new Exception("Graph has a negative cycle");
                 }
             }
@@ -92,77 +99,77 @@ public class CPTGraph<T> {
 
     internal void findUnbalanced() { 
         int nn = 0 , np = 0 ; // number of vertices of negative/positive delta
-        for (int i = 0; i < N; i++) {
-            if (delta[i] < 0) 
+        for (int i = 0; i < nVertices; i++) {
+            if (vertDeltas[i] < 0) 
                 nn++;
-            else if (delta[i] > 0) 
+            else if (vertDeltas[i] > 0) 
                 np++;
         }
 
-        neg = new int[nn];
-        pos = new int[np];
+        umbalancedVerticesNeg = new int[nn];
+        umbalancedVerticesPos = new int[np];
         nn = np = 0 ;
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < nVertices; i++) {
             // initialise sets
-            if (delta[i] < 0) 
-                neg[nn++] = i;
+            if (vertDeltas[i] < 0) 
+                umbalancedVerticesNeg[nn++] = i;
             else if 
-                (delta[i] > 0) pos[np++] = i;
+                (vertDeltas[i] > 0) umbalancedVerticesPos[np++] = i;
         }
     }
     
     private void findFeasible() { 
         // delete next 3 lines to be faster, but non-reentrant
-        int[] delta = new int[N];
-        for (int i = 0; i < N; i++) {
-            delta[i] = this.delta[i];
+        int[] delta = new int[nVertices];
+        for (int i = 0; i < nVertices; i++) {
+            delta[i] = this.vertDeltas[i];
         }
 
-        for(int u = 0; u < neg.Length; u++) {
-            int i = neg[u];
-            for(int v = 0; v < pos.Length; v++) { 
-                int j = pos[v];
-                f[i, j] = -delta[i] < delta[j]? -delta[i]: delta[j];
-                delta[i] += f[i, j];
-                delta[j] -= f[i, j];
+        for(int u = 0; u < umbalancedVerticesNeg.Length; u++) {
+            int i = umbalancedVerticesNeg[u];
+            for(int v = 0; v < umbalancedVerticesPos.Length; v++) { 
+                int j = umbalancedVerticesPos[v];
+                repeatedArcs[i, j] = -delta[i] < delta[j]? -delta[i]: delta[j];
+                delta[i] += repeatedArcs[i, j];
+                delta[j] -= repeatedArcs[i, j];
             }
         }
     }
 
     private bool improvements() {
-        CPTGraph<T> residual = new CPTGraph<T>(N);
-        for (int u = 0; u < neg.Length; u++) {
-            int i = neg[u];
-            for (int v = 0; v < pos.Length; v++) {
-                int j = pos[v];
-                residual.addArc(null, i, j, c[i, j]);
-                if (f[i, j] != 0) {
-                    residual.addArc(null, j, i, -c[i, j]);
+        CPTGraph<T> residual = new CPTGraph<T>(nVertices);
+        for (int u = 0; u < umbalancedVerticesNeg.Length; u++) {
+            int i = umbalancedVerticesNeg[u];
+            for (int v = 0; v < umbalancedVerticesPos.Length; v++) {
+                int j = umbalancedVerticesPos[v];
+                residual.addArc(null, i, j, arcCosts[i, j]);
+                if (repeatedArcs[i, j] != 0) {
+                    residual.addArc(null, j, i, -arcCosts[i, j]);
                 }
             }
         }
 
         residual.leastCostPaths(); // find a negative cycle
-        for (int i = 0; i < N; i++) {
-            if (residual.c[i, i] < 0){ // cancel the cycle (if any)
+        for (int i = 0; i < nVertices; i++) {
+            if (residual.arcCosts[i, i] < 0){ // cancel the cycle (if any)
                 int k = 0, u, v;
                 bool kunset = true;
                 u = i;
                 do{ // find k to cancel
-                    v = residual.path[u, i];
-                    if (residual.c[u, v] < 0 && (kunset || k > f[v, u])) {
-                        k = f[v, u];
+                    v = residual.spanningTree[u, i];
+                    if (residual.arcCosts[u, v] < 0 && (kunset || k > repeatedArcs[v, u])) {
+                        k = repeatedArcs[v, u];
                         kunset = false;
                     }
                 }while((u = v) != i);
 
                 u = i;
                 do{ // cancel k along the cycle
-                    v = residual.path[u, i];
-                    if (residual.c[u, v] < 0)
-                        f[v, u] -= k;
+                    v = residual.spanningTree[u, i];
+                    if (residual.arcCosts[u, v] < 0)
+                        repeatedArcs[v, u] -= k;
                     else 
-                        f[u, v] += k;
+                        repeatedArcs[u, v] += k;
                 }while((u = v) != i);
 
                 return true; // have another go
@@ -177,16 +184,16 @@ public class CPTGraph<T> {
 
     internal float phi(){
         float phi = 0;
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                phi += c[i, j] * f[i, j];
+        for (int i = 0; i < nVertices; i++) {
+            for (int j = 0; j < nVertices; j++) {
+                phi += arcCosts[i, j] * repeatedArcs[i, j];
             }
         }
         return phi;
     }
     
     private int findPath(int from, int[,] f) { // find a path between unbalanced vertices
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < nVertices; i++) {
             if (f[from, i] > 0) {
                 return i;
             }
@@ -196,12 +203,12 @@ public class CPTGraph<T> {
     protected internal void printCPT(int startVertex) { 
         int v = startVertex;
         // delete next 7 lines to be faster, but non-reentrant
-        int[,] arcs = new int[N, N];
-        int[,] f = new int[N, N];
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                arcs[i, j] = this.arcs[i, j];
-                f[i, j] = this.f[i, j];
+        int[,] arcs = new int[nVertices, nVertices];
+        int[,] f = new int[nVertices, nVertices];
+        for (int i = 0; i < nVertices; i++) {
+            for (int j = 0; j < nVertices; j++) {
+                arcs[i, j] = this.adjMat[i, j];
+                f[i, j] = this.repeatedArcs[i, j];
             }
         }
 
@@ -210,24 +217,24 @@ public class CPTGraph<T> {
             if((v = findPath(u, f)) != NONE) { 
                 f[u, v]--; // remove path
                 for(int p; u != v; u = p){ // break down path into its arcs
-                    p = path[u, v];
+                    p = spanningTree[u, v];
                     Debug.Log("Take arc " + cheapestLabel[u, p] + " from " + u + " to " + p);
                 }
             }
             else{ 
-                int bridgeVertex = path[u, startVertex];
+                int bridgeVertex = spanningTree[u, startVertex];
                 if (arcs[u, bridgeVertex] == 0) {
                     break; // finished if bridge already used
                 }
 
                 v = bridgeVertex;
-                for( int i = 0; i < N; i++ ) // find an unused arc, using bridge last
+                for( int i = 0; i < nVertices; i++ ) // find an unused arc, using bridge last
                     if( i != bridgeVertex && arcs[u, i] > 0) { 
                         v = i;
                         break;
                     }
                 arcs[u, v]--; // decrement count of parallel arcs
-                Debug.Log("Take arc " + label[u, v][arcs[u, v]] + " from " + u + " to " + v); // use each arc label in turn
+                Debug.Log("Take arc " + arcLabels[u, v][arcs[u, v]] + " from " + u + " to " + v); // use each arc label in turn
             }
         }
     }

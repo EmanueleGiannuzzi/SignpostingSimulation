@@ -24,23 +24,23 @@ public class OpenCPT<T>: CPTGraph<T> {
         float bestCost = 0, cost;
         int i = 0;
         do { 
-            g = new (N+1);
+            g = new (nVertices+1);
             for(int j = 0; j < arcs.Count; j++){ 
                 Arc it = arcs[j];
                 g.addArc(it.lab, it.u, it.v, it.cost);
             }
             cost = g.basicCost;
             g.findUnbalanced(); // initialise g.neg on original graph
-            g.addArc("'virtual start'", N, startVertex, cost);
-            g.addArc("'virtual end'", g.neg.Length == 0 ? startVertex : g.neg[i], N, cost); // graph is Eulerian if neg.length=0
+            g.addArc("'virtual start'", nVertices, startVertex, cost);
+            g.addArc("'virtual end'", g.umbalancedVerticesNeg.Length == 0 ? startVertex : g.umbalancedVerticesNeg[i], nVertices, cost); // graph is Eulerian if neg.length=0
             g.solve();
             if( bestGraph == null || bestCost > g.cost() )
             { bestCost = g.cost();
                 bestGraph = g;
             }
-        } while( ++i < g.neg.Length );
+        } while( ++i < g.umbalancedVerticesNeg.Length );
         Debug.Log("Open CPT from "+startVertex+" (ignore virtual arcs)");
-        bestGraph.printCPT(N);
+        bestGraph.printCPT(nVertices);
         return cost+bestGraph.phi();
     }
 }
