@@ -17,18 +17,16 @@ public class RoutedAgent : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         IRouteMarker marker = other.GetComponent<IRouteMarker>();
-        if (marker == null) {
+        if (marker == null || route.Count <= 0 || marker != route.Peek()) {
             return;
         }
-
-        if(route.Count > 0 && marker == route.Peek()) {
-            IRouteMarker reachedMarker = route.Dequeue();
-            if (route.Count > 0) {
-                OnExitReached(reachedMarker);
-            }
-            else {
-                OnIntermediateMarkerReached(reachedMarker);
-            }
+        
+        IRouteMarker reachedMarker = route.Dequeue();
+        if (route.Count > 0) {
+            OnIntermediateMarkerReached(reachedMarker);
+        }
+        else {
+            OnExitReached(reachedMarker);
         }
     }
 
