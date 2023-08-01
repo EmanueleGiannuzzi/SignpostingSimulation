@@ -14,7 +14,7 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
     private GameObject SpawnRoutedAgent(GameObject agentPrefab) {
         GameObject agent = SpawnAgent(agentPrefab);
         
-        List<IRouteMarker> route = routeGenerator.GetNewAgentRoute(this);
+        Queue<IRouteMarker> route = routeGenerator.GetNewAgentRoute(this);
         agent.GetComponent<RoutedAgent>().SetRoute(route);
         
         return agent;

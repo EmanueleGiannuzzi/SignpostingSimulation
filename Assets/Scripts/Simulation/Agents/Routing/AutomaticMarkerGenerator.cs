@@ -15,7 +15,7 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
 
     public string[] IfcTraversableTags = { "IfcDoor" };
 
-    private RoutingGraph routingGraph;
+    private RoutingGraphCPT routingGraph;
 
     private void Start() {
         AddMarkersToTraversables();
@@ -32,12 +32,10 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
     public void AddMarkersToTraversables() {
         ResetMarkers();
 
+        List<IRouteMarker> markers = new();
+
         foreach (InputArea existingMarker in FindObjectsOfType<InputArea>()) {
-            string storeyName = GetStoreyName(existingMarker.gameObject);
-            if (storeyName == null) {
-                storeyName = "Start";
-            }
-            routingGraph.AddVertex(existingMarker, storeyName);
+            markers.Add(existingMarker);
         }
         
         if (!ifcGameObject) {
@@ -67,15 +65,13 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
                 IntermediateMarker marker = SpawnMarker(projectionOnNavmesh, widthX, widthZ, $"IntermediateMarker-{spawnedMarkers}");
                 spawnedMarkers++;
                 
-                string storeyName = GetStoreyName(traversable.gameObject);
-                if (storeyName != null) {
-                    routingGraph.AddVertex(marker, storeyName);
-                }
+                markers.Add(marker);
             } 
             if(EditorUtility.DisplayCancelableProgressBar("Automatic Marker Generator", "Generating Routing Markers", 1f - progress)) {
                 EditorUtility.ClearProgressBar();
                 return;
             }
+            routingGraph = new RoutingGraphCPT(markers.ToArray());
         }
         EditorUtility.ClearProgressBar();
     }
@@ -108,7 +104,6 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
     }
 
     private void ResetMarkers() {
-        routingGraph = new RoutingGraph();
         foreach (var markerGroup in GameObject.FindGameObjectsWithTag(MARKERS_GROUP_NAME)) {
             DestroyImmediate(markerGroup);
         }
@@ -140,17 +135,15 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
     }
 
     private void OnDrawGizmos() {
-        if (routingGraph?.AdjacencyList == null) {
+        if (routingGraph == null) {
             return;
         }
-        foreach (var vertex in routingGraph.AdjacencyList.Keys) {
-            foreach (var edge in routingGraph.AdjacencyList[vertex]) {
-                DrawLineBetweenMarkers(vertex, edge.Marker);
-            }
+        foreach (var arc in routingGraph.GetArcs()) {
+            DrawLineBetweenMarkers(arc.Item1, arc.Item1);
         }
     }
 
-    public List<IRouteMarker> GetNewAgentRoute(IRouteMarker start) {
-        return routingGraph.GeneratePath(start);
+    public Queue<IRouteMarker> GetNewAgentRoute(IRouteMarker start) {
+        return routingGraph.GetOpenCPT(start);
     }
 }

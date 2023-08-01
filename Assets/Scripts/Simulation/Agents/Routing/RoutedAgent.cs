@@ -38,9 +38,8 @@ public class RoutedAgent : MonoBehaviour {
         Destroy(this.gameObject);
     }
     
-    public void SetRoute(List<IRouteMarker> newRoute) {
-        route = new Queue<IRouteMarker>(newRoute);
-        if (route.TryPeek(out IRouteMarker destination)) {
+    public void SetRoute(Queue<IRouteMarker> newRoute) {
+        if (newRoute.TryPeek(out IRouteMarker destination)) {
             agent.SetDestination(destination.Position);
         }
     }

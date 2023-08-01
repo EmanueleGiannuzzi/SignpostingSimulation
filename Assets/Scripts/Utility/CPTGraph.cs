@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CPTGraph<T> {
-    private T[] vertLabels;
+public class CPTGraph<T> where T : class {
+    protected T[] vertLabels;
     
     protected int nVertices; // number of vertices
     private int[] vertDeltas; // deltas of vertices
@@ -21,21 +21,11 @@ public class CPTGraph<T> {
 
     private const int NONE = -1; // anything < 0
     
-    public void solve() {
-        do {
-            leastCostPaths();
-            checkValid();
-            findUnbalanced();
-            findFeasible();
-        } while (improvements());
-    }
-    
-    public CPTGraph(int vertices) {
-        if ((nVertices = vertices) <= 0) {
+    internal CPTGraph(int nVertices) {
+        if ((this.nVertices = nVertices) <= 0) {
             throw new Exception("Graph is empty");
         }
 
-        vertLabels = new T[nVertices];
         vertDeltas = new int[nVertices];
         pathDefined = new bool[nVertices, nVertices];
         arcLabels = new List<string>[nVertices, nVertices];
@@ -46,11 +36,52 @@ public class CPTGraph<T> {
         spanningTree = new int[nVertices, nVertices];
         basicCost = 0;
     }
+    
+    public CPTGraph(T[] vertexLabels) : this(vertexLabels.Length) {
+        vertLabels = vertexLabels;
+    }
 
-    public void AddVertex() {
+    public Tuple<T, T>[] GetArcs() {
+        List<Tuple<T, T>> arcs = new();
         
+        for (int i = 0; i < nVertices; i++) {
+            for (int j = 0; j < nVertices; j++) {
+                if (this.adjMat[i, j] > 0) {
+                    Tuple<T, T> arc = new(vertLabels[i], vertLabels[j]);
+                    arcs.Add(arc);
+                }
+            }
+        }
+
+        return arcs.ToArray();
+    }
+
+    protected internal void solve() {
+        do {
+            leastCostPaths();
+            checkValid();
+            findUnbalanced();
+            findFeasible();
+        } while (improvements());
     }
     
+
+    protected int findVertex(T vertex) {
+        for (int i = 0; i < nVertices; i++) {
+            if (vertLabels[i] == vertex) {
+                return i;
+            }
+        }
+
+        throw new Exception($"Unable to find vertex label: {vertex}");
+    }
+
+    protected void addArc(string label, T u, T v, float cost) {
+        int uPos = findVertex(u);
+        int vPos = findVertex(v);
+        addArc(label, uPos, vPos, cost);
+    }
+
     protected internal void addArc(string lab, int u, int v, float cost) {
         if (!pathDefined[u,v]) {
             arcLabels[u,v] = new List<string>();
@@ -200,6 +231,60 @@ public class CPTGraph<T> {
         }
         return NONE;
     }
+    
+    protected internal Queue<int> getCPT(int startVertex) {
+        Queue<int> pathCPT = new ();
+        int v = startVertex;
+        // delete next 7 lines to be faster, but non-reentrant
+        int[,] arcs = new int[nVertices, nVertices];
+        int[,] f = new int[nVertices, nVertices];
+        for (int i = 0; i < nVertices; i++) {
+            for (int j = 0; j < nVertices; j++) {
+                arcs[i, j] = this.adjMat[i, j];
+                f[i, j] = this.repeatedArcs[i, j];
+            }
+        }
+
+        while(true) {
+            int u = v;
+            if((v = findPath(u, f)) != NONE) {
+                f[u, v]--; // remove path
+                for(int p; u != v; u = p){ // break down path into its arcs
+                    p = spanningTree[u, v];
+                    if (pathCPT.Peek() != u) {//TODO: Ignore virtual arcs
+                        pathCPT.Enqueue(u);
+                    }
+                    if (pathCPT.Peek() != v) {
+                        pathCPT.Enqueue(v);
+                    }
+                }
+            }
+            else{ 
+                int bridgeVertex = spanningTree[u, startVertex];
+                if (arcs[u, bridgeVertex] == 0) {
+                    break; // finished if bridge already used
+                }
+
+                v = bridgeVertex;
+                for( int i = 0; i < nVertices; i++ ) // find an unused arc, using bridge last
+                    if( i != bridgeVertex && arcs[u, i] > 0) { 
+                        v = i;
+                        break;
+                    }
+                arcs[u, v]--; // decrement count of parallel arcs
+                
+                if (pathCPT.Peek() != u) {//TODO: Ignore virtual arcs
+                    pathCPT.Enqueue(u);
+                }
+                if (pathCPT.Peek() != v) {
+                    pathCPT.Enqueue(v);
+                }
+            }
+        }
+
+        return pathCPT;
+    }
+    
     protected internal void printCPT(int startVertex) { 
         int v = startVertex;
         // delete next 7 lines to be faster, but non-reentrant
