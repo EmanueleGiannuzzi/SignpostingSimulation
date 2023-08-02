@@ -55,7 +55,7 @@ public class OpenCPT<T>: CPTGraph<T> where T : class {
         return bestGraph.getCPT(nVertices);
     }
     
-    private float printCPT(int startVertex) { 
+    private new float printCPT(int startVertex) { 
         CPTGraph<T> bestGraph = null, g;
         float bestCost = 0, cost;
         int i = 0;

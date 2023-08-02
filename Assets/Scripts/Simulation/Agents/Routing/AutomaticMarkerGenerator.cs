@@ -14,8 +14,9 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
     private const string MARKERS_GROUP_NAME = "MarkersGroup";
 
     public string[] IfcTraversableTags = { "IfcDoor" };
-
-    private RoutingGraphCPT routingGraph;
+    
+    public delegate void OnMarkersGenerated(List<IRouteMarker> markers);
+    public event OnMarkersGenerated OnMarkersGeneration;
 
     private void Start() {
         AddMarkersToTraversables();
@@ -34,9 +35,9 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
 
         List<IRouteMarker> markers = new();
 
-        foreach (InputArea existingMarker in FindObjectsOfType<InputArea>()) {
-            markers.Add(existingMarker);
-        }
+        // foreach (InputArea existingMarker in FindObjectsOfType<InputArea>()) {
+        //     markers.Add(existingMarker);
+        // }
         
         if (!ifcGameObject) {
             Debug.LogError("[AutomaticMarkerGenerator]: No IFC Object found");
@@ -57,8 +58,7 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
             Bounds traversableRendererBounds = traversableRenderer.bounds;
             Vector3 traversableCenter = traversableRendererBounds.center;
 
-            Vector3 projectionOnNavmesh;
-            if(TraversableCenterProjectionOnNavMesh(traversableCenter, out projectionOnNavmesh)
+            if(TraversableCenterProjectionOnNavMesh(traversableCenter, out Vector3 projectionOnNavmesh)
                && traversableCenter.y > projectionOnNavmesh.y) {
                 float widthX = Mathf.Max(1f, traversableRendererBounds.extents.x*2);
                 float widthZ = Mathf.Max(1f, traversableRendererBounds.extents.z*2);
@@ -67,12 +67,14 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
                 
                 markers.Add(marker);
             } 
+            
+            progress -= progressBarStep;
             if(EditorUtility.DisplayCancelableProgressBar("Automatic Marker Generator", "Generating Routing Markers", 1f - progress)) {
                 EditorUtility.ClearProgressBar();
                 return;
             }
-            routingGraph = new RoutingGraphCPT(markers.ToArray());
         }
+        OnMarkersGeneration?.Invoke(markers);
         EditorUtility.ClearProgressBar();
     }
 
@@ -128,22 +130,5 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
         markerCollider.isTrigger = true;
 
         return marker;
-    }
-
-    private void DrawLineBetweenMarkers(IRouteMarker marker1, IRouteMarker marker2) {
-        Debug.DrawLine(marker1.Position, marker2.Position, Color.blue);
-    }
-
-    private void OnDrawGizmos() {
-        if (routingGraph == null) {
-            return;
-        }
-        foreach (var arc in routingGraph.GetArcs()) {
-            DrawLineBetweenMarkers(arc.Item1, arc.Item1);
-        }
-    }
-
-    public Queue<IRouteMarker> GetNewAgentRoute(IRouteMarker start) {
-        return routingGraph.GetOpenCPT(start);
     }
 }

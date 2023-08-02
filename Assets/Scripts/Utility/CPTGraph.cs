@@ -38,7 +38,15 @@ public class CPTGraph<T> where T : class {
     }
     
     public CPTGraph(T[] vertexLabels) : this(vertexLabels.Length) {
-        vertLabels = vertexLabels;
+        vertLabels = (T[])vertexLabels.Clone();
+        
+        // if(vertLabels == null)Debug.LogError("BANANA2");
+        // else Debug.LogError("BANANA3");
+        // foreach (var vert in vertLabels) {
+        //     if (vert == null) {
+        //         Debug.LogError("BANANA");
+        //     }
+        // }
     }
 
     public Tuple<T, T>[] GetArcs() {
@@ -119,6 +127,10 @@ public class CPTGraph<T> where T : class {
         for(int i = 0; i < nVertices; i++) { 
             for(int j = 0; j < nVertices; j++){
                 if (!pathDefined[i, j]) {
+                    if (vertLabels[i] is IRouteMarker marker1 && vertLabels[j] is IRouteMarker marker2) {//TODO: REMOVE
+                        Debug.Log("BANANA");
+                        Debug.DrawLine(marker1.Position, marker2.Position, Color.red, 30f, false);
+                    }
                     throw new Exception("Graph is not strongly connected");
                 }
                 if (arcCosts[i, i] < 0) {

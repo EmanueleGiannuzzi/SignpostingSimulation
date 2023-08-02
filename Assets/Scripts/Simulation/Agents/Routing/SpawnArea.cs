@@ -32,7 +32,7 @@ public class SpawnArea : SpawnAreaBase {
         return agent;
     }
 
-    public virtual GameObject SpawnAgent(GameObject agentPrefab) {
+    private new GameObject SpawnAgent(GameObject agentPrefab) {
         if(goals.Length == 0) {
             Debug.Log("SpawnArea [" + this.gameObject.name + "]: No destination set");
         }

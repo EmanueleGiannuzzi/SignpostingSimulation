@@ -48,13 +48,13 @@ public class RoutingGraphCPT : OpenCPT<IRouteMarker> {
         NavMeshPath path = new ();
         NavMesh.CalculatePath(start, destination, NavMesh.AllAreas, path);
         cost = GetPathLengthSquared(path);
-        bool doesPathExists = path.status == NavMeshPathStatus.PathComplete;
+        bool pathExists = path.status == NavMeshPathStatus.PathComplete;
         bool isDirect = !doesPathIntersectOtherMarkers(path, startMarker, destinationMarker);
 
-        return doesPathExists && isDirect;
+        return pathExists && isDirect;
     }
     
-    private  static bool doesPathIntersectOtherMarkers(NavMeshPath path, IRouteMarker startmarker, IRouteMarker destinationMarker) {
+    private static bool doesPathIntersectOtherMarkers(NavMeshPath path, IRouteMarker startMarker, IRouteMarker destinationMarker) {
         const int MARKER_LAYER_MASK = 1 << 10;
         const float SPHERE_RADIUS = 0.5f;
         const bool DEBUG = false;
@@ -64,7 +64,7 @@ public class RoutingGraphCPT : OpenCPT<IRouteMarker> {
             float distanceToNextCorner = Vector3.Distance(path.corners[i - 1], path.corners[i]);
             if (Physics.SphereCast(path.corners[i], SPHERE_RADIUS, directionTowardsNextCorner, out RaycastHit hit, distanceToNextCorner + 0.3f, MARKER_LAYER_MASK)) {
                 IRouteMarker markerHit = hit.collider.GetComponent<IRouteMarker>();
-                if (markerHit != null && markerHit != startmarker && markerHit != destinationMarker) {
+                if (markerHit != null && markerHit != startMarker && markerHit != destinationMarker) {
                     if (DEBUG) {
                         Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.red, 60f, false);
                         DebugExtension.DebugWireSphere(path.corners[i], Color.red, SPHERE_RADIUS, 60f, false);
