@@ -35,7 +35,6 @@ public class CPTGraph {
         basicCost = 0;
     }
 
-        List<Tuple<T, T>> arcs = new();
     protected internal void solve() {
         do {
             leastCostPaths();
