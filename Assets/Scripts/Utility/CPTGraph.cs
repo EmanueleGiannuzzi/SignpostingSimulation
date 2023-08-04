@@ -1,17 +1,14 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
-public class CPTGraph<T> where T : class {
-    protected T[] VertLabels { get; }
-
+public class CPTGraph {
     protected int nVertices; // number of vertices
     private int[] vertDeltas; // deltas of vertices
     internal int[] umbalancedVerticesNeg; // unbalanced vertices
     private int[] umbalancedVerticesPos; // unbalanced vertices
-    private int[,] adjMat; // adjacency matrix, counts arcs between vertices
+    protected int[,] adjMat; // adjacency matrix, counts arcs between vertices
     private List<string>[,] arcLabels; // vectors of labels of arcs (for each vertex pair)
     private int[,] repeatedArcs; // repeated arcs in CPT
     private float[,] arcCosts; // costs of cheapest arcs or paths
@@ -38,26 +35,7 @@ public class CPTGraph<T> where T : class {
         basicCost = 0;
     }
 
-    protected CPTGraph(T[] vertexLabels) : this(vertexLabels.Length) {
-        this.VertLabels = new T[vertexLabels.Length];
-        Array.Copy(vertexLabels, this.VertLabels, vertexLabels.Length);
-    }
-
-    public Tuple<T, T>[] GetArcs() {
         List<Tuple<T, T>> arcs = new();
-        
-        for (int i = 0; i < nVertices; i++) {
-            for (int j = 0; j < nVertices; j++) {
-                if (this.adjMat[i, j] > 0) {
-                    Tuple<T, T> arc = new(VertLabels[i], VertLabels[j]);
-                    arcs.Add(arc);
-                }
-            }
-        }
-
-        return arcs.ToArray();
-    }
-
     protected internal void solve() {
         do {
             leastCostPaths();
@@ -67,23 +45,6 @@ public class CPTGraph<T> where T : class {
         } while (improvements());
     }
     
-
-    protected int findVertex(T vertex) {
-        for (int i = 0; i < nVertices; i++) {
-            if (VertLabels[i] == vertex) {
-                return i;
-            }
-        }
-
-        throw new Exception($"Unable to find vertex label: {vertex}");
-    }
-
-    protected void addArc(string label, T u, T v, float cost) {
-        int uPos = findVertex(u);
-        int vPos = findVertex(v);
-        addArc(label, uPos, vPos, cost);
-    }
-
     protected internal void addArc(string lab, int u, int v, float cost) {
         if (!pathDefined[u,v]) {
             arcLabels[u,v] = new List<string>();
@@ -106,25 +67,24 @@ public class CPTGraph<T> where T : class {
             for (int i = 0; i < nVertices; i++) {
                 if (pathDefined[i, k])
                     for (int j = 0; j < nVertices; j++) {
-                        if (pathDefined[k, j] && (!pathDefined[i, j] || arcCosts[i, j] > arcCosts[i, k] + arcCosts[k, j])) {
-                            spanningTree[i, j] = spanningTree[i, k];
-                            arcCosts[i, j] = arcCosts[i, k] + arcCosts[k, j];
-                            pathDefined[i, j] = true;
-                            if (i == j && arcCosts[i, j] < 0) return; // stop on negative cycle
+                        if (pathDefined[k, j]) {
+                            if (!pathDefined[i, j] || arcCosts[i, j] > arcCosts[i, k] + arcCosts[k, j]) {
+                                spanningTree[i, j] = spanningTree[i, k];
+                                arcCosts[i, j] = arcCosts[i, k] + arcCosts[k, j];
+                                if (i == j && arcCosts[i, j] < 0) return; // stop on negative cycle
+                            }
                         }
+                        pathDefined[i, j] = true;
+                        Debug.Log($"Path defined between {i} and {j}");
                     }
             }
         }
     }
     
     private void checkValid() {
-
         for(int i = 0; i < nVertices; i++) { 
             for(int j = 0; j < nVertices; j++){
                 if (!pathDefined[i, j]) {
-                    if (VertLabels?[i] is IRouteMarker marker1 && VertLabels?[j] is IRouteMarker marker2) {//TODO: REMOVE
-                        Debug.DrawLine(marker1.Position, marker2.Position, Color.red, 30f, false);
-                    }
                     throw new Exception($"Graph is not strongly connected. Unable to find path between {i} and {j}");
                 }
                 if (arcCosts[i, i] < 0) {
@@ -174,7 +134,7 @@ public class CPTGraph<T> where T : class {
     }
 
     private bool improvements() {
-        CPTGraph<T> residual = new CPTGraph<T>(nVertices);
+        CPTGraph residual = new CPTGraph(nVertices);
         for (int u = 0; u < umbalancedVerticesNeg.Length; u++) {
             int i = umbalancedVerticesNeg[u];
             for (int v = 0; v < umbalancedVerticesPos.Length; v++) {

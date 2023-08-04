@@ -1,13 +1,40 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class RoutingGraphCPT : OpenCPT<IRouteMarker> {
-    public RoutingGraphCPT(IRouteMarker[] vertexLabels) : base(vertexLabels) {
+public class RoutingGraphCPT : OpenCPT {
+    private IRouteMarker[] VertLabels { get; }
+    
+    public RoutingGraphCPT(IRouteMarker[] vertexLabels) : base(vertexLabels.Length) {
+        VertLabels = (IRouteMarker[])vertexLabels.Clone();
         foreach (var vertex in vertexLabels) {
             generateEdges(vertex);
         }
+    }
+    
+    private void addEdge(IRouteMarker vertex1, IRouteMarker vertex2, float cost) {
+        if (cost < 0) {
+            throw new ArgumentOutOfRangeException($"Edge can't have negative cost [{cost}]");
+        }
+        addArc("", vertex1, vertex2, cost);
+        addArc("", vertex2, vertex1, cost);
+    }
+    
+    private void addArc(string label, IRouteMarker u, IRouteMarker v, float cost) {
+        int uPos = findVertex(u);
+        int vPos = findVertex(v);
+        base.addArc(label, uPos, vPos, cost);
+    }
+    
+    private int findVertex(IRouteMarker vertex) {
+        for (int i = 0; i < nVertices; i++) {
+            if (VertLabels[i] == vertex) {
+                return i;
+            }
+        }
+        throw new Exception($"Unable to find vertex label: {vertex}");
     }
 
     private void generateEdges(IRouteMarker vertex1) {
@@ -19,14 +46,6 @@ public class RoutingGraphCPT : OpenCPT<IRouteMarker> {
                 addEdge(vertex1, vertex2, cost);
             }
         }
-    }
-    
-    private void addEdge(IRouteMarker vertex1, IRouteMarker vertex2, float cost) {
-        if (cost < 0) {
-            throw new ArgumentOutOfRangeException($"Edge can't have negative cost [{cost}]");
-        }
-        addArc("", vertex1, vertex2, cost);
-        addArc("", vertex2, vertex1, cost);
     }
     
     private static float GetPathLengthSquared(NavMeshPath path) {
@@ -81,5 +100,36 @@ public class RoutingGraphCPT : OpenCPT<IRouteMarker> {
         }
 
         return false;
+    }
+    
+    public IEnumerable<Tuple<IRouteMarker, IRouteMarker>> GetArcs() {
+        List<Tuple<IRouteMarker, IRouteMarker>> arcs = new();
+        
+        for (int i = 0; i < nVertices; i++) {
+            for (int j = 0; j < nVertices; j++) {
+                if (this.adjMat[i, j] > 0) {
+                    Tuple<IRouteMarker, IRouteMarker> arc = new(VertLabels[i], VertLabels[j]);
+                    arcs.Add(arc);
+                }
+            }
+        }
+        return arcs;
+    }
+    
+    public Queue<IRouteMarker> GetOpenCPT(IRouteMarker startVertex) {
+        int startVertexPos = findVertex(startVertex);
+        
+        Queue<IRouteMarker> openCPT = new ();
+        string debug = "route: ";
+        foreach (int vertexPos in getOpenCPT(startVertexPos)) {
+            debug += vertexPos + " ";
+            if (vertexPos < nVertices) {
+                openCPT.Enqueue(VertLabels[vertexPos]);
+            }
+        }
+        Debug.Log(debug);
+
+        openCPT.Dequeue();//Remove starting area
+        return openCPT;
     }
 }
