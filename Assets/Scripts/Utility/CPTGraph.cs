@@ -41,14 +41,6 @@ public class CPTGraph<T> where T : class {
     protected CPTGraph(T[] vertexLabels) : this(vertexLabels.Length) {
         this.VertLabels = new T[vertexLabels.Length];
         Array.Copy(vertexLabels, this.VertLabels, vertexLabels.Length);
-        
-        // if(vertLabels == null)Debug.LogError("BANANA2");
-        // else Debug.LogError("BANANA3");
-        // foreach (var vert in vertLabels) {
-        //     if (vert == null) {
-        //         Debug.LogError("BANANA");
-        //     }
-        // }
     }
 
     public Tuple<T, T>[] GetArcs() {
@@ -98,8 +90,8 @@ public class CPTGraph<T> where T : class {
         }
         arcLabels[u,v].Add(lab);
         basicCost += cost;
-        if( !pathDefined[u,v] || arcCosts[u,v] > cost )
-        { arcCosts[u,v] = cost;
+        if( !pathDefined[u,v] || arcCosts[u,v] > cost ) { 
+            arcCosts[u,v] = cost;
             cheapestLabel[u,v] = lab;
             pathDefined[u,v] = true;
             spanningTree[u,v] = v;
@@ -129,11 +121,11 @@ public class CPTGraph<T> where T : class {
 
         for(int i = 0; i < nVertices; i++) { 
             for(int j = 0; j < nVertices; j++){
-                if (VertLabels != null && !pathDefined[i, j]) {
-                    if (VertLabels[i] is IRouteMarker marker1 && VertLabels[j] is IRouteMarker marker2) {//TODO: REMOVE
+                if (!pathDefined[i, j]) {
+                    if (VertLabels?[i] is IRouteMarker marker1 && VertLabels?[j] is IRouteMarker marker2) {//TODO: REMOVE
                         Debug.DrawLine(marker1.Position, marker2.Position, Color.red, 30f, false);
                     }
-                    throw new Exception("Graph is not strongly connected");
+                    throw new Exception($"Graph is not strongly connected. Unable to find path between {i} and {j}");
                 }
                 if (arcCosts[i, i] < 0) {
                     throw new Exception("Graph has a negative cycle");

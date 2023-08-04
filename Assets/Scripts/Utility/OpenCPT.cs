@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class OpenCPT<T>: CPTGraph<T> where T : class {
-    private readonly List<Arc> arcs = new List<Arc>();
+    private readonly List<Arc> arcs = new();
 
     private class Arc {
         public string lab; 
@@ -50,7 +50,8 @@ public class OpenCPT<T>: CPTGraph<T> where T : class {
             cost = g.basicCost;
             g.findUnbalanced(); // initialise g.neg on original graph
             g.addArc("'virtual start'", nVertices, startVertex, cost);
-            g.addArc("'virtual end'", g.umbalancedVerticesNeg.Length == 0 ? startVertex : g.umbalancedVerticesNeg[i], nVertices, cost); // graph is Eulerian if neg.length=0
+            g.addArc("'virtual end'", 
+                g.umbalancedVerticesNeg.Length == 0 ? startVertex : g.umbalancedVerticesNeg[i], nVertices, cost); // graph is Eulerian if neg.length=0
             g.solve();
             if( bestGraph == null || bestCost > g.cost() ) {
                 bestCost = g.cost();
