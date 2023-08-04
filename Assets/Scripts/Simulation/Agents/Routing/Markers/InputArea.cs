@@ -39,6 +39,7 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
         GameObject agent = SpawnAgent(agentPrefab);
         
         Queue<IRouteMarker> route = routingGraph.GetOpenCPT(this);
+        
         agent.GetComponent<RoutedAgent>().SetRoute(route);
         
         return agent;

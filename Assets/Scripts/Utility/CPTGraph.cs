@@ -1,11 +1,12 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CPTGraph<T> where T : class {
-    protected T[] vertLabels;
-    
+    protected T[] VertLabels { get; }
+
     protected int nVertices; // number of vertices
     private int[] vertDeltas; // deltas of vertices
     internal int[] umbalancedVerticesNeg; // unbalanced vertices
@@ -36,9 +37,10 @@ public class CPTGraph<T> where T : class {
         spanningTree = new int[nVertices, nVertices];
         basicCost = 0;
     }
-    
-    public CPTGraph(T[] vertexLabels) : this(vertexLabels.Length) {
-        vertLabels = (T[])vertexLabels.Clone();
+
+    protected CPTGraph(T[] vertexLabels) : this(vertexLabels.Length) {
+        this.VertLabels = new T[vertexLabels.Length];
+        Array.Copy(vertexLabels, this.VertLabels, vertexLabels.Length);
         
         // if(vertLabels == null)Debug.LogError("BANANA2");
         // else Debug.LogError("BANANA3");
@@ -55,7 +57,7 @@ public class CPTGraph<T> where T : class {
         for (int i = 0; i < nVertices; i++) {
             for (int j = 0; j < nVertices; j++) {
                 if (this.adjMat[i, j] > 0) {
-                    Tuple<T, T> arc = new(vertLabels[i], vertLabels[j]);
+                    Tuple<T, T> arc = new(VertLabels[i], VertLabels[j]);
                     arcs.Add(arc);
                 }
             }
@@ -76,7 +78,7 @@ public class CPTGraph<T> where T : class {
 
     protected int findVertex(T vertex) {
         for (int i = 0; i < nVertices; i++) {
-            if (vertLabels[i] == vertex) {
+            if (VertLabels[i] == vertex) {
                 return i;
             }
         }
@@ -123,12 +125,12 @@ public class CPTGraph<T> where T : class {
         }
     }
     
-    private void checkValid() { 
+    private void checkValid() {
+
         for(int i = 0; i < nVertices; i++) { 
             for(int j = 0; j < nVertices; j++){
-                if (!pathDefined[i, j]) {
-                    if (vertLabels[i] is IRouteMarker marker1 && vertLabels[j] is IRouteMarker marker2) {//TODO: REMOVE
-                        Debug.Log("BANANA");
+                if (VertLabels != null && !pathDefined[i, j]) {
+                    if (VertLabels[i] is IRouteMarker marker1 && VertLabels[j] is IRouteMarker marker2) {//TODO: REMOVE
                         Debug.DrawLine(marker1.Position, marker2.Position, Color.red, 30f, false);
                     }
                     throw new Exception("Graph is not strongly connected");
@@ -263,10 +265,10 @@ public class CPTGraph<T> where T : class {
                 f[u, v]--; // remove path
                 for(int p; u != v; u = p){ // break down path into its arcs
                     p = spanningTree[u, v];
-                    if (pathCPT.Peek() != u) {//TODO: Ignore virtual arcs
+                    if (pathCPT.Count <= 0 || pathCPT.Peek() != u) {//TODO: Ignore virtual arcs
                         pathCPT.Enqueue(u);
                     }
-                    if (pathCPT.Peek() != v) {
+                    if (pathCPT.Count <= 0 || pathCPT.Peek() != v) {
                         pathCPT.Enqueue(v);
                     }
                 }
@@ -285,10 +287,10 @@ public class CPTGraph<T> where T : class {
                     }
                 arcs[u, v]--; // decrement count of parallel arcs
                 
-                if (pathCPT.Peek() != u) {//TODO: Ignore virtual arcs
+                if (pathCPT.Count <= 0 || pathCPT.Peek() != u) {//TODO: Ignore virtual arcs
                     pathCPT.Enqueue(u);
                 }
-                if (pathCPT.Peek() != v) {
+                if (pathCPT.Count <= 0 || pathCPT.Peek() != v) {
                     pathCPT.Enqueue(v);
                 }
             }

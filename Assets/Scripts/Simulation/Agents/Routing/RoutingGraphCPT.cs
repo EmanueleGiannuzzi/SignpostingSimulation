@@ -9,10 +9,24 @@ public class RoutingGraphCPT : OpenCPT<IRouteMarker> {
             generateEdges(vertex);
         }
     }
-    
+
+    public void banana() {
+        if (VertLabels == null) {
+            Debug.Log("BANANA");
+        }
+        
+        for (int i = 0; i < nVertices; i++) {
+            if (VertLabels[i] == null) {
+                Debug.Log($"vertLabels[{i}] null");
+            }
+            else {
+                Debug.Log("OK");
+            }
+        }
+    }
+
     private void generateEdges(IRouteMarker vertex1) {
-        var allVertices = vertLabels;
-        foreach (IRouteMarker vertex2 in allVertices) {
+        foreach (IRouteMarker vertex2 in VertLabels) {
             if (vertex1 == vertex2) {
                 continue;
             }

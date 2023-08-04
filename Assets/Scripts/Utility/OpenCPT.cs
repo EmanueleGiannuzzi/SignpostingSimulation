@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class OpenCPT<T>: CPTGraph<T> where T : class {
-    private readonly List<Arc> arcs = new ();
+    private readonly List<Arc> arcs = new List<Arc>();
 
     private class Arc {
         public string lab; 
@@ -17,26 +17,32 @@ public class OpenCPT<T>: CPTGraph<T> where T : class {
             this.cost = cost;
         }
     }
-    
-    public OpenCPT(T[] vertexLabels) : base(vertexLabels) {}
+
+    protected OpenCPT(T[] vertexLabels) : base(vertexLabels) {}
 
     public Queue<T> GetOpenCPT(T startVertex) {
         int startVertexPos = findVertex(startVertex);
         
-        Queue<T> openCPT = new();
+        Queue<T> openCPT = new Queue<T>();
+        string debug = "route: ";
         foreach (int vertexPos in getOpenCPT(startVertexPos)) {
-            openCPT.Enqueue(vertLabels[vertexPos]);
+            debug += vertexPos + " ";
+            if (vertexPos < nVertices) {
+                openCPT.Enqueue(VertLabels[vertexPos]);
+            }
         }
+        Debug.Log(debug);
+
+        openCPT.Dequeue();//Remove starting area
         return openCPT;
     }
     
     private Queue<int> getOpenCPT(int startVertex) {
-        Queue<int> pathCPT = new ();
         CPTGraph<T> bestGraph = null, g;
         float bestCost = 0, cost;
         int i = 0;
         do {
-            g = new (nVertices+1);
+            g = new CPTGraph<T>(nVertices+1);
             for(int j = 0; j < arcs.Count; j++){ 
                 Arc it = arcs[j];
                 g.addArc(it.lab, it.u, it.v, it.cost);
@@ -60,7 +66,7 @@ public class OpenCPT<T>: CPTGraph<T> where T : class {
         float bestCost = 0, cost;
         int i = 0;
         do { 
-            g = new (nVertices+1);
+            g = new CPTGraph<T>(nVertices+1);
             for(int j = 0; j < arcs.Count; j++){ 
                 Arc it = arcs[j];
                 g.addArc(it.lab, it.u, it.v, it.cost);
