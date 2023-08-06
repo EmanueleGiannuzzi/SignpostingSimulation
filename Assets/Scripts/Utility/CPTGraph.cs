@@ -62,6 +62,7 @@ public class CPTGraph {
     }
 
     private void leastCostPaths() {
+        Debug.Log($"leastCostPaths: {nVertices}");
         for (int k = 0; k < nVertices; k++) {
             for (int i = 0; i < nVertices; i++) {
                 if (pathDefined[i, k])
@@ -74,7 +75,7 @@ public class CPTGraph {
                             }
                         }
                         pathDefined[i, j] = true;
-                        Debug.Log($"Path defined between {i} and {j}");
+                        //Debug.Log($"Path defined between {i} and {j}");
                     }
             }
         }
@@ -201,48 +202,50 @@ public class CPTGraph {
         Queue<int> pathCPT = new ();
         int v = startVertex;
         // delete next 7 lines to be faster, but non-reentrant
-        int[,] arcs = new int[nVertices, nVertices];
-        int[,] f = new int[nVertices, nVertices];
+        int[,] adjMat = new int[nVertices, nVertices];
+        int[,] repeatedArcs = new int[nVertices, nVertices];
         for (int i = 0; i < nVertices; i++) {
             for (int j = 0; j < nVertices; j++) {
-                arcs[i, j] = this.adjMat[i, j];
-                f[i, j] = this.repeatedArcs[i, j];
+                adjMat[i, j] = this.adjMat[i, j];
+                repeatedArcs[i, j] = this.repeatedArcs[i, j];
             }
         }
 
+        int last = -1;
         while(true) {
             int u = v;
-            if((v = findPath(u, f)) != NONE) {
-                f[u, v]--; // remove path
+            
+            if((v = findPath(u, repeatedArcs)) != NONE) {
+                repeatedArcs[u, v]--; // remove path
+                pathCPT.Enqueue(u);
                 for(int p; u != v; u = p){ // break down path into its arcs
                     p = spanningTree[u, v];
-                    if (pathCPT.Count <= 0 || pathCPT.Peek() != u) {//TODO: Ignore virtual arcs
-                        pathCPT.Enqueue(u);
-                    }
-                    if (pathCPT.Count <= 0 || pathCPT.Peek() != v) {
-                        pathCPT.Enqueue(v);
-                    }
+                    pathCPT.Enqueue(p);
                 }
+                pathCPT.Enqueue(v);
+                last = v;
             }
-            else{ 
+            else { 
                 int bridgeVertex = spanningTree[u, startVertex];
-                if (arcs[u, bridgeVertex] == 0) {
+                if (adjMat[u, bridgeVertex] == 0) {
                     break; // finished if bridge already used
                 }
 
                 v = bridgeVertex;
                 for( int i = 0; i < nVertices; i++ ) // find an unused arc, using bridge last
-                    if( i != bridgeVertex && arcs[u, i] > 0) { 
+                    if( i != bridgeVertex && adjMat[u, i] > 0) { 
                         v = i;
                         break;
                     }
-                arcs[u, v]--; // decrement count of parallel arcs
+                adjMat[u, v]--; // decrement count of parallel arcs
                 
-                if (pathCPT.Count <= 0 || pathCPT.Peek() != u) {//TODO: Ignore virtual arcs
+                if (last != u) {
                     pathCPT.Enqueue(u);
+                    last = u;
                 }
-                if (pathCPT.Count <= 0 || pathCPT.Peek() != v) {
+                if (last != v) {
                     pathCPT.Enqueue(v);
+                    last = v;
                 }
             }
         }

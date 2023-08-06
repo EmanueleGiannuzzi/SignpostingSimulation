@@ -6,12 +6,12 @@ public class OpenCPT : CPTGraph {
     private readonly List<Arc> arcs = new();
 
     private class Arc {
-        public string lab; 
+        public string label; 
         public int u, v; 
         public float cost;
 
-        private Arc(string lab, int u, int v, float cost) {
-            this.lab = lab;
+        private Arc(string label, int u, int v, float cost) {
+            this.label = label;
             this.u = u;
             this.v = v;
             this.cost = cost;
@@ -26,9 +26,8 @@ public class OpenCPT : CPTGraph {
         int i = 0;
         do {
             g = new CPTGraph(nVertices+1);
-            for(int j = 0; j < arcs.Count; j++){ 
-                Arc it = arcs[j];
-                g.addArc(it.lab, it.u, it.v, it.cost);
+            foreach (Arc arc in arcs) {
+                g.addArc(arc.label, arc.u, arc.v, arc.cost);
             }
             cost = g.basicCost;
             g.findUnbalanced(); // initialise g.neg on original graph
@@ -53,7 +52,7 @@ public class OpenCPT : CPTGraph {
             g = new CPTGraph(nVertices+1);
             for(int j = 0; j < arcs.Count; j++){ 
                 Arc it = arcs[j];
-                g.addArc(it.lab, it.u, it.v, it.cost);
+                g.addArc(it.label, it.u, it.v, it.cost);
             }
             cost = g.basicCost;
             g.findUnbalanced(); // initialise g.neg on original graph

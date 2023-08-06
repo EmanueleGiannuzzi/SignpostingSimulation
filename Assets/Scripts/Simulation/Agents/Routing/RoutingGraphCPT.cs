@@ -12,6 +12,7 @@ public class RoutingGraphCPT : OpenCPT {
         foreach (var vertex in vertexLabels) {
             generateEdges(vertex);
         }
+        solve();
     }
     
     private void addEdge(IRouteMarker vertex1, IRouteMarker vertex2, float cost) {
@@ -120,8 +121,11 @@ public class RoutingGraphCPT : OpenCPT {
         int startVertexPos = findVertex(startVertex);
         
         Queue<IRouteMarker> openCPT = new ();
-        string debug = "route: ";
-        foreach (int vertexPos in getOpenCPT(startVertexPos)) {
+        string debug = $"route[{nVertices}]: ";
+        foreach (int vertexPos in getCPT(startVertexPos)) {//TODO: Ignore virtual arcs
+            if (vertexPos == startVertexPos) {
+                continue;
+            }
             debug += vertexPos + " ";
             if (vertexPos < nVertices) {
                 openCPT.Enqueue(VertLabels[vertexPos]);
@@ -129,7 +133,6 @@ public class RoutingGraphCPT : OpenCPT {
         }
         Debug.Log(debug);
 
-        openCPT.Dequeue();//Remove starting area
         return openCPT;
     }
 }
