@@ -15,29 +15,6 @@ public class RoutingGraphCPT : OpenCPT {
         solve();
     }
     
-    private void addEdge(IRouteMarker vertex1, IRouteMarker vertex2, float cost) {
-        if (cost < 0) {
-            throw new ArgumentOutOfRangeException($"Edge can't have negative cost [{cost}]");
-        }
-        addArc("", vertex1, vertex2, cost);
-        addArc("", vertex2, vertex1, cost);
-    }
-    
-    private void addArc(string label, IRouteMarker u, IRouteMarker v, float cost) {
-        int uPos = findVertex(u);
-        int vPos = findVertex(v);
-        base.addArc(label, uPos, vPos, cost);
-    }
-    
-    private int findVertex(IRouteMarker vertex) {
-        for (int i = 0; i < nVertices; i++) {
-            if (VertLabels[i] == vertex) {
-                return i;
-            }
-        }
-        throw new Exception($"Unable to find vertex label: {vertex}");
-    }
-
     private void generateEdges(IRouteMarker vertex1) {
         foreach (IRouteMarker vertex2 in VertLabels) {
             if (vertex1 == vertex2) {
@@ -49,6 +26,30 @@ public class RoutingGraphCPT : OpenCPT {
         }
     }
     
+    private void addEdge(IRouteMarker vertex1, IRouteMarker vertex2, float cost) {
+        if (cost < 0) {
+            throw new ArgumentOutOfRangeException($"Edge can't have negative cost [{cost}]");
+        }
+        addArc("", vertex1, vertex2, cost);
+    }
+    
+    private void addArc(string label, IRouteMarker u, IRouteMarker v, float cost) {
+        int uPos = findVertex(u);
+        int vPos = findVertex(v);
+        base.addArc(label, uPos, vPos, cost);
+        base.addArc(label, vPos, uPos, cost);
+        Debug.Log($"New Edge {uPos} {vPos}");
+    }
+    
+    private int findVertex(IRouteMarker vertex) {
+        for (int i = 0; i < nVertices; i++) {
+            if (VertLabels[i] == vertex) {
+                return i;
+            }
+        }
+        throw new Exception($"Unable to find vertex label: {vertex}");
+    }
+
     private static float GetPathLengthSquared(NavMeshPath path) {
         Vector3[] corners = path.corners;
 
@@ -117,7 +118,7 @@ public class RoutingGraphCPT : OpenCPT {
         return arcs;
     }
     
-    public Queue<IRouteMarker> GetOpenCPT(IRouteMarker startVertex) {
+    public Queue<IRouteMarker> GetRoute(IRouteMarker startVertex) {
         int startVertexPos = findVertex(startVertex);
         
         Queue<IRouteMarker> openCPT = new ();

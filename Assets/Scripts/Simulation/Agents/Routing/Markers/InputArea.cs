@@ -7,6 +7,7 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
     Vector3 IRouteMarker.Position => transform.position;
 
     private RoutingGraphCPT routingGraph;
+    private Queue<IRouteMarker> route;
 
     private void Awake() {
         //base.Start();
@@ -29,6 +30,7 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
         markersConnected.Insert(0,this);
         
         routingGraph = new RoutingGraphCPT(markersConnected.ToArray());
+        route = routingGraph.GetRoute(this);
     }
 
     private GameObject SpawnRoutedAgent(GameObject agentPrefab) {
@@ -38,9 +40,7 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
         }
         GameObject agent = SpawnAgent(agentPrefab);
         
-        Queue<IRouteMarker> route = routingGraph.GetOpenCPT(this);
-        
-        agent.GetComponent<RoutedAgent>().SetRoute(route);
+        agent.GetComponent<RoutedAgent>().SetRoute(new Queue<IRouteMarker>(route));
         
         return agent;
     }
