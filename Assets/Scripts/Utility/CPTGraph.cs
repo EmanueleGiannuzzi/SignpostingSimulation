@@ -38,25 +38,6 @@ public class CPTGraph {
     protected internal void solve() {
         do {
             leastCostPaths();
-            
-            string spanningTreePrint = "";
-            for (int i = 0; i < nVertices; i++) {
-                for (int j = 0; j < nVertices; j++) {
-                    spanningTreePrint += spanningTree[i, j];
-                }
-                spanningTreePrint += '\n';
-            }
-            Debug.Log(spanningTreePrint);
-            
-            string definedPrint = "";
-            for (int i = 0; i < nVertices; i++) {
-                for (int j = 0; j < nVertices; j++) {
-                    definedPrint += pathDefined[i, j] ? "T" : "F";
-                }
-                definedPrint += '\n';
-            }
-            Debug.Log(definedPrint);
-            
             checkValid();
             findUnbalanced();
             findFeasible();
@@ -81,7 +62,6 @@ public class CPTGraph {
     }
 
     private void leastCostPaths() {
-        Debug.Log($"leastCostPaths: {nVertices}");
         for (int k = 0; k < nVertices; k++) {
             for (int i = 0; i < nVertices; i++) {
                 if (pathDefined[i, k]) {
@@ -219,6 +199,8 @@ public class CPTGraph {
     }
     
     protected internal Queue<int> getCPT(int startVertex) {
+        solve();
+        
         Queue<int> pathCPT = new ();
         int v = startVertex;
         // delete next 7 lines to be faster, but non-reentrant
@@ -237,13 +219,22 @@ public class CPTGraph {
             
             if((v = findPath(u, repeatedArcs)) != NONE) {
                 repeatedArcs[u, v]--; // remove path
-                pathCPT.Enqueue(u);
+                if (last != u) {
+                    pathCPT.Enqueue(u);
+                    last = u;
+                }
                 for(int p; u != v; u = p){ // break down path into its arcs
                     p = spanningTree[u, v];
-                    pathCPT.Enqueue(p);
+                    if (last != p) {
+                        pathCPT.Enqueue(p);
+                        last = p;
+                    }
                 }
-                pathCPT.Enqueue(v);
-                last = v;
+
+                if (last != v) {
+                    pathCPT.Enqueue(v);
+                    last = v;
+                }
             }
             else { 
                 int bridgeVertex = spanningTree[u, startVertex];
@@ -273,42 +264,4 @@ public class CPTGraph {
         return pathCPT;
     }
     
-    protected internal void printCPT(int startVertex) { 
-        int v = startVertex;
-        // delete next 7 lines to be faster, but non-reentrant
-        int[,] arcs = new int[nVertices, nVertices];
-        int[,] f = new int[nVertices, nVertices];
-        for (int i = 0; i < nVertices; i++) {
-            for (int j = 0; j < nVertices; j++) {
-                arcs[i, j] = this.adjMat[i, j];
-                f[i, j] = this.repeatedArcs[i, j];
-            }
-        }
-
-        while(true) { 
-            int u = v;
-            if((v = findPath(u, f)) != NONE) { 
-                f[u, v]--; // remove path
-                for(int p; u != v; u = p){ // break down path into its arcs
-                    p = spanningTree[u, v];
-                    Debug.Log("Take arc " + cheapestLabel[u, p] + " from " + u + " to " + p);
-                }
-            }
-            else{ 
-                int bridgeVertex = spanningTree[u, startVertex];
-                if (arcs[u, bridgeVertex] == 0) {
-                    break; // finished if bridge already used
-                }
-
-                v = bridgeVertex;
-                for( int i = 0; i < nVertices; i++ ) // find an unused arc, using bridge last
-                    if( i != bridgeVertex && arcs[u, i] > 0) { 
-                        v = i;
-                        break;
-                    }
-                arcs[u, v]--; // decrement count of parallel arcs
-                Debug.Log("Take arc " + arcLabels[u, v][arcs[u, v]] + " from " + u + " to " + v); // use each arc label in turn
-            }
-        }
-    }
 }

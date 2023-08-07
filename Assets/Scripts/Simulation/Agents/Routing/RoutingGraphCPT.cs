@@ -12,7 +12,6 @@ public class RoutingGraphCPT : OpenCPT {
         foreach (var vertex in vertexLabels) {
             generateEdges(vertex);
         }
-        solve();
     }
     
     private void generateEdges(IRouteMarker vertex1) {
@@ -38,7 +37,6 @@ public class RoutingGraphCPT : OpenCPT {
         int vPos = findVertex(v);
         base.addArc(label, uPos, vPos, cost);
         // base.addArc(label, vPos, uPos, cost);
-        Debug.Log($"New Edge {uPos} {vPos} Cost:{cost}");
     }
     
     private int findVertex(IRouteMarker vertex) {
@@ -105,17 +103,14 @@ public class RoutingGraphCPT : OpenCPT {
     }
     
     public IEnumerable<Tuple<IRouteMarker, IRouteMarker>> GetArcs() {
-        List<Tuple<IRouteMarker, IRouteMarker>> arcs = new();
-        
-        for (int i = 0; i < nVertices; i++) {
-            for (int j = 0; j < nVertices; j++) {
-                if (this.adjMat[i, j] > 0) {
-                    Tuple<IRouteMarker, IRouteMarker> arc = new(VertLabels[i], VertLabels[j]);
-                    arcs.Add(arc);
-                }
-            }
+        List<Tuple<IRouteMarker, IRouteMarker>> arcsObjs = new();
+
+        foreach (Arc arc in this.arcs) {
+            Tuple<IRouteMarker, IRouteMarker> arcObj = new(VertLabels[arc.u], VertLabels[arc.v]);
+            arcsObjs.Add(arcObj);
         }
-        return arcs;
+        
+        return arcsObjs;
     }
     
     public Queue<IRouteMarker> GetRoute(IRouteMarker startVertex) {
@@ -123,10 +118,7 @@ public class RoutingGraphCPT : OpenCPT {
         
         Queue<IRouteMarker> openCPT = new ();
         string debug = $"route[{nVertices}]: ";
-        foreach (int vertexPos in getCPT(startVertexPos)) {//TODO: Ignore virtual arcs
-            if (vertexPos == startVertexPos) {
-                continue;
-            }
+        foreach (int vertexPos in getOpenCPT(startVertexPos)) {//TODO: Ignore virtual arcs
             debug += vertexPos + " ";
             if (vertexPos < nVertices) {
                 openCPT.Enqueue(VertLabels[vertexPos]);
@@ -134,6 +126,7 @@ public class RoutingGraphCPT : OpenCPT {
         }
         Debug.Log(debug);
 
+        openCPT.Dequeue();//remove start area
         return openCPT;
     }
 }

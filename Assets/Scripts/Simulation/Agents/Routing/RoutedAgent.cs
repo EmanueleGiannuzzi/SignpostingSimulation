@@ -12,7 +12,6 @@ public class RoutedAgent : MonoBehaviour {
     
     void Awake() {
         agent = GetComponent<NavMeshAgent>();
-        route = new Queue<IRouteMarker>();
     }
 
     private void OnTriggerEnter(Collider other) {
@@ -39,6 +38,7 @@ public class RoutedAgent : MonoBehaviour {
     }
     
     public void SetRoute(Queue<IRouteMarker> newRoute) {
+        route = newRoute;
         if (newRoute.TryPeek(out IRouteMarker destination)) {
             agent.SetDestination(destination.Position);
         }
