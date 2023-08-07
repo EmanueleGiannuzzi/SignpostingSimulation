@@ -37,8 +37,8 @@ public class RoutingGraphCPT : OpenCPT {
         int uPos = findVertex(u);
         int vPos = findVertex(v);
         base.addArc(label, uPos, vPos, cost);
-        base.addArc(label, vPos, uPos, cost);
-        Debug.Log($"New Edge {uPos} {vPos}");
+        // base.addArc(label, vPos, uPos, cost);
+        Debug.Log($"New Edge {uPos} {vPos} Cost:{cost}");
     }
     
     private int findVertex(IRouteMarker vertex) {

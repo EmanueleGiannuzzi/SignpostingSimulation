@@ -38,6 +38,25 @@ public class CPTGraph {
     protected internal void solve() {
         do {
             leastCostPaths();
+            
+            string spanningTreePrint = "";
+            for (int i = 0; i < nVertices; i++) {
+                for (int j = 0; j < nVertices; j++) {
+                    spanningTreePrint += spanningTree[i, j];
+                }
+                spanningTreePrint += '\n';
+            }
+            Debug.Log(spanningTreePrint);
+            
+            string definedPrint = "";
+            for (int i = 0; i < nVertices; i++) {
+                for (int j = 0; j < nVertices; j++) {
+                    definedPrint += pathDefined[i, j] ? "T" : "F";
+                }
+                definedPrint += '\n';
+            }
+            Debug.Log(definedPrint);
+            
             checkValid();
             findUnbalanced();
             findFeasible();
@@ -65,18 +84,19 @@ public class CPTGraph {
         Debug.Log($"leastCostPaths: {nVertices}");
         for (int k = 0; k < nVertices; k++) {
             for (int i = 0; i < nVertices; i++) {
-                if (pathDefined[i, k])
+                if (pathDefined[i, k]) {
                     for (int j = 0; j < nVertices; j++) {
-                        if (pathDefined[k, j]) {
-                            if (!pathDefined[i, j] || arcCosts[i, j] > arcCosts[i, k] + arcCosts[k, j]) {
-                                spanningTree[i, j] = spanningTree[i, k];
-                                arcCosts[i, j] = arcCosts[i, k] + arcCosts[k, j];
-                                if (i == j && arcCosts[i, j] < 0) return; // stop on negative cycle
+                        if (pathDefined[k, j] &&
+                            (!pathDefined[i, j] || arcCosts[i, j] > arcCosts[i, k] + arcCosts[k, j])) {
+                            spanningTree[i, j] = spanningTree[i, k];
+                            arcCosts[i, j] = arcCosts[i, k] + arcCosts[k, j];
+                            pathDefined[i, j] = true;
+                            if (i == j && arcCosts[i, j] < 0) {
+                                return; // stop on negative cycle
                             }
                         }
-                        pathDefined[i, j] = true;
-                        //Debug.Log($"Path defined between {i} and {j}");
                     }
+                }
             }
         }
     }
@@ -232,7 +252,7 @@ public class CPTGraph {
                 }
 
                 v = bridgeVertex;
-                for( int i = 0; i < nVertices; i++ ) // find an unused arc, using bridge last
+                for(int i = 0; i < nVertices; i++) // find an unused arc, using bridge last
                     if( i != bridgeVertex && adjMat[u, i] > 0) { 
                         v = i;
                         break;
