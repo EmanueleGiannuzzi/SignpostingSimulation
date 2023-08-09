@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 using static AgentsPrefabGenerator;
 
 [System.Serializable]
@@ -64,7 +65,7 @@ public class AgentsSpawnHandler : MonoBehaviour
 
     private void SpawnAgents() {
         foreach(SpawnAreaBase spawnArea in this.GetComponentsInChildren<SpawnAreaBase>()) {
-            if(spawnArea.Enabled) {
+            if(spawnArea.ShouldSpawnAgents()) {
                 GameObject agent = spawnArea.SpawnAgentEvent(GetAgentPrefab());
                 agent.transform.parent = AgentsGameObjectParent.transform;
                 //agent.GetComponent<AgentCollisionDetection>().collisionEvent.AddListener(OnAgentCollidedWith);

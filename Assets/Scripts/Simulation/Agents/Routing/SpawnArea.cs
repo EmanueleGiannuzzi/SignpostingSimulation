@@ -5,11 +5,11 @@ using UnityEngine.AI;
 public class SpawnArea : SpawnAreaBase {
 
     public SpawnAreaDestination[] goals;
-
-    //public Gradient AgentColorGradient;
-
-
     
+    // [Header("Agent Spawn Settings")]
+    // public bool OverrideSpawnRate = true;
+    // [ConditionalField(nameof(OverrideSpawnRate))]
+    // public int SpawnRate;
 
     private GameObject SpawnAgentMoveTo(GameObject agentPrefab, SpawnAreaDestination goal) {
         Transform destination = goal.Destination;
@@ -19,11 +19,7 @@ public class SpawnArea : SpawnAreaBase {
 
 
     protected GameObject SpawnAgentMoveTo(GameObject agentPrefab, Vector3 destination, Collider destroyer) {
-        if(!this.Enabled || goals is not { Length: > 0 }) {
-            return null;
-        }
-
-        GameObject agent = base.SpawnAgent(agentPrefab);
+        GameObject agent = SpawnAgent(agentPrefab);
         agent.GetComponent<AgentCollisionDetection>().destroyer = destroyer;
 
         NavMeshAgent navMeshAgent = agent.GetComponent<NavMeshAgent>();
@@ -32,16 +28,14 @@ public class SpawnArea : SpawnAreaBase {
         return agent;
     }
 
-    private new GameObject SpawnAgent(GameObject agentPrefab) {
-        if(goals.Length == 0) {
-            Debug.Log("SpawnArea [" + this.gameObject.name + "]: No destination set");
-        }
+    public override GameObject SpawnAgentEvent(GameObject agentPrefab) {
         return SpawnAgentMoveTo(agentPrefab, goals[Random.Range(0, goals.Length)]);
     }
-
-    public override GameObject SpawnAgentEvent(GameObject agentPrefab) {
-        return SpawnAgent(agentPrefab);
+    
+    public override bool ShouldSpawnAgents() {
+        return base.ShouldSpawnAgents() && goals.Length == 0;
     }
+
 }
 
 

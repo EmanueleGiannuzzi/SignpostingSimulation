@@ -35,10 +35,6 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
 
         List<IRouteMarker> markers = new();
 
-        // foreach (InputArea existingMarker in FindObjectsOfType<InputArea>()) {
-        //     markers.Add(existingMarker);
-        // }
-        
         if (!ifcGameObject) {
             Debug.LogError("[AutomaticMarkerGenerator]: No IFC Object found");
             return;
@@ -60,8 +56,8 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
 
             if(TraversableCenterProjectionOnNavMesh(traversableCenter, out Vector3 projectionOnNavmesh)
                && traversableCenter.y > projectionOnNavmesh.y) {
-                float widthX = Mathf.Max(1f, traversableRendererBounds.extents.x*2);
-                float widthZ = Mathf.Max(1f, traversableRendererBounds.extents.z*2);
+                float widthX = traversableRendererBounds.extents.x*2;
+                float widthZ = traversableRendererBounds.extents.z*2;
                 IntermediateMarker marker = SpawnMarker(projectionOnNavmesh, widthX, widthZ, $"IntermediateMarker-{spawnedMarkers}");
                 spawnedMarkers++;
                 
@@ -115,6 +111,10 @@ public class AutomaticMarkerGenerator : MonoBehaviour {
     }
 
     private IntermediateMarker SpawnMarker(Vector3 pos, float widthX, float widthZ, string name) {
+        const float MIN_SIZE = 1.5f;
+        widthX = Mathf.Max(MIN_SIZE, widthX);
+        widthZ = Mathf.Max(MIN_SIZE, widthZ);
+        
         GameObject markerGO = GameObject.CreatePrimitive(PrimitiveType.Quad);
         markerGO.transform.parent = markerParent.transform;
         pos += new Vector3(0f, 0.01f, 0f);

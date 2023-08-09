@@ -16,7 +16,7 @@ public class RoutedAgent : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         IRouteMarker marker = other.GetComponent<IRouteMarker>();
-        if (marker == null || route.Count <= 0 || marker != route.Peek()) {
+        if (marker == null || route is not { Count: > 0 } || marker != route.Peek()) {
             return;
         }
         
@@ -44,9 +44,9 @@ public class RoutedAgent : MonoBehaviour {
         }
     }
 
-    private void OnDrawGizmos() {
-        if (route?.Count > 0) {
-            Gizmos.DrawLine(transform.position, route.Peek().Position);
-        }
-    }
+    // private void OnDrawGizmos() {
+    //     if (route?.Count > 0) {
+    //         Gizmos.DrawLine(transform.position, route.Peek().Position);
+    //     }
+    // }
 }

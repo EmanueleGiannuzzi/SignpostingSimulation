@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class OpenCPT {
     protected readonly List<Arc> arcs = new();
@@ -24,11 +23,10 @@ public class OpenCPT {
         this.nVertices = nVertices;
     }
     
-    protected new void addArc(string lab, int u, int v, float cost) {
+    protected void addArc(string lab, int u, int v, float cost) {
         if (cost < 0) {
             throw new ArgumentException("Graph has negative costs");
         }
-        //base.addArc(lab, u, v, cost);
         arcs.Add(new Arc(lab, u, v, cost));
     }
 
@@ -52,7 +50,6 @@ public class OpenCPT {
                 bestGraph = g;
             }
         } while(++i < g.umbalancedVerticesNeg.Length);
-        Debug.Log("Open CPT from "+startVertex+" (ignore virtual arcs)");
         return bestGraph.getCPT(nVertices);
     }
 }

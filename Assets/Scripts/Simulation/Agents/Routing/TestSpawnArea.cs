@@ -9,8 +9,7 @@ public class TestSpawnArea : SpawnArea
     public int mouseButton = 0;
 
 
-    void Update()
-    {
+    void Update() {
         if(Input.GetMouseButtonDown(mouseButton)) {
             Ray ray = PlayerCamera.ScreenPointToRay(Input.mousePosition);
 
@@ -18,5 +17,9 @@ public class TestSpawnArea : SpawnArea
                 SpawnAgentMoveTo(AgentPrefab, hit.point, null);
             }
         }
+    }
+
+    public override bool ShouldSpawnAgents() {
+        return false;
     }
 }

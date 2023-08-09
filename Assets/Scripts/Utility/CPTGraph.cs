@@ -1,14 +1,13 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class CPTGraph {
-    protected int nVertices; // number of vertices
+    private int nVertices; // number of vertices
     private int[] vertDeltas; // deltas of vertices
     internal int[] umbalancedVerticesNeg; // unbalanced vertices
     private int[] umbalancedVerticesPos; // unbalanced vertices
-    protected int[,] adjMat; // adjacency matrix, counts arcs between vertices
+    private int[,] adjMat; // adjacency matrix, counts arcs between vertices
     private List<string>[,] arcLabels; // vectors of labels of arcs (for each vertex pair)
     private int[,] repeatedArcs; // repeated arcs in CPT
     private float[,] arcCosts; // costs of cheapest arcs or paths

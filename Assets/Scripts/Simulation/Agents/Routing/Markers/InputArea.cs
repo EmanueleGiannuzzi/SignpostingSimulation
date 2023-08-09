@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-[ExecuteInEditMode]
 public class InputArea : SpawnAreaBase, IRouteMarker {
     Vector3 IRouteMarker.Position => transform.position;
 
     private RoutingGraphCPT routingGraph;
     private Queue<IRouteMarker> route;
+    
 
     private void Awake() {
         //base.Start();
@@ -18,13 +18,16 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
         }
         markerGen.OnMarkersGeneration += OnMarkersGenerated;
     }
-    
-    public void OnMarkersGenerated(List<IRouteMarker> markers) {
+
+    private void OnMarkersGenerated(List<IRouteMarker> markers) {
         List<IRouteMarker> markersConnected = new (markers);
         markersConnected.RemoveAll(marker => {
             NavMeshPath path = new NavMeshPath();
             NavMesh.CalculatePath(((IRouteMarker)this).Position, marker.Position, NavMesh.AllAreas, path);
             bool pathExists = path.status == NavMeshPathStatus.PathComplete;
+            if (!pathExists) {
+                Debug.DrawLine(marker.Position, ((IRouteMarker)this).Position, Color.red, 30f, false);
+            }
             return !pathExists;
         });
         markersConnected.Insert(0,this);

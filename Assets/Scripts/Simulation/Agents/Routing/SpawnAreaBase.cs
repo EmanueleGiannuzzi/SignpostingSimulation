@@ -1,14 +1,7 @@
-using MyBox;
 using UnityEngine;
 
 public abstract class SpawnAreaBase : MonoBehaviour {
     public bool Enabled = true;
-
-    [Header("Agent Spawn Settings")]
-    public bool OverrideSpawnRate = true;
-    [ConditionalField(nameof(OverrideSpawnRate))]
-    public int SpawnRate;
-    
     private Environment environment;
 
     protected void Start() {
@@ -33,4 +26,8 @@ public abstract class SpawnAreaBase : MonoBehaviour {
     }
 
     public abstract GameObject SpawnAgentEvent(GameObject agentPrefab);
+
+    public virtual bool ShouldSpawnAgents() {
+        return Enabled;
+    }
 }

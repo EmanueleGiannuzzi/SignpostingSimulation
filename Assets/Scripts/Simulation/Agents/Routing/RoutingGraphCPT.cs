@@ -3,6 +3,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Vertx.Debugging;
+
+// #if UNITY_EDITOR
+// using Physics = Vertx.Debugging.DrawPhysics;
+// #endif
 
 public class RoutingGraphCPT : OpenCPT {
     private IRouteMarker[] VertLabels { get; }
@@ -10,11 +15,11 @@ public class RoutingGraphCPT : OpenCPT {
     public RoutingGraphCPT(IRouteMarker[] vertexLabels) : base(vertexLabels.Length) {
         VertLabels = (IRouteMarker[])vertexLabels.Clone();
         foreach (var vertex in vertexLabels) {
-            generateEdges(vertex);
+            generateEdgesFrom(vertex);
         }
     }
     
-    private void generateEdges(IRouteMarker vertex1) {
+    private void generateEdgesFrom(IRouteMarker vertex1) {
         foreach (IRouteMarker vertex2 in VertLabels) {
             if (vertex1 == vertex2) {
                 continue;
@@ -75,27 +80,16 @@ public class RoutingGraphCPT : OpenCPT {
     private static bool doesPathIntersectOtherMarkers(NavMeshPath path, IRouteMarker startMarker, IRouteMarker destinationMarker) {
         const int MARKER_LAYER_MASK = 1 << 10;
         const float SPHERE_RADIUS = 0.5f;
-        const bool DEBUG = false;
 
         for (int i = 1; i < path.corners.Length; i++) {
             Vector3 directionTowardsNextCorner = (path.corners[i - 1] - path.corners[i]).normalized;
             float distanceToNextCorner = Vector3.Distance(path.corners[i - 1], path.corners[i]);
+            DrawPhysicsSettings.SetDuration(60f);
             if (Physics.SphereCast(path.corners[i], SPHERE_RADIUS, directionTowardsNextCorner, out RaycastHit hit, distanceToNextCorner + 0.3f, MARKER_LAYER_MASK)) {
                 IRouteMarker markerHit = hit.collider.GetComponent<IRouteMarker>();
                 if (markerHit != null && markerHit != startMarker && markerHit != destinationMarker) {
-                    if (DEBUG) {
-                        Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.red, 60f, false);
-                        DebugExtension.DebugWireSphere(path.corners[i], Color.red, SPHERE_RADIUS, 60f, false);
-                        DebugExtension.DebugWireSphere(path.corners[i-1], Color.green, SPHERE_RADIUS, 60f, false);
-                        Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.magenta, 60f, false);
-                        DebugExtension.DebugWireSphere(markerHit.Position, Color.blue, SPHERE_RADIUS, 60f, false);
-                    }
                     return true;
                 }
-            }
-
-            if (DEBUG) {
-                Debug.DrawLine(path.corners[i - 1], path.corners[i], Color.green, 60f, false);
             }
         }
 
@@ -118,7 +112,7 @@ public class RoutingGraphCPT : OpenCPT {
         
         Queue<IRouteMarker> openCPT = new ();
         string debug = $"route[{nVertices}]: ";
-        foreach (int vertexPos in getOpenCPT(startVertexPos)) {//TODO: Ignore virtual arcs
+        foreach (int vertexPos in getOpenCPT(startVertexPos)) {
             debug += vertexPos + " ";
             if (vertexPos < nVertices) {
                 openCPT.Enqueue(VertLabels[vertexPos]);
