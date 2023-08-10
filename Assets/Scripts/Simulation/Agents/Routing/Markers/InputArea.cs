@@ -26,7 +26,7 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
             NavMesh.CalculatePath(((IRouteMarker)this).Position, marker.Position, NavMesh.AllAreas, path);
             bool pathExists = path.status == NavMeshPathStatus.PathComplete;
             if (!pathExists) {
-                Debug.DrawLine(marker.Position, ((IRouteMarker)this).Position, Color.red, 30f, false);
+                Debug.DrawLine(marker.Position, ((IRouteMarker)this).Position, Color.red, 120f, false);
             }
             return !pathExists;
         });
@@ -65,5 +65,9 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
         foreach (var arc in routingGraph.GetArcs()) {
             DrawLineBetweenMarkers(arc.Item1, arc.Item2);
         }
+    }
+
+    public override bool ShouldSpawnAgents() {
+        return base.ShouldSpawnAgents() && routingGraph != null;
     }
 }

@@ -92,7 +92,6 @@ public class RoutingGraphCPT : OpenCPT {
                 }
             }
         }
-
         return false;
     }
     
