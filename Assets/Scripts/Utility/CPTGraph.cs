@@ -38,7 +38,7 @@ public class CPTGraph {
 
     protected internal void solve() {
         int step = 0;
-        const int STEP_LIMIT = 500000;
+        const int STEP_LIMIT = 1000;
         do {
             leastCostPaths();
             checkValid();
