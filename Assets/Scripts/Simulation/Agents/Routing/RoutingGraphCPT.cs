@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 using Vertx.Debugging;
@@ -111,14 +112,17 @@ public class RoutingGraphCPT : OpenCPT {
         
         Queue<IRouteMarker> openCPT = new ();
         string debug = $"route[{nVertices}]: ";
-        foreach (int vertexPos in getOpenCPT(startVertexPos)) {
+        Queue<int> openCPTVertPos = getOpenCPT(startVertexPos);
+        
+        foreach (int vertexPos in openCPTVertPos) {
+            
             debug += vertexPos + " ";
             if (vertexPos < nVertices) {
                 openCPT.Enqueue(VertLabels[vertexPos]);
             }
         }
         Debug.Log(debug);
-
+        
         openCPT.Dequeue();//remove start area
         return openCPT;
     }

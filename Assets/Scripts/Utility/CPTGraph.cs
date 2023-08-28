@@ -1,11 +1,13 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
 public class CPTGraph {
     private int nVertices; // number of vertices
     private int[] vertDeltas; // deltas of vertices
-    internal int[] umbalancedVerticesNeg; // unbalanced vertices
+    internal int[] unbalancedVerticesNeg; // unbalanced vertices
     private int[] umbalancedVerticesPos; // unbalanced vertices
     private int[,] adjMat; // adjacency matrix, counts arcs between vertices
     private List<string>[,] arcLabels; // vectors of labels of arcs (for each vertex pair)
@@ -35,12 +37,21 @@ public class CPTGraph {
     }
 
     protected internal void solve() {
+        int step = 0;
+        const int STEP_LIMIT = 500000;
         do {
             leastCostPaths();
             checkValid();
             findUnbalanced();
             findFeasible();
-        } while (improvements());
+            step++;
+            if(EditorUtility.DisplayCancelableProgressBar("Path Generator", $"Making Improvements ({step}/{STEP_LIMIT})", (float)step/STEP_LIMIT)) {
+                EditorUtility.ClearProgressBar();
+                return;
+            }
+        } while (step < STEP_LIMIT && improvements());
+        Debug.Log($"Used {step} steps");
+        EditorUtility.ClearProgressBar();
     }
     
     protected internal void addArc(string lab, int u, int v, float cost) {
@@ -102,13 +113,13 @@ public class CPTGraph {
                 np++;
         }
 
-        umbalancedVerticesNeg = new int[nn];
+        unbalancedVerticesNeg = new int[nn];
         umbalancedVerticesPos = new int[np];
         nn = np = 0 ;
         for (int i = 0; i < nVertices; i++) {
             // initialise sets
             if (vertDeltas[i] < 0) 
-                umbalancedVerticesNeg[nn++] = i;
+                unbalancedVerticesNeg[nn++] = i;
             else if 
                 (vertDeltas[i] > 0) umbalancedVerticesPos[np++] = i;
         }
@@ -121,8 +132,8 @@ public class CPTGraph {
             delta[i] = this.vertDeltas[i];
         }
 
-        for(int u = 0; u < umbalancedVerticesNeg.Length; u++) {
-            int i = umbalancedVerticesNeg[u];
+        for(int u = 0; u < unbalancedVerticesNeg.Length; u++) {
+            int i = unbalancedVerticesNeg[u];
             for(int v = 0; v < umbalancedVerticesPos.Length; v++) { 
                 int j = umbalancedVerticesPos[v];
                 repeatedArcs[i, j] = -delta[i] < delta[j]? -delta[i]: delta[j];
@@ -134,10 +145,8 @@ public class CPTGraph {
 
     private bool improvements() {
         CPTGraph residual = new CPTGraph(nVertices);
-        for (int u = 0; u < umbalancedVerticesNeg.Length; u++) {
-            int i = umbalancedVerticesNeg[u];
-            for (int v = 0; v < umbalancedVerticesPos.Length; v++) {
-                int j = umbalancedVerticesPos[v];
+        foreach (var i in unbalancedVerticesNeg) {
+            foreach (var j in umbalancedVerticesPos) {
                 residual.addArc(null, i, j, arcCosts[i, j]);
                 if (repeatedArcs[i, j] != 0) {
                     residual.addArc(null, j, i, -arcCosts[i, j]);
@@ -178,7 +187,7 @@ public class CPTGraph {
         return basicCost+phi();
     }
 
-    internal float phi(){
+    private float phi(){
         float phi = 0;
         for (int i = 0; i < nVertices; i++) {
             for (int j = 0; j < nVertices; j++) {

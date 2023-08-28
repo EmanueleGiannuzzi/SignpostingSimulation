@@ -7,13 +7,12 @@ using System.IO;
 using System.Xml;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.GraphView;
 using System.Globalization;
 
 public class IfcOpenShellParser : MonoBehaviour {
     //private string fileName;
     [Header("Walkable Areas")]
-    [SerializeField] private string[] walkableAreas = { "IfcSlab", "IfcStair", "IfcStairFlight", "IfcWallStandardCase" };
+    [SerializeField] private string[] walkableAreas = { "IfcSlab", "IfcStair", "IfcStairFlight", "IfcWallStandardCase", "IfcSite" };
     [SerializeField] private string[] navMeshIgnoredAreas = { "IfcDoor" };
 
     [Header("IFCSignboard Standard")]
@@ -30,7 +29,8 @@ public class IfcOpenShellParser : MonoBehaviour {
     private GameObject loadedOBJ;
     private XmlDocument loadedXML;
 
-    private static readonly int NAVMESH_NOTWALKABLE_AREATYPE = 1;
+    private const int NAVMESH_NOTWALKABLE_AREATYPE = 1;
+    private const int WALKABLE_LAYER = 9;
 
     private readonly Dummiesman.OBJLoader objLoader = new Dummiesman.OBJLoader {
         SplitMode = Dummiesman.SplitMode.Object,
@@ -161,13 +161,18 @@ public class IfcOpenShellParser : MonoBehaviour {
                 NavMeshModifier navmeshModifier = goElement.AddComponent<NavMeshModifier>();
                 navmeshModifier.ignoreFromBuild = true;
             }
-            else if(!IsIfcWalkableArea(node.Name)) {
-                NavMeshModifier navmeshModifier = goElement.AddComponent<NavMeshModifier>();
-                navmeshModifier.overrideArea = true;
-                navmeshModifier.area = NAVMESH_NOTWALKABLE_AREATYPE;
-            }
             else if(IsIfcSign(node.Name)) {
                 LoadSignboardData(ref goElement);
+            }
+            else {
+                if (IsIfcWalkableArea(node.Name)) {
+                    goElement.layer = WALKABLE_LAYER;
+                }
+                else{
+                    NavMeshModifier navmeshModifier = goElement.AddComponent<NavMeshModifier>();
+                    navmeshModifier.overrideArea = true;
+                    navmeshModifier.area = NAVMESH_NOTWALKABLE_AREATYPE;
+                }
             }
         }
     }

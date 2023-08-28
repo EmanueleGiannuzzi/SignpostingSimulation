@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1920
     height: 997
   m_ShowMode: 4
-  m_Title: Scene
+  m_Title: Hierarchy
   m_RootView: {fileID: 2}
   m_MinSize: {x: 875, y: 321}
   m_MaxSize: {x: 10000, y: 10000}
@@ -145,7 +145,7 @@ MonoBehaviour:
   m_MinSize: {x: 100, y: 100}
   m_MaxSize: {x: 8096, y: 16192}
   vertical: 1
-  controlID: 43
+  controlID: 17
 --- !u!114 &7
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -165,8 +165,8 @@ MonoBehaviour:
     y: 0
     width: 379
     height: 631
-  m_MinSize: {x: 201, y: 221}
-  m_MaxSize: {x: 4001, y: 4021}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 14}
   m_Panes:
   - {fileID: 14}
@@ -242,8 +242,8 @@ MonoBehaviour:
     y: 0
     width: 1156
     height: 620
-  m_MinSize: {x: 202, y: 221}
-  m_MaxSize: {x: 4002, y: 4021}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 13}
   m_Panes:
   - {fileID: 13}
@@ -295,8 +295,8 @@ MonoBehaviour:
     y: 0
     width: 385
     height: 947
-  m_MinSize: {x: 276, y: 71}
-  m_MaxSize: {x: 4001, y: 4021}
+  m_MinSize: {x: 275, y: 50}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 18}
   m_Panes:
   - {fileID: 18}
@@ -659,9 +659,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: -51.600506, y: 23.436794, z: -16.202522}
+    m_Target: {x: -15.062137, y: 5.053617, z: 7.0103235}
     speed: 2
-    m_Value: {x: -51.600506, y: 23.436794, z: -16.202522}
+    m_Value: {x: -15.062137, y: 5.053617, z: 7.0103235}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -707,13 +707,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.0078149745, y: 0.8599619, z: -0.51072127, w: -0.03752853}
+    m_Target: {x: -0.06809567, y: -0.9482157, z: 0.24513893, w: -0.19604759}
     speed: 2
-    m_Value: {x: -0.0078149745, y: 0.8599619, z: -0.5107212, w: -0.03752853}
+    m_Value: {x: -0.06765088, y: -0.94743025, z: 0.24496195, w: -0.19440375}
   m_Size:
-    m_Target: 8.494924
+    m_Target: 6.5883107
     speed: 2
-    m_Value: 8.494924
+    m_Value: 6.5883107
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -778,7 +778,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 2afbffff
+      m_ExpandedIDs: 7219ffffba1cffffc222ffffcc22fffff633ffff3c3effff8854ffff4861ffff5461ffff5861ffff529fffff5e9fffff629fffffcebaffffc2e6ffff8ce8ffff8ee8ffff48edffff72edffff0aefffff9cf7ffff2afbffff02eb01007af5010088010200be3f05000a4405005c5305006c570500e4610500f26d0500
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -848,7 +848,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Scripts/Simulation/Agents/Routing
+    - Assets/Scripts/Simulation/Agents/Routing/Markers
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -864,7 +864,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 4e7b0000
     m_LastClickedID: 31566
-    m_ExpandedIDs: 000000009ecb0100a0cb0100a2cb0100a4cb0100a6cb0100a8cb0100aacb0100accb0100aecb0100b0cb0100b2cb0100b4cb0100b6cb0100b8cb0100bacb0100
+    m_ExpandedIDs: 0000000056d1010058d101005ad101005cd101005ed1010060d1010062d1010064d1010066d1010068d101006ad101006cd101006ed1010070d1010072d10100
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -889,24 +889,24 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_AssetTreeState:
-    scrollPos: {x: 0, y: 427}
+    scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: ffffffff000000009ecb0100a0cb0100a2cb0100a4cb0100a6cb0100a8cb0100aacb0100accb0100aecb0100b0cb0100b2cb0100b4cb0100b6cb0100b8cb0100bacb0100
+    m_ExpandedIDs: ffffffff0000000056d1010058d101005cd101005ed1010060d1010062d1010064d1010066d1010068d101006ad101006cd1010070d10100a2d10100
     m_RenameOverlay:
       m_UserAcceptedRename: 0
-      m_Name: 
-      m_OriginalName: 
+      m_Name: FromScratchTest
+      m_OriginalName: FromScratchTest
       m_EditFieldRect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 0
         height: 0
-      m_UserData: 0
+      m_UserData: 119272
       m_IsWaitingForDelay: 0
       m_IsRenaming: 0
-      m_OriginalEventType: 11
+      m_OriginalEventType: 0
       m_IsRenamingFilename: 1
       m_ClientGUIView: {fileID: 8}
     m_SearchString: 

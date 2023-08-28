@@ -1,9 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(AutomaticMarkerGenerator))]
+[CustomEditor(typeof(MarkerGenerator))]
 public class AutomaticMarkerGeneratorEditor : Editor {
-    AutomaticMarkerGenerator handler;
+    MarkerGenerator handler;
 
     public override void OnInspectorGUI() {
         DrawDefaultInspector();
@@ -14,6 +14,6 @@ public class AutomaticMarkerGeneratorEditor : Editor {
     }
 
     void OnEnable() {
-        handler = (AutomaticMarkerGenerator)target;
+        handler = (MarkerGenerator)target;
     }
 }

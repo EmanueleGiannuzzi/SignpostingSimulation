@@ -1,6 +1,8 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
 public class OpenCPT {
     protected readonly List<Arc> arcs = new();
@@ -43,13 +45,21 @@ public class OpenCPT {
             g.findUnbalanced(); // initialise g.neg on original graph
             g.addArc("'virtual start'", nVertices, startVertex, cost);
             g.addArc("'virtual end'", 
-                g.umbalancedVerticesNeg.Length == 0 ? startVertex : g.umbalancedVerticesNeg[i], nVertices, cost); // graph is Eulerian if neg.length=0
+                g.unbalancedVerticesNeg.Length == 0 ? startVertex : g.unbalancedVerticesNeg[i], nVertices, cost); // graph is Eulerian if neg.length=0
             g.solve();
             if( bestGraph == null || bestCost > g.cost() ) {
                 bestCost = g.cost();
                 bestGraph = g;
             }
-        } while(++i < g.umbalancedVerticesNeg.Length);
+            
+            
+            if(EditorUtility.DisplayCancelableProgressBar("Path Generator", $"Generating Path ({i}/{g.unbalancedVerticesNeg.Length-1})", (float)i/g.unbalancedVerticesNeg.Length)) {
+                EditorUtility.ClearProgressBar();
+                return null;
+            }
+        } while(++i < g.unbalancedVerticesNeg.Length);
+        
+        EditorUtility.ClearProgressBar();
         return bestGraph.getCPT(nVertices);
     }
 }

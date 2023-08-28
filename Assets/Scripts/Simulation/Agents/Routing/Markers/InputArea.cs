@@ -11,9 +11,9 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
 
     private void Awake() {
         //base.Start();
-        AutomaticMarkerGenerator markerGen = FindObjectOfType<AutomaticMarkerGenerator>();
+        MarkerGenerator markerGen = FindObjectOfType<MarkerGenerator>();
         if (markerGen == null) {
-            Debug.LogError($"Unable to find {nameof(AutomaticMarkerGenerator)}");
+            Debug.LogError($"Unable to find {nameof(MarkerGenerator)}");
             return;
         }
         markerGen.OnMarkersGeneration += OnMarkersGenerated;
@@ -31,7 +31,6 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
             return !pathExists;
         });
         markersConnected.Insert(0,this);
-        
         routingGraph = new RoutingGraphCPT(markersConnected.ToArray());
         route = routingGraph.GetRoute(this);
     }
