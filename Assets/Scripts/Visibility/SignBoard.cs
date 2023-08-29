@@ -4,7 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(Transform))]
 //[ExecuteInEditMode]
 //[InitializeOnLoad]
-public class SignageBoard : MonoBehaviour {
+public class SignBoard : MonoBehaviour {
     [Header("Signage Board Parameters")]
     public float ViewingDistance;
     public float ViewingAngle;
@@ -69,7 +69,7 @@ public class SignageBoard : MonoBehaviour {
         return Color;
     }
 
-    public void CopyDataFrom(SignageBoard source) {
+    public void CopyDataFrom(SignBoard source) {
         this.ViewingDistance = source.ViewingDistance;
         this.ViewingAngle = source.ViewingAngle;
         this.Color = source.Color;

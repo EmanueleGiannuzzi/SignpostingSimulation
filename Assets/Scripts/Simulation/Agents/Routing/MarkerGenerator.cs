@@ -112,9 +112,9 @@ public class MarkerGenerator : MonoBehaviour {
     }
 
     private IntermediateMarker SpawnMarker(Vector3 pos, float widthX, float widthZ, string name) {
-        const float MIN_SIZE = 1.5f;
-        widthX = Mathf.Max(MIN_SIZE, widthX);
-        widthZ = Mathf.Max(MIN_SIZE, widthZ);
+        // const float MIN_SIZE = 1.5f;
+        // widthX = Mathf.Max(MIN_SIZE, widthX);
+        // widthZ = Mathf.Max(MIN_SIZE, widthZ);
         
         GameObject markerGO = GameObject.CreatePrimitive(PrimitiveType.Quad);
         markerGO.transform.parent = markerParent.transform;

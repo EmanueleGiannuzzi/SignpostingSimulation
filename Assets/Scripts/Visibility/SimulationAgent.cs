@@ -114,8 +114,8 @@ public class SimulationAgent : MonoBehaviour {
     }
 
     private bool IsSignboardInFOV(int signboardID) {
-        SignageBoard signageBoard = environment.signageBoards[signboardID];
-        Vector2 signboardPos = Utility.Vector3ToVerctor2NoY(signageBoard.transform.position);
+        SignBoard signBoard = environment.signageBoards[signboardID];
+        Vector2 signboardPos = Utility.Vector3ToVerctor2NoY(signBoard.transform.position);
 
         Vector2 agentPos = Utility.Vector3ToVerctor2NoY(this.transform.position);
 

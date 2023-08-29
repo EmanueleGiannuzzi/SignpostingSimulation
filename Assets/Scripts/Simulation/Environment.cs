@@ -24,7 +24,7 @@ public class Environment : MonoBehaviour {
     private int agentSpawnedCount;
     private int[,] SignboardAgentViews; //[agentTypeID, signageBoardID]
 
-    public SignageBoard[] signageBoards;
+    public SignBoard[] signageBoards;
 
     public Environment() {
         visibilityHandler = new VisibilityHandler(this);
@@ -97,7 +97,7 @@ public class Environment : MonoBehaviour {
             return;
         }
 
-        signageBoards = FindObjectsOfType<SignageBoard>();
+        signageBoards = FindObjectsOfType<SignBoard>();
         Debug.Log(signageBoards.Length + " Signage Boards found.");
 
         visibilityHandler.GenerateVisibilityData();
@@ -180,7 +180,7 @@ public class Environment : MonoBehaviour {
         int agentTypeSize = GetVisibilityHandler().agentTypes.Length;
 
         for(int signageBoardID = 0; signageBoardID < signageBoards.Length; signageBoardID++) {
-            SignageBoard signboard = signageBoards[signageBoardID];
+            SignBoard signboard = signageBoards[signageBoardID];
             signboard.visibilityPerAgentType = new float[agentTypeSize];
             for(int agentTypeID = 0; agentTypeID < agentTypeSize; agentTypeID++) {
             //  print("Agent Type: " + GetVisibilityHandler().agentTypes[agentTypeID].Key + "(" + GetVisibilityHandler().agentTypes[agentTypeID].Value + ")");
@@ -231,14 +231,14 @@ public class Environment : MonoBehaviour {
     }
 
     public void OnAgentEnterVisibilityArea(GameObject agent, int agentTypeID, int signboardID) {
-        SignageBoard signageBoard = signageBoards[signboardID];
+        SignBoard signBoard = signageBoards[signboardID];
         //Debug.Log("Agent " + agent.name + " enter in range of " + signageBoard.name);
     }
 
     public void OnAgentExitVisibilityArea(GameObject agent, int agentTypeID, int signboardID, float residenceTime) {
-        SignageBoard signageBoard = signageBoards[signboardID];
+        SignBoard signBoard = signageBoards[signboardID];
 
-        if(residenceTime >= signageBoard.MinimumReadingTime) {
+        if(residenceTime >= signBoard.MinimumReadingTime) {
             SignboardAgentViews[agentTypeID, signboardID]++;
         }
 

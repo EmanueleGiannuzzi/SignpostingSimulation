@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -52,7 +51,7 @@ public class BestSignboardPosition {
         float maxVisibility = 0f;
         for(int visPlaneId = 0; visPlaneId < environment.visibilityHandler.GetVisibilityPlaneSize(); visPlaneId++) {
             foreach(Transform child in signboardGridGroup.transform.GetChild(visPlaneId)) {
-                SignageBoard signboard = child.gameObject.GetComponent<SignageBoard>();
+                SignBoard signboard = child.gameObject.GetComponent<SignBoard>();
 
                 float visibility = signboard.GetVisiblityForHeatmap()[agentTypeID];
                 if(visibility > maxVisibility) {

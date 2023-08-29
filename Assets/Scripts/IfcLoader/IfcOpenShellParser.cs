@@ -181,7 +181,7 @@ public class IfcOpenShellParser : MonoBehaviour {
         if(goElement.TryGetComponent<IFCData>(out IFCData signboardIFCData)) {
             List<IFCProperty> signboardProperties = signboardIFCData.propertySets.Find(property => property.propSetName == ifcSignboardPropertiesName).properties;
             if(signboardProperties != null) {
-                SignageBoard signBoard = goElement.AddComponent<SignageBoard>();
+                SignBoard signBoard = goElement.AddComponent<SignBoard>();
                 try {
                     signBoard.ViewingDistance = StringToFloat(signboardProperties.Find(property => property.propName == ifcSignViewingDistanceProperty).propValue);
                     signBoard.ViewingAngle = StringToFloat(signboardProperties.Find(property => property.propName == ifcSignViewingAngleProperty).propValue);

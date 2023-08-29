@@ -1,10 +1,10 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(SignageBoard))]
+[CustomEditor(typeof(SignBoard))]
 public class SignageBoardEditor : Editor
 {
-    SignageBoard signageBoard;
+    SignBoard _signBoard;
     public override void OnInspectorGUI() {
         DrawDefaultInspector();
         //if(DrawDefaultInspector()) {
@@ -15,6 +15,6 @@ public class SignageBoardEditor : Editor
     }
 
     void OnEnable() {
-        signageBoard = (SignageBoard)target;
+        _signBoard = (SignBoard)target;
     }
 }

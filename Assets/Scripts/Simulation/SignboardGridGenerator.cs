@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
-using UnityEngine.UIElements;
 
 [System.Serializable]
 public class SignboardGridGenerator {
-    public SignageBoard SignboardTemplate;
+    public SignBoard SignboardTemplate;
     public float resolution; // point/meter
 
     public float signboardHeight;
@@ -41,41 +40,44 @@ public class SignboardGridGenerator {
         GenerateGrid(signboardGridGroup);
     }
 
-    private void GenerateSignboardBack(GameObject signageboardObj, Material signboardBackMaterial) {
-        GameObject signageboarBackdObj = GameObject.Instantiate(signageboardObj);
-        signageboarBackdObj.transform.parent = signageboardObj.transform;
-        signageboarBackdObj.transform.rotation = Quaternion.AngleAxis(180f, Vector3.up) * signageboardObj.transform.rotation;
+    private void GenerateSignboardBack(GameObject signboardObj, Material signboardBackMaterial) {
+        GameObject signboardBackObj = GameObject.Instantiate(signboardObj, signboardObj.transform, true);
+        signboardBackObj.name = signboardObj.name + "(Mirror)";
+        Object.Destroy(signboardBackObj.GetComponent<Collider>());
+        signboardBackObj.transform.rotation = Quaternion.AngleAxis(180f, Vector3.up) * signboardObj.transform.rotation;
 
-        signageboarBackdObj.GetComponent<MeshRenderer>().sharedMaterial = signboardBackMaterial;
+        signboardBackObj.GetComponent<MeshRenderer>().sharedMaterial = signboardBackMaterial;
     }
 
     private GameObject GenerateMainSignboard(int gridX, int gridZ, Color signboardColor, Vector3 position, float sideWidth, float sideHeight, GameObject visPlaneParent, Material signboardBackMaterial) {
-        GameObject signageboardObj = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        signageboardObj.name = "Signboard [" + gridX + ", " + gridZ + "]";
+        GameObject signboardObj = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        Object.Destroy(signboardObj.GetComponent<Collider>());
+        signboardObj.name = "Signboard [" + gridX + ", " + gridZ + "]";
         position.x -= sideWidth / 2;
         position.z -= sideHeight / 2;
-        signageboardObj.transform.position = position;
-        signageboardObj.transform.rotation = Quaternion.Euler(-90f, 0f, sigboardOrientation);
-        signageboardObj.transform.localScale = new Vector3(-0.08f, 1f, 0.08f);
-        signageboardObj.transform.parent = visPlaneParent.transform;
+        signboardObj.transform.position = position;
+        signboardObj.transform.rotation = Quaternion.Euler(-90f, 0f, sigboardOrientation);
+        signboardObj.transform.localScale = new Vector3(-0.08f, 1f, 0.08f);
+        signboardObj.transform.parent = visPlaneParent.transform;
 
-        signageboardObj.AddComponent<SignageBoard>();
-        SignageBoard signageboard = signageboardObj.GetComponent<SignageBoard>();
-        signageboard.CopyDataFrom(SignboardTemplate);
-        signageboard.Color = signboardColor;
+        signboardObj.AddComponent<SignBoard>();
+        SignBoard signboard = signboardObj.GetComponent<SignBoard>();
+        signboard.CopyDataFrom(SignboardTemplate);
+        signboard.Color = signboardColor;
 
-        MeshRenderer signageboarRenderer = signageboardObj.GetComponent<MeshRenderer>();
-        Material tempMaterial = new Material(signageboarRenderer.sharedMaterial);
-        tempMaterial.color = signboardColor;
-        signageboarRenderer.sharedMaterial = tempMaterial;
+        MeshRenderer signboardRenderer = signboardObj.GetComponent<MeshRenderer>();
+        Material tempMaterial = new Material(signboardRenderer.sharedMaterial) {
+            color = signboardColor
+        };
+        signboardRenderer.sharedMaterial = tempMaterial;
 
-        GenerateSignboardBack(signageboardObj, signboardBackMaterial);
+        GenerateSignboardBack(signboardObj, signboardBackMaterial);
 
-        signageboardObj.AddComponent<GridSignageboard>();
-        GridSignageboard gridSignageboard = signageboardObj.GetComponent<GridSignageboard>();
-        gridSignageboard.planeLocalIndex = new Vector2Int(gridX, gridZ);
+        signboardObj.AddComponent<GridSignageboard>();
+        GridSignageboard gridSignboard = signboardObj.GetComponent<GridSignageboard>();
+        gridSignboard.planeLocalIndex = new Vector2Int(gridX, gridZ);
 
-        return signageboardObj;
+        return signboardObj;
     }
 
     public void GenerateGrid(GameObject parent) {
@@ -91,8 +93,8 @@ public class SignboardGridGenerator {
             Bounds meshRendererBounds = visibilityPlane.GetComponent<MeshRenderer>().bounds;
             float planeWidth = meshRendererBounds.extents.x * 2;
             float planeHeight = meshRendererBounds.extents.z * 2;
-            int widthResolution = (int)Mathf.Floor((float)planeWidth * this.resolution);
-            int heightResolution = (int)Mathf.Floor((float)planeHeight * this.resolution);
+            int widthResolution = (int)Mathf.Floor(planeWidth * this.resolution);
+            int heightResolution = (int)Mathf.Floor(planeHeight * this.resolution);
 
             Vector3 cornerMax = meshRendererBounds.max;
 
@@ -110,7 +112,7 @@ public class SignboardGridGenerator {
                             Random.Range(0f, 1f),
                             Random.Range(0f, 1f)
                         );
-                        GameObject signageboardObj = GenerateMainSignboard(x, z, signboardColor, position, sideWidth, sideHeight, visPlaneParent, signboardBackMaterial);
+                        GameObject signboardObj = GenerateMainSignboard(x, z, signboardColor, position, sideWidth, sideHeight, visPlaneParent, signboardBackMaterial);
                     }
                 }
             }

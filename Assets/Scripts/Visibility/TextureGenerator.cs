@@ -3,9 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class VisibilityTextureGenerator
-{
-	public static Texture2D TextureFromColourMap(Color[] colourMap, int width, int height) {
+public class VisibilityTextureGenerator {
+	private static Texture2D textureFromColourMap(Color[] colourMap, int width, int height) {
         Texture2D texture = new Texture2D(width, height) {
             filterMode = FilterMode.Point,
             wrapMode = TextureWrapMode.Clamp
@@ -16,7 +15,7 @@ public class VisibilityTextureGenerator
 	}
 
 	
-	public static Texture2D TextureFromVisibilityData(Dictionary<Vector2Int, VisibilityInfo> visibilityData, SignageBoard[] signageBoards, int width, int height, Color nonVisibleColor) {
+	public static Texture2D TextureFromVisibilityData(Dictionary<Vector2Int, VisibilityInfo> visibilityData, SignBoard[] signageBoards, int width, int height, Color nonVisibleColor) {
 		Color[] colourMap = new Color[width * height];
 		Utility.FillArray(colourMap, nonVisibleColor);
 
@@ -34,7 +33,7 @@ public class VisibilityTextureGenerator
 			colourMap[coords.y * width + coords.x] = visibleColor;
 		}
 
-		return TextureFromColourMap(colourMap, width, height);
+		return textureFromColourMap(colourMap, width, height);
 	}
 
 	public static Texture2D BestSignboardTexture(GameObject signboardGridGroup, int agentTypeID, int visPlaneID, int width, int height, float minVisibility, float maxVisibility, Gradient gradient) {
@@ -42,7 +41,7 @@ public class VisibilityTextureGenerator
 		Utility.FillArray(colorMap, gradient.Evaluate(0f));
 
 		foreach(Transform child in signboardGridGroup.transform.GetChild(visPlaneID)) {
-			SignageBoard signboard = child.gameObject.GetComponent<SignageBoard>();
+			SignBoard signboard = child.gameObject.GetComponent<SignBoard>();
 			GridSignageboard gridSignboard = child.gameObject.GetComponent<GridSignageboard>();
 
 			float visibility = signboard.GetVisiblityForHeatmap()[agentTypeID];
@@ -51,7 +50,7 @@ public class VisibilityTextureGenerator
             colorMap[gridSignboard.planeLocalIndex.y * width + gridSignboard.planeLocalIndex.x] = gradient.Evaluate(visiblityNorm);
 		}
 
-		return TextureFromColourMap(colorMap, width, height);
+		return textureFromColourMap(colorMap, width, height);
 	}
 
 }

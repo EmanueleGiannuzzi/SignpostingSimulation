@@ -36,7 +36,7 @@ public class VisibilityHandler {
         return environment.GetVisibilityPlaneGenerator().GetVisibilityPlanesGroup().transform.childCount;
     }
 
-    private SignageBoard[] GetSignageBoardArray() {
+    private SignBoard[] GetSignageBoardArray() {
         return environment.signageBoards;
     }
 
@@ -122,7 +122,7 @@ public class VisibilityHandler {
                 visibilityPlane.transform.position = position;
 
                 for(int signageboardID = 0; signageboardID < GetSignageBoardArray().Length; signageboardID++) {
-                    SignageBoard signageboard = GetSignageBoardArray()[signageboardID];
+                    SignBoard signageboard = GetSignageBoardArray()[signageboardID];
                     Vector3 p = signageboard.GetWorldCenterPoint();
                     Vector3 n = signageboard.GetDirection();
                     float theta = (signageboard.GetViewingAngle() * Mathf.PI) / 180;
@@ -197,7 +197,7 @@ public class VisibilityHandler {
         }
 
         for(int signageboardID = 0; signageboardID < GetSignageBoardArray().Length; signageboardID++) {
-            SignageBoard signageboard = GetSignageBoardArray()[signageboardID];
+            SignBoard signageboard = GetSignageBoardArray()[signageboardID];
             signageboard.coveragePerAgentType = new float[agentTypes.Length];
             for(int agentTypeID = 0; agentTypeID < agentTypes.Length; agentTypeID++) {
                 float coverage = (float)signageboardCoverage[signageboardID, agentTypeID] / visibilityGroupMaxSize;
