@@ -10,6 +10,8 @@ public class BestSignboardPosition {
 
     private bool done = false;
 
+    private Texture2D[,] resultTextures;
+
     public BestSignboardPosition(Environment e) {
         environment = e;
         csvExporter = new CSVExporter(environment);
@@ -19,6 +21,9 @@ public class BestSignboardPosition {
         yield return environment.CoroutineSimulationWarmup(environment.WarmupDurationSeconds);
         yield return environment.CoroutineRunSimulationForSeconds(environment.SimulationDurationSeconds);
         environment.StopSpawnAgents();
+
+        generateTextures();
+        
         done = true;
 
         ShowVisibilityPlane(0);
@@ -39,33 +44,67 @@ public class BestSignboardPosition {
 
         WarmupAndSimulate();
     }
+    
+    private int getVisibilityPlaneSize() {
+        return environment.visibilityHandler.GetVisibilityPlaneSize();
+    }
+
+    private int getAgentTypesSize() {
+        return environment.visibilityHandler.agentTypes.Length;
+    }
+
+    private void generateTextures() {
+        resultTextures = new Texture2D[getVisibilityPlaneSize(), getAgentTypesSize()];
+        
+        GameObject signboardGridGroup = environment.signboardGridGenerator.GetSignboardGridGroup();
+        float signboardGridResolution = environment.signboardGridGenerator.resolution;
+
+        float[] minVisibility = new float[getAgentTypesSize()];
+        float[] maxVisibility = new float[getAgentTypesSize()];
+        for (int agentTypeID = 0; agentTypeID < getAgentTypesSize(); agentTypeID++) {
+            minVisibility[agentTypeID] = float.PositiveInfinity;
+            maxVisibility[agentTypeID] = 0f;
+        }
+
+        for (int agentTypeID = 0; agentTypeID < getAgentTypesSize(); agentTypeID++) {
+            for (int visPlaneId = 0; visPlaneId < getVisibilityPlaneSize(); visPlaneId++) {
+                foreach (Transform child in signboardGridGroup.transform.GetChild(visPlaneId)) {
+                    SignBoard signboard = child.gameObject.GetComponent<SignBoard>();
+
+                    float visibility = signboard.GetVisiblityForHeatmap()[agentTypeID];
+                    if (visibility > maxVisibility[agentTypeID]) {
+                        maxVisibility[agentTypeID] = visibility;
+                    }
+
+                    if (visibility < minVisibility[agentTypeID]) {
+                        minVisibility[agentTypeID] = visibility;
+                    }
+                }
+            }
+        }
+
+        for (int visPlaneId = 0; visPlaneId < getVisibilityPlaneSize(); visPlaneId++) {
+            GameObject visibilityPlane = environment.visibilityHandler.GetVisibilityPlane(visPlaneId);
+            Bounds meshRendererBounds = visibilityPlane.GetComponent<MeshRenderer>().bounds;
+            float planeWidth = meshRendererBounds.extents.x * 2;
+            float planeHeight = meshRendererBounds.extents.z * 2;
+            int widthResolution = (int)Mathf.Floor(planeWidth * signboardGridResolution);
+            int heightResolution = (int)Mathf.Floor(planeHeight * signboardGridResolution);
+            
+            for (int agentTypeID = 0; agentTypeID < getAgentTypesSize(); agentTypeID++) {
+                resultTextures[visPlaneId, agentTypeID] = VisibilityTextureGenerator.BestSignboardTexture(signboardGridGroup, agentTypeID, visPlaneId, 
+                    widthResolution, heightResolution, minVisibility[agentTypeID], maxVisibility[agentTypeID], this.Gradient);
+            }
+        }
+    }
 
     public void ShowVisibilityPlane(int agentTypeID) {
         if(!isVisibilityReady()) {
             return;
         }
 
-        GameObject signboardGridGroup = environment.signboardGridGenerator.GetSignboardGridGroup();
-
-        float minVisibility = float.PositiveInfinity;
-        float maxVisibility = 0f;
-        for(int visPlaneId = 0; visPlaneId < environment.visibilityHandler.GetVisibilityPlaneSize(); visPlaneId++) {
-            foreach(Transform child in signboardGridGroup.transform.GetChild(visPlaneId)) {
-                SignBoard signboard = child.gameObject.GetComponent<SignBoard>();
-
-                float visibility = signboard.GetVisiblityForHeatmap()[agentTypeID];
-                if(visibility > maxVisibility) {
-                    maxVisibility = visibility;
-                }
-                if(visibility < minVisibility) {
-                    minVisibility = visibility;
-                }
-            }
-        }
-
-        for(int visPlaneId = 0; visPlaneId < environment.visibilityHandler.GetVisibilityPlaneSize(); visPlaneId++) {
+        for(int visPlaneId = 0; visPlaneId < getVisibilityPlaneSize(); visPlaneId++) {
             GameObject visibilityPlane = environment.visibilityHandler.GetVisibilityPlane(visPlaneId);
-            //Dictionary<Vector2Int, VisibilityInfo>[] visInfos = environment.visibilityHandler.visibilityInfos[visPlaneId];
 
             Vector3 position = visibilityPlane.transform.position;
             VisibilityPlaneData planeData = visibilityPlane.GetComponent<VisibilityPlaneData>();
@@ -73,33 +112,21 @@ public class BestSignboardPosition {
             position[1] = originalFloorHeight; // the Y value
             visibilityPlane.transform.position = position;
 
-            float signboardGridResolution = environment.signboardGridGenerator.resolution;
-
-            Bounds meshRendererBounds = visibilityPlane.GetComponent<MeshRenderer>().bounds;
-            float planeWidth = meshRendererBounds.extents.x * 2;
-            float planeHeight = meshRendererBounds.extents.z * 2;
-
-            int widthResolution = (int)Mathf.Floor((float)planeWidth * signboardGridResolution);
-            int heightResolution = (int)Mathf.Floor((float)planeHeight * signboardGridResolution);
-
-
             Vector3[] meshVertices = visibilityPlane.GetComponent<MeshFilter>().sharedMesh.vertices;
             Vector2[] uvs = new Vector2[meshVertices.Length];
 
+            Bounds meshRendererBounds = visibilityPlane.GetComponent<MeshRenderer>().bounds;
             Vector3 localMin = visibilityPlane.transform.InverseTransformPoint(meshRendererBounds.min);
             Vector3 localMax = visibilityPlane.transform.InverseTransformPoint(meshRendererBounds.max) - localMin;
 
             for(int i = 0; i < meshVertices.Length; i++) {
                 Vector3 normVertex = meshVertices[i] - localMin;
-                uvs[i] = new Vector2(1f - (float)(normVertex.x / localMax.x), 1f - (float)(normVertex.z / localMax.z));
+                uvs[i] = new Vector2(1f - normVertex.x / localMax.x, 1f - normVertex.z / localMax.z);
             }
             visibilityPlane.GetComponent<MeshFilter>().sharedMesh.uv = uvs;
 
-            Texture2D texture = VisibilityTextureGenerator.BestSignboardTexture(signboardGridGroup, agentTypeID, visPlaneId, 
-                widthResolution, heightResolution, minVisibility, maxVisibility, this.Gradient);
             MeshRenderer meshRenderer = visibilityPlane.GetComponent<MeshRenderer>();
-            //meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Transparent"));
-            meshRenderer.sharedMaterial.mainTexture = texture;
+            meshRenderer.sharedMaterial.mainTexture = resultTextures[visPlaneId, agentTypeID];
         }
     }
 

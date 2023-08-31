@@ -20,7 +20,7 @@ public class TextureExporter {
         
             File.WriteAllBytes(pathToFile + "i", pngByteArray);
             
-            environment.GetBestSignboardPosition().ShowVisibilityPlane();
+            // environment.GetBestSignboardPosition().ShowVisibilityPlane();
         }
     }
 }

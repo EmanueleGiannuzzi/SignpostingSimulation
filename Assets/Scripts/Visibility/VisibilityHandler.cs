@@ -8,7 +8,7 @@ public class VisibilityHandler {
     public StringFloatTuple[] agentTypes;
 
     [Header("Texture Color")]
-    public Color nonVisibleColor = new Color(1f, 0f, 0f, 0.5f);//red
+    public Color nonVisibleColor = new(1f, 0f, 0f, 0.5f);//red
 
     [Header("Resolution (point/meter)")]
     public int resolution = 10;
@@ -19,6 +19,8 @@ public class VisibilityHandler {
     public float progressAnalysis = -1f;
 
     private readonly Environment environment;
+
+    private Texture2D[,] resultTextures;
 
     public VisibilityHandler(Environment environment) {
         this.environment = environment;
@@ -36,12 +38,12 @@ public class VisibilityHandler {
         return environment.GetVisibilityPlaneGenerator().GetVisibilityPlanesGroup().transform.childCount;
     }
 
-    private SignBoard[] GetSignageBoardArray() {
+    private SignBoard[] GetSignboardArray() {
         return environment.signageBoards;
     }
 
     public void GenerateVisibilityData() {
-        if(GetSignageBoardArray().Length <= 0) {
+        if(GetSignboardArray().Length <= 0) {
             Debug.LogError("No Signage Boards found, please press Init first.");
             return;
         }
@@ -54,9 +56,28 @@ public class VisibilityHandler {
             }
         }
 
-        AnalyzeSignboards();
+        analyzeSignboards();
+        generateTextures();
 
         Debug.Log("Done Calculating Visibility Areas");
+    }
+
+    private void generateTextures() {
+        resultTextures = new Texture2D[GetVisibilityPlaneSize(), agentTypes.Length];
+        
+        for (int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
+            GameObject visibilityPlane = GetVisibilityPlane(visPlaneId);
+            Dictionary<Vector2Int, VisibilityInfo>[] visInfos = this.visibilityInfos[visPlaneId];
+            VisibilityPlaneData planeData = visibilityPlane.GetComponent<VisibilityPlaneData>();
+            
+            int widthResolution = planeData.GetAxesResolution().x;
+            int heightResolution = planeData.GetAxesResolution().y;
+
+            for (int agentTypeID = 0; agentTypeID < agentTypes.Length; agentTypeID++) {
+                resultTextures[visPlaneId, agentTypeID] = VisibilityTextureGenerator.TextureFromVisibilityData(visInfos[agentTypeID],
+                    GetSignboardArray(), widthResolution, heightResolution, nonVisibleColor);
+            }
+        }
     }
 
     public void ShowVisibilityPlane(int agentTypeID) {
@@ -66,7 +87,6 @@ public class VisibilityHandler {
 
         for(int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
             GameObject visibilityPlane = GetVisibilityPlane(visPlaneId);
-            Dictionary<Vector2Int, VisibilityInfo>[] visInfos = this.visibilityInfos[visPlaneId];
 
             Vector3 position = visibilityPlane.transform.position;
             VisibilityPlaneData planeData = visibilityPlane.GetComponent<VisibilityPlaneData>();
@@ -75,14 +95,7 @@ public class VisibilityHandler {
             visibilityPlane.transform.position = position;
 
             Bounds meshRendererBounds = visibilityPlane.GetComponent<MeshRenderer>().bounds;
-            float planeWidth = meshRendererBounds.extents.x * 2;
-            float planeHeight = meshRendererBounds.extents.z * 2;
-            int widthResolution = planeData.GetAxesResolution().x;
-            int heightResolution = planeData.GetAxesResolution().y;
-            //int widthResolution = (int)Mathf.Floor(planeWidth * this.resolution);
-            //int heightResolution = (int)Mathf.Floor(planeHeight * this.resolution);
-
-
+            
             Vector3[] meshVertices = visibilityPlane.GetComponent<MeshFilter>().sharedMesh.vertices;
             Vector2[] uvs = new Vector2[meshVertices.Length];
 
@@ -91,21 +104,19 @@ public class VisibilityHandler {
 
             for(int i = 0; i < meshVertices.Length; i++) {
                 Vector3 normVertex = meshVertices[i] - localMin;
-                uvs[i] = new Vector2(1f - (float)(normVertex.x / localMax.x), 1f - (float)(normVertex.z / localMax.z));
+                uvs[i] = new Vector2(1f - normVertex.x / localMax.x, 1f - normVertex.z / localMax.z);
             }
             visibilityPlane.GetComponent<MeshFilter>().sharedMesh.uv = uvs;
 
-            Texture2D texture = VisibilityTextureGenerator.TextureFromVisibilityData(visInfos[agentTypeID], GetSignageBoardArray(), widthResolution, heightResolution, nonVisibleColor);
             MeshRenderer meshRenderer = visibilityPlane.GetComponent<MeshRenderer>();
-            //meshRenderer.sharedMaterial = new Material(Shader.Find("Unlit/Transparent"));
-            meshRenderer.sharedMaterial.mainTexture = texture;
+            meshRenderer.sharedMaterial.mainTexture = resultTextures[visPlaneId, agentTypeID];
         }
     }
 
-    private void AnalyzeSignboards() {
+    private void analyzeSignboards() {
         this.progressAnalysis = 1f;
 
-        float progressBarStep = 1f / GetVisibilityPlaneSize() / agentTypes.Length / GetSignageBoardArray().Length;
+        float progressBarStep = 1f / GetVisibilityPlaneSize() / agentTypes.Length / GetSignboardArray().Length;
         for(int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
             GameObject visibilityPlane = GetVisibilityPlane(visPlaneId);
             Dictionary<Vector2Int, VisibilityInfo>[] visInfos = this.visibilityInfos[visPlaneId];
@@ -121,8 +132,8 @@ public class VisibilityHandler {
                 position[1] = originalFloorHeight + tuple.Value; // the Y value
                 visibilityPlane.transform.position = position;
 
-                for(int signageboardID = 0; signageboardID < GetSignageBoardArray().Length; signageboardID++) {
-                    SignBoard signageboard = GetSignageBoardArray()[signageboardID];
+                for(int signageboardID = 0; signageboardID < GetSignboardArray().Length; signageboardID++) {
+                    SignBoard signageboard = GetSignboardArray()[signageboardID];
                     Vector3 p = signageboard.GetWorldCenterPoint();
                     Vector3 n = signageboard.GetDirection();
                     float theta = (signageboard.GetViewingAngle() * Mathf.PI) / 180;
@@ -181,7 +192,7 @@ public class VisibilityHandler {
 
 
     public void CalculateSignCoverage() {
-        int[,] signageboardCoverage = new int[GetSignageBoardArray().Length, agentTypes.Length];
+        int[,] signageboardCoverage = new int[GetSignboardArray().Length, agentTypes.Length];
         int visibilityGroupMaxSize = 0;
         for(int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
             Dictionary<Vector2Int, VisibilityInfo>[] visInfosPerMesh = this.visibilityInfos[visPlaneId];
@@ -196,8 +207,8 @@ public class VisibilityHandler {
             visibilityGroupMaxSize += GetVisibilityPlane(visPlaneId).GetComponent<VisibilityPlaneData>().ValidMeshPointsCount;
         }
 
-        for(int signageboardID = 0; signageboardID < GetSignageBoardArray().Length; signageboardID++) {
-            SignBoard signageboard = GetSignageBoardArray()[signageboardID];
+        for(int signageboardID = 0; signageboardID < GetSignboardArray().Length; signageboardID++) {
+            SignBoard signageboard = GetSignboardArray()[signageboardID];
             signageboard.coveragePerAgentType = new float[agentTypes.Length];
             for(int agentTypeID = 0; agentTypeID < agentTypes.Length; agentTypeID++) {
                 float coverage = (float)signageboardCoverage[signageboardID, agentTypeID] / visibilityGroupMaxSize;
