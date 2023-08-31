@@ -97,6 +97,10 @@ public class BestSignboardPosition {
             }
         }
     }
+    
+    public Texture2D GetResultTexture(int visPlaneId, int agentTypeID) {
+        return resultTextures[visPlaneId, agentTypeID];
+    }
 
     public void ShowVisibilityPlane(int agentTypeID) {
         if(!isVisibilityReady()) {
@@ -126,7 +130,7 @@ public class BestSignboardPosition {
             visibilityPlane.GetComponent<MeshFilter>().sharedMesh.uv = uvs;
 
             MeshRenderer meshRenderer = visibilityPlane.GetComponent<MeshRenderer>();
-            meshRenderer.sharedMaterial.mainTexture = resultTextures[visPlaneId, agentTypeID];
+            meshRenderer.sharedMaterial.mainTexture = GetResultTexture(visPlaneId, agentTypeID);
         }
     }
 
