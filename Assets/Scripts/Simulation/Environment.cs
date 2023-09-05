@@ -20,17 +20,20 @@ public class Environment : MonoBehaviour {
     private AgentsSpawnHandler agentsSpawnHandler;
     public SignboardGridGenerator signboardGridGenerator;
     public BestSignboardPosition bestSignboardPosition;
+    public TextureExporter textureExporter;
 
     private int agentSpawnedCount;
     private int[,] SignboardAgentViews; //[agentTypeID, signageBoardID]
 
     public SignBoard[] signageBoards;
 
+
     public Environment() {
         visibilityHandler = new VisibilityHandler(this);
         visibilityPlaneGenerator = new VisibilityPlaneGenerator();
         signboardGridGenerator = new SignboardGridGenerator(this);
         bestSignboardPosition = new BestSignboardPosition(this);
+        textureExporter = new TextureExporter(this);
     }
 
     void Start() {

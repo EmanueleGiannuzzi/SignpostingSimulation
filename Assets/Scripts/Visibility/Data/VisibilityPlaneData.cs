@@ -5,22 +5,20 @@ using UnityEditor;
 
 public class VisibilityPlaneData : MonoBehaviour {
     [ReadOnly]
-    [UnityEngine.SerializeField]
+    [SerializeField]
     private float originalFloorHeight;
     public float OriginalFloorHeight {
         set { originalFloorHeight = value; }
         get { return originalFloorHeight; }
     }
 
-    private readonly Dictionary<Vector2, Vector2Int> AnalyzablePoints = new Dictionary<Vector2, Vector2Int>();
+    private readonly Dictionary<Vector2, Vector2Int> AnalyzablePoints = new();
 
     [ReadOnly]
-    [UnityEngine.SerializeField]
+    [SerializeField]
     private Vector2Int axesResolution;
 
-    public int ValidMeshPointsCount {
-        get { return AnalyzablePoints.Count; }
-    }
+    public int ValidMeshPointsCount => AnalyzablePoints.Count;
 
     public void SetResolution(int widthRes, int heightRes) {
         axesResolution = new Vector2Int(widthRes, heightRes);
@@ -51,7 +49,7 @@ public class VisibilityPlaneData : MonoBehaviour {
         int heightResolution = axesResolution.y;
 
         float progress = 0f;
-        float progressStep = 1f / (float)(heightResolution*widthResolution);
+        float progressStep = 1f / (heightResolution*widthResolution);
         for(int z = 0; z < heightResolution; z++) {
             for(int x = 0; x < widthResolution; x++) {
                 Vector3 vi = new Vector3(cornerMax.x - ((planeWidth / widthResolution) * x), 0f, cornerMax.z - ((planeHeight / heightResolution) * z));
@@ -67,4 +65,12 @@ public class VisibilityPlaneData : MonoBehaviour {
         }
         EditorUtility.ClearProgressBar();
     }
+
+    // private void OnDrawGizmos() {
+    //     foreach (Vector2 vi2 in AnalyzablePoints.Keys) {
+    //         Vector3 vi = new Vector3(vi2.x, transform.position.y + 0.5f, vi2.y);
+    //         Gizmos.color = Color.blue;//TODO: Remove
+    //         Gizmos.DrawSphere(vi, 0.05f);//TODO: Remove
+    //     }
+    // }
 }

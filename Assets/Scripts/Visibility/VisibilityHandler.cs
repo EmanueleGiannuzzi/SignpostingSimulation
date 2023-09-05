@@ -17,6 +17,7 @@ public class VisibilityHandler {
 
     [HideInInspector]
     public float progressAnalysis = -1f;
+    private bool done = false;
 
     private readonly Environment environment;
 
@@ -26,8 +27,15 @@ public class VisibilityHandler {
         this.environment = environment;
     }
 
+    public bool IsCoverageReady() {
+        return done;
+    }
+
     public void ClearAllData() {
         visibilityInfos = null;
+        resultTextures = null;
+        
+        done = false;
     }
 
     public GameObject GetVisibilityPlane(int visPlaneId) {//TODO: Unificare con SignboardGridGenerator
@@ -58,7 +66,8 @@ public class VisibilityHandler {
 
         analyzeSignboards();
         generateTextures();
-
+        
+        done = true;
         Debug.Log("Done Calculating Visibility Areas");
     }
 
@@ -137,15 +146,14 @@ public class VisibilityHandler {
                 visibilityPlane.transform.position = position;
 
                 for(int signageboardID = 0; signageboardID < GetSignboardArray().Length; signageboardID++) {
-                    SignBoard signageboard = GetSignboardArray()[signageboardID];
-                    Vector3 p = signageboard.GetWorldCenterPoint();
-                    Vector3 n = signageboard.GetDirection();
-                    float theta = (signageboard.GetViewingAngle() * Mathf.PI) / 180;
-                    float d = signageboard.GetViewingDistance();
+                    SignBoard signBoard = GetSignboardArray()[signageboardID];
+                    Vector3 p = signBoard.GetWorldCenterPoint();
+                    Vector3 n = signBoard.GetDirection();
+                    float theta = (signBoard.GetViewingAngle() * Mathf.PI) / 180;
+                    float d = signBoard.GetViewingDistance();
 
                     foreach(Vector2 vi2 in visibilityPlaneData.GetPointsForAnalysis().Keys) {
                         Vector3 vi = new Vector3(vi2.x, visibilityPlane.transform.position.y, vi2.y);
-                        //Debug.DrawLine(vi, p, Color.green);
 
                         bool isVisible = false;
 
@@ -154,13 +162,9 @@ public class VisibilityHandler {
                         if((Vector3.Dot((vi - p), n) / ((vi - p).magnitude * n.magnitude)) >= Mathf.Cos(theta / 2) && ((vi - p).magnitude <= d)) {
                             Ray ray = new Ray(p, pToViDirection);
                             float maxDistance = Vector3.Distance(p, vi);
-                            //RaycastHit hit;
-                            if(!Physics.Raycast(ray, out _, maxDistance)) {//(ray, out hit, maxDistance)
+                            if(!Physics.Raycast(ray, out _, maxDistance)) {
                                 isVisible = true;
                             }
-                            //else {
-                            //    Debug.DrawRay(p, pToViDirection, Color.red);
-                            //}
                         }
 
                         if(isVisible) {

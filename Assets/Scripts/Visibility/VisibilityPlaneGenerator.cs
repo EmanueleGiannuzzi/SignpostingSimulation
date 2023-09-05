@@ -4,7 +4,7 @@ using System.Linq;
 
 [System.Serializable]
 public class VisibilityPlaneGenerator {
-    public string[] areaToAnalize = { "IfcSlab" };
+    public string[] areaToAnalyze = { "IfcSlab" };
 
     public GameObject ifcGameObject;
 
@@ -16,12 +16,12 @@ public class VisibilityPlaneGenerator {
         return visibilityPlanesGroup;
     }
 
-    private bool ShoudAnalizeArea(string ifcClass) {
-        return this.areaToAnalize.Contains(ifcClass);
+    private bool ShouldAnalyzeArea(string ifcClass) {
+        return this.areaToAnalyze.Contains(ifcClass);
     }
 
     public void GenerateVisibilityPlanes(int analysisResolution) {
-        GameObject.DestroyImmediate(GameObject.Find(VISIBILITY_GROUP_NAME));
+        Object.DestroyImmediate(GameObject.Find(VISIBILITY_GROUP_NAME));
         visibilityPlanesGroup = new GameObject(VISIBILITY_GROUP_NAME);
 
         GeneratePlaneForGameObject(analysisResolution, ifcGameObject);
@@ -35,7 +35,7 @@ public class VisibilityPlaneGenerator {
         IFCData ifcData = goElement.GetComponent<IFCData>();
         if(ifcData != null) {
             string ifClass = ifcData.IFCClass;
-            if(ShoudAnalizeArea(ifClass)) {
+            if(ShouldAnalyzeArea(ifClass)) {
                 GameObject plane = new GameObject(ifcData.STEPName);
                 plane.layer = 8;//VisibilityLayer - To be ignored from NavMesh
                 NavMeshModifier navmeshModifier = plane.AddComponent<NavMeshModifier>();

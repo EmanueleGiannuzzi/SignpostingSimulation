@@ -42,9 +42,9 @@ public class IfcOpenShellParser : MonoBehaviour {
         string mtlPath = Path.ChangeExtension(ifcPath, "mtl");
         string xmlPath = Path.ChangeExtension(ifcPath, "xml");
 
-        string ifcConveter = Path.GetFullPath("IFC/IfcConvert.exe");
-        System.Diagnostics.Process processOBJ = Utility.RunCommand(ifcConveter, "\"" + ifcPath + "\"" + " " + "\"" + objPath + "\"" + " --use-element-guids -y", true);
-        System.Diagnostics.Process processXML = Utility.RunCommand(ifcConveter, "\"" + ifcPath + "\"" + " " + "\"" + xmlPath + "\"" + " --use-element-guids -y", true);
+        string ifcConverter = Path.GetFullPath("IFC/IfcConvert.exe");
+        System.Diagnostics.Process processOBJ = Utility.RunCommand(ifcConverter, "\"" + ifcPath + "\"" + " " + "\"" + objPath + "\"" + " --use-element-guids -y", true);
+        System.Diagnostics.Process processXML = Utility.RunCommand(ifcConverter, "\"" + ifcPath + "\"" + " " + "\"" + xmlPath + "\"" + " --use-element-guids -y", true);
 
         processOBJ.WaitForExit();
         processXML.WaitForExit();

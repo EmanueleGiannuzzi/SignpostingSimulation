@@ -8,6 +8,7 @@ public class EnvironmentEditor : Editor {
     float showHeatmapSliderValue = 0;
 
     string pathToCSV = "C:/Users/emagi/Desktop/export.csv";
+    string pathToTextures = "C:/Users/emagi/Desktop/textures";
 
     public override void OnInspectorGUI() {
         DrawDefaultInspector();
@@ -69,6 +70,13 @@ public class EnvironmentEditor : Editor {
         GUI.enabled = handler.bestSignboardPosition.isVisibilityReady();
         if(GUILayout.Button("Export Visibility to CSV")) {
             handler.bestSignboardPosition.ExportCSV(pathToCSV);
+        }
+        GUI.enabled = true;
+        
+        pathToTextures = EditorGUILayout.TextField("Path to Textures: ", pathToTextures);
+        GUI.enabled = handler.textureExporter.CanExport();
+        if(GUILayout.Button("Export Textures")) {
+            handler.textureExporter.ExportTexture(pathToTextures);
         }
         GUI.enabled = true;
     }
