@@ -5,14 +5,14 @@ public class SimulationAgent : MonoBehaviour {
     private Environment environment;
 
     private List<int>[] signboardEncounteredPerAgentType;
-    private BoardsEcounter[] boardsEcountersPerAgentType;
+    private BoardsEncounter[] boardsEncountersPerAgentType;
 
     public bool DebugFOV = false;
 
-    private class BoardsEcounter {
-        public Dictionary<int, float> visibleBoards;//Board-First seen time(Time.time)
+    private class BoardsEncounter {
+        public readonly Dictionary<int, float> visibleBoards;//Board-First seen time(Time.time)
 
-        public BoardsEcounter() {
+        public BoardsEncounter() {
             visibleBoards = new Dictionary<int, float>();
         }
     }
@@ -24,7 +24,7 @@ public class SimulationAgent : MonoBehaviour {
             throw new MissingReferenceException("No Environment found!");
         }
 
-        boardsEcountersPerAgentType = new BoardsEcounter[environment.GetVisibilityHandler().agentTypes.Length];
+        boardsEncountersPerAgentType = new BoardsEncounter[environment.GetVisibilityHandler().agentTypes.Length];
 
         if(environment.IsSimulationEnabled()) {
             OnStartSimulation(environment.repeatRate);
@@ -38,20 +38,20 @@ public class SimulationAgent : MonoBehaviour {
             signboardEncounteredPerAgentType[i] = new List<int>();
         }
 
-        InvokeRepeating(nameof(SimulationUpdate), 0f, repeatRate);
+        InvokeRepeating(nameof(simulationUpdate), 0f, repeatRate);
     }
 
     public void OnSimulationStopped() {
-        CancelInvoke(nameof(SimulationUpdate));
+        CancelInvoke(nameof(simulationUpdate));
         signboardEncounteredPerAgentType = null;
     }
 
-    private bool IsSimulationEnabled() {
+    private bool isSimulationEnabled() {
         return environment.IsSimulationEnabled();
     }
 
-    private void SimulationUpdate() {
-        if(IsSimulationEnabled()) {
+    private void simulationUpdate() {
+        if(isSimulationEnabled()) {
             for(int agentTypeID = 0; agentTypeID < environment.GetVisibilityHandler().agentTypes.Length; agentTypeID++) {
                 List<int> visibleBoards = environment.GetSignageBoardsVisible(this.transform.position, agentTypeID);
                 if(visibleBoards == null) {
@@ -61,7 +61,7 @@ public class SimulationAgent : MonoBehaviour {
                 for(int i = 0; i < visibleBoards.Count; i++) {
                     int signageBoardID = visibleBoards[i];
 
-                    if(!IsSignboardInFOV(signageBoardID)) {
+                    if(!isSignboardInFOV(signageBoardID)) {
                         visibleBoards.Remove(signageBoardID);
                     }
                 }
@@ -74,25 +74,23 @@ public class SimulationAgent : MonoBehaviour {
     }
 
     private void OnAgentInVisibilityArea(List<int> visibleBoards, int agentTypeID) {
-        BoardsEcounter boardsEcounters = boardsEcountersPerAgentType[agentTypeID];
-        if(boardsEcounters == null) {
-            boardsEcounters = new BoardsEcounter();
+        BoardsEncounter boardsEncounters = boardsEncountersPerAgentType[agentTypeID];
+        if(boardsEncounters == null) {
+            boardsEncounters = new BoardsEncounter();
         }
         float now = Time.time;
 
         foreach(int signageBoardID in visibleBoards) {
-            //1) Se non c'è in boardsEcounters viene aggiunta e l'agente entra
-            if(!boardsEcounters.visibleBoards.ContainsKey(signageBoardID)) {
-                boardsEcounters.visibleBoards.Add(signageBoardID, now);
-
+            //1) Se non c'è in boardsEncounters viene aggiunta e l'agente entra
+            if(!boardsEncounters.visibleBoards.ContainsKey(signageBoardID)) {
+                boardsEncounters.visibleBoards.Add(signageBoardID, now);
                 environment.OnAgentEnterVisibilityArea(this.gameObject, agentTypeID, signageBoardID);
-
             }
             //else { } //2) Se c'è già non fa niente
         }
-        //3) Se c'è in boardsEcounters, ma non in visibleBoards viene tolta e l'agente esce 
+        //3) Se c'è in boardsEncounters, ma non in visibleBoards viene tolta e l'agente esce 
         List<int> signBoardsToRemove = new List<int>();
-        foreach(KeyValuePair<int, float> boardEncounter in boardsEcounters.visibleBoards) {
+        foreach(KeyValuePair<int, float> boardEncounter in boardsEncounters.visibleBoards) {
             int signageBoardID = boardEncounter.Key;
             if(!visibleBoards.Contains(signageBoardID)) {
                 signBoardsToRemove.Add(signageBoardID);
@@ -106,14 +104,14 @@ public class SimulationAgent : MonoBehaviour {
             }
         }
 
-        foreach(int signgboardToRemoveID in signBoardsToRemove) {
-            boardsEcounters.visibleBoards.Remove(signgboardToRemoveID);
+        foreach(int signboardToRemoveID in signBoardsToRemove) {
+            boardsEncounters.visibleBoards.Remove(signboardToRemoveID);
         }
 
-        boardsEcountersPerAgentType[agentTypeID] = boardsEcounters;
+        boardsEncountersPerAgentType[agentTypeID] = boardsEncounters;
     }
 
-    private bool IsSignboardInFOV(int signboardID) {
+    private bool isSignboardInFOV(int signboardID) {
         SignBoard signBoard = environment.signageBoards[signboardID];
         Vector2 signboardPos = Utility.Vector3ToVerctor2NoY(signBoard.transform.position);
 

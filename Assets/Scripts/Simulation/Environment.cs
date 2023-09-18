@@ -84,7 +84,7 @@ public class Environment : MonoBehaviour {
             Debug.Log("Visibility Planes Generated");
         }
         else {
-            Debug.Log("Unable to generate Visibility Planes");
+            Debug.LogError("Unable to generate Visibility Planes");
             return;
         }
     }

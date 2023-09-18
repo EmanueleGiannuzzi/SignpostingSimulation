@@ -10,6 +10,13 @@ public class RoutedAgent : MonoBehaviour {
 
     private Queue<IRouteMarker> route;
     
+    public Vector3 Target {
+        get {
+            route.TryPeek(out IRouteMarker destination);
+            return destination.Position;
+        }
+    }
+    
     void Awake() {
         agent = GetComponent<NavMeshAgent>();
     }

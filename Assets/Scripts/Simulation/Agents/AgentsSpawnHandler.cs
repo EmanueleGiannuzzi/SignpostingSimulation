@@ -29,6 +29,10 @@ public class AgentsSpawnHandler : MonoBehaviour
         return AgentsGameObjectParent.transform.GetChild(agentID);
     }
 
+    public GameObject GetAgentsParent() {
+        return AgentsGameObjectParent;
+    }
+
     public GameObject GetAgentPrefab() {
         return AgentPrefab;
     }

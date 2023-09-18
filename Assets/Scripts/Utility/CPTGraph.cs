@@ -50,7 +50,6 @@ public class CPTGraph {
                 return;
             }
         } while (step < STEP_LIMIT && improvements());
-        Debug.Log($"Used {step} steps");
         EditorUtility.ClearProgressBar();
     }
     
