@@ -14,6 +14,6 @@ public class AnimatorWalkingSpeedSync : MonoBehaviour {
     }
 
     private void Update() {
-        animator.SetFloat("Speed", navMeshAgent.desiredVelocity.magnitude);
+        animator.SetFloat("Speed", navMeshAgent.desiredVelocity.magnitude / 2f);
     }
 }

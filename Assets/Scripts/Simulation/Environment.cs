@@ -167,7 +167,7 @@ public class Environment : MonoBehaviour {
     public void StartSimulation() {
         this.agentSpawnedCount = 0;
         for(int agentID = 0; agentID < agentsSpawnHandler.GetAgentsCount(); agentID++) {
-            SimulationAgent agent = agentsSpawnHandler.GetAgentsTranform(agentID).gameObject.GetComponent<SimulationAgent>();
+            SimulationAgent agent = agentsSpawnHandler.GetAgentsTransform(agentID).gameObject.GetComponent<SimulationAgent>();
             agent.OnStartSimulation(SimulationUpdateFrequencyHz);
         }
         Debug.Log("Simulation Started");
@@ -175,7 +175,7 @@ public class Environment : MonoBehaviour {
 
     public void StopSimulation() {
         for(int agentID = 0; agentID < agentsSpawnHandler.GetAgentsCount(); agentID++) {
-            SimulationAgent agent = agentsSpawnHandler.GetAgentsTranform(agentID).gameObject.GetComponent<SimulationAgent>();
+            SimulationAgent agent = agentsSpawnHandler.GetAgentsTransform(agentID).gameObject.GetComponent<SimulationAgent>();
             agent.OnSimulationStopped();
         }
         Debug.Log("Simulation Stopped");

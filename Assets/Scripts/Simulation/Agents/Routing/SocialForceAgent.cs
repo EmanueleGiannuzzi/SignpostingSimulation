@@ -1,24 +1,32 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class SocialForceAgent : MonoBehaviour {
+    private static readonly List<SocialForceAgent> agents = new ();
+    
     private NavMeshAgent navMeshAgent;
-    private Vector3 target => navMeshAgent.nextPosition;
     private Vector3 velocity => navMeshAgent.velocity;
+    private float radius => navMeshAgent.radius;
     private float desiredSpeed => navMeshAgent.speed;
 
     private AgentsSpawnHandler agentsSpawnHandler;
     
-
-    private float radius => navMeshAgent.radius;
-    public const float relaxationTime = 0.3f;
+    private const float maxInteractionDistance = 2f;
+    
 
     private static readonly string[] ifcWallTags = { "IfcWallStandardCase" };
-    private void Start() {
+    private void Awake() {
         navMeshAgent = this.GetComponent<NavMeshAgent>();
         agentsSpawnHandler = FindObjectOfType<AgentsSpawnHandler>();
+        
+        agents.Add(this);
+    }
+
+    private void OnDestroy() {
+        agents.Remove(this);
     }
 
     private void FixedUpdate() {
@@ -27,25 +35,28 @@ public class SocialForceAgent : MonoBehaviour {
         }
 
         Vector3 socialForce = CalculateSocialForce();
-        Vector3 newVelocity = navMeshAgent.velocity + socialForce;
-        newVelocity += Vector3.ClampMagnitude(newVelocity, desiredSpeed);
-        navMeshAgent.velocity += socialForce;
-        navMeshAgent.velocity = Vector3.ClampMagnitude(navMeshAgent.velocity, desiredSpeed);
+
+        Vector3 oldVelocity = navMeshAgent.velocity;
+        Vector3 newVelocity = oldVelocity + socialForce;
+        oldVelocity = newVelocity;
+        navMeshAgent.velocity = oldVelocity;
+        navMeshAgent.velocity = Vector3.ClampMagnitude(newVelocity, oldVelocity.magnitude);
     }
     
     private Vector3 CalculateSocialForce() {
         return AgentInteractForce() + WallInteractionForce();
     }
 
-    private IEnumerable<SocialForceAgent> GetCloseAgents() {
-        List<SocialForceAgent> agents = new List<SocialForceAgent>();
-        foreach (Transform agentTransform in agentsSpawnHandler.GetAgentsParent().transform) {
-            SocialForceAgent agent = agentTransform.GetComponent<SocialForceAgent>();
-            if (agent != null) {
-                agents.Add(agent);
-            }
-        }
-        return agents.ToArray();
+    private static IEnumerable<SocialForceAgent> GetCloseAgents() {
+        return agents;
+        // List<SocialForceAgent> agents = new List<SocialForceAgent>();
+        // foreach (Transform agentTransform in agentsSpawnHandler.GetAgentsParent().transform) {
+        //     SocialForceAgent agent = agentTransform.GetComponent<SocialForceAgent>();
+        //     if (agent != null) {
+        //         agents.Add(agent);
+        //     }
+        // }
+        // return agents.ToArray();
     }
 
     private static bool isIfcWall(IFCData ifcData) {
@@ -53,19 +64,29 @@ public class SocialForceAgent : MonoBehaviour {
     }
 
     private IEnumerable<Vector3> GetCloseWallsPoints() {
-        RaycastHit[] hits = Physics.SphereCastAll(this.transform.position, 2, Vector3.up, 2);
         List<Vector3> obstaclesPoints = new List<Vector3>();
-        foreach (RaycastHit hit in hits) {
-            IFCData ifcData = hit.collider.GetComponent<IFCData>();
-            if (ifcData != null && isIfcWall(ifcData)) {
-                obstaclesPoints.Add(hit.point);
+
+        Vector3 agentPosition = this.transform.position;
+        foreach (var wall in IFCData.DataCache.Where(isIfcWall)) {
+            Vector3 wallClosestPoint = wall.collider.ClosestPoint(agentPosition);
+            if (Vector3.SqrMagnitude(agentPosition - wallClosestPoint) < maxInteractionDistance * maxInteractionDistance) {
+                obstaclesPoints.Add(wallClosestPoint);
             }
         }
         return obstaclesPoints.ToArray();
+        
+        // RaycastHit[] hits = Physics.SphereCastAll(this.transform.position, 2, Vector3.up, 2);
+        // List<Vector3> obstaclesPoints = new List<Vector3>();
+        // foreach (RaycastHit hit in hits) {
+        //     IFCData ifcData = hit.collider.GetComponent<IFCData>();
+        //     if (ifcData != null && isIfcWall(ifcData)) {
+        //         obstaclesPoints.Add(hit.point);
+        //     }
+        // }
+        // return obstaclesPoints.ToArray();
     }
 
      private Vector3 AgentInteractForce() { 
-        const float maxInteractionDistance = 2f;
         // Constant Values Based on (Moussaid et al., 2009)
         const float lambda = 2.0f;    // Weight reflecting relative importance of velocity vector against position vector
         const float gamma = 0.35f;    // Speed interaction
@@ -73,6 +94,7 @@ public class SocialForceAgent : MonoBehaviour {
         const float n = 2.0f;         // Angular interaction
         const float A = 4.5f;         // Modal parameter A
 
+        Vector3 agentPosition = this.transform.position;
         Vector3 distanceToAgent, vectorToAgent, interactionDirection, interactionNormal, force;
         float B, theta, forceVelocity, forceTheta;
         int K;
@@ -81,7 +103,7 @@ public class SocialForceAgent : MonoBehaviour {
 
         foreach (SocialForceAgent otherAgent in GetCloseAgents()) {
             if (otherAgent == this) continue;
-            distanceToAgent = otherAgent.transform.position - this.transform.position;
+            distanceToAgent = otherAgent.transform.position - agentPosition;
             if (Vector3.SqrMagnitude(distanceToAgent) > maxInteractionDistance * maxInteractionDistance) {
                 continue;
             }

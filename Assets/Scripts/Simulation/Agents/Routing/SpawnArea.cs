@@ -17,7 +17,6 @@ public class SpawnArea : SpawnAreaBase {
         return SpawnAgentMoveTo(agentPrefab, destination.position, destroyer);
     }
 
-
     protected GameObject SpawnAgentMoveTo(GameObject agentPrefab, Vector3 destination, Collider destroyer) {
         GameObject agent = SpawnAgent(agentPrefab);
         agent.GetComponent<AgentCollisionDetection>().destroyer = destroyer;
@@ -33,9 +32,8 @@ public class SpawnArea : SpawnAreaBase {
     }
     
     public override bool ShouldSpawnAgents() {
-        return base.ShouldSpawnAgents() && goals.Length == 0;
+        return base.ShouldSpawnAgents() && goals.Length != 0;
     }
-
 }
 
 

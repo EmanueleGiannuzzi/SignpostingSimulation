@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 using static AgentsPrefabGenerator;
 
 [System.Serializable]
@@ -25,7 +24,7 @@ public class AgentsSpawnHandler : MonoBehaviour
         return AgentsGameObjectParent.transform.childCount;
     }
 
-    public Transform GetAgentsTranform(int agentID) {
+    public Transform GetAgentsTransform(int agentID) {
         return AgentsGameObjectParent.transform.GetChild(agentID);
     }
 
