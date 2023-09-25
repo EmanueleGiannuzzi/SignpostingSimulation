@@ -20,11 +20,13 @@ public class SpawnArea : SpawnAreaBase {
     protected GameObject SpawnAgentMoveTo(GameObject agentPrefab, Vector3 destination, Collider destroyer) {
         GameObject agent = SpawnAgent(agentPrefab);
         agent.GetComponent<AgentCollisionDetection>().destroyer = destroyer;
+        MoveAgentTo(agent, destination);
+        return agent;
+    }
 
+    protected void MoveAgentTo(GameObject agent, Vector3 destination) {
         NavMeshAgent navMeshAgent = agent.GetComponent<NavMeshAgent>();
         navMeshAgent.SetDestination(destination);
-
-        return agent;
     }
 
     public override GameObject SpawnAgentEvent(GameObject agentPrefab) {

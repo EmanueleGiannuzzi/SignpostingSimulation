@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Environment : MonoBehaviour {
@@ -227,6 +228,10 @@ public class Environment : MonoBehaviour {
 
         }
         return new List<int>();
+    }
+
+    public IEnumerable<Transform> GetAgents() {
+        return transform.Cast<Transform>();
     }
 
     public void OnAgentSpawned() {

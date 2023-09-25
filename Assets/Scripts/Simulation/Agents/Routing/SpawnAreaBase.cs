@@ -7,14 +7,35 @@ public abstract class SpawnAreaBase : MonoBehaviour {
     protected void Start() {
         environment = FindObjectOfType<Environment>();
     }
-    
+
+    private bool isSpawnPointCloseToAgents(Vector3 point, float maxDistance) {
+        foreach (Transform agent in environment.GetAgents()) {
+            Vector3 distanceVector = point - agent.position;
+            if (distanceVector.sqrMagnitude > maxDistance * maxDistance) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     protected GameObject SpawnAgent(GameObject agentPrefab) {
-        Vector3 position = this.transform.position;
-        Vector3 localScale = this.transform.localScale / 2;
+        Transform agentTransform = this.transform;
+        Vector3 position = agentTransform.position;
+        Vector3 localScale = agentTransform.localScale / 2;
         float randX = Random.Range(-localScale.x, localScale.x) * 10;
         float randZ = Random.Range(-localScale.z, localScale.z) * 10;
-        Vector3 spawnPoint = new Vector3(position.x + randX, position.y, position.z + randZ);
+
+        Vector3 spawnPoint;
+        const int MAX_TENTATIVES = 1000;
+        int tentatives = 0;
+        do {
+            if (tentatives >= MAX_TENTATIVES) {
+                Debug.LogError("Unable to Spawn Agent: Spawn Area too full.");
+                return null;
+            }
+            spawnPoint = new Vector3(position.x + randX, position.y, position.z + randZ);
+            tentatives++;
+        } while (isSpawnPointCloseToAgents(spawnPoint, 0.25f));
 
         GameObject agent = Instantiate(agentPrefab, spawnPoint, Quaternion.identity);
 
