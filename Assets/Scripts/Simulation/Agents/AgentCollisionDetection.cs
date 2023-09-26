@@ -9,17 +9,21 @@ public class AgentCollisionDetection : MonoBehaviour {
     public CollisionEvent collisionEvent;
     public Collider destroyer;
 
-    void Start() {
-        if(collisionEvent == null) {
-            collisionEvent = new CollisionEvent();
-        }
+    private void Start() {
+        collisionEvent ??= new CollisionEvent();
     }
 
     private void OnTriggerEnter(Collider other) {
-        collisionEvent.Invoke(this.gameObject.GetComponent<NavMeshAgent>(), other);
+        NavMeshAgent agent = this.gameObject.GetComponent<NavMeshAgent>();
+        collisionEvent.Invoke(agent, other);
 
         if(destroyer != null && destroyer.Equals(other)) {
             Destroy(this.gameObject);
+        }
+
+        EventAgentTriggerCollider agentTriggerCollider = other.GetComponent<EventAgentTriggerCollider>();
+        if (agentTriggerCollider != null) {
+            agentTriggerCollider.OnAgentCrossed(agent);
         }
     }
 }

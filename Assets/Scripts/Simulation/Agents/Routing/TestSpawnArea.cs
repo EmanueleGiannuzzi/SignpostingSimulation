@@ -44,7 +44,6 @@ public class TestSpawnArea : SpawnArea {
             Ray ray = PlayerCamera.ScreenPointToRay(Input.mousePosition);
 
             if(Physics.Raycast(ray, out RaycastHit hit)) {
-                Debug.Log("BANANA");
                 SpawnAgentMoveTo(AgentPrefab, hit.point, null);
             }
         }

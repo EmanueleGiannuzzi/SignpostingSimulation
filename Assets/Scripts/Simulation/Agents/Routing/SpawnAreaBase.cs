@@ -4,11 +4,15 @@ public abstract class SpawnAreaBase : MonoBehaviour {
     public bool Enabled = true;
     private Environment environment;
 
-    protected void Start() {
+    protected void Awake() {
         environment = FindObjectOfType<Environment>();
     }
 
     private bool isSpawnPointCloseToAgents(Vector3 point, float maxDistance) {
+        if (environment.GetAgents() == null) {
+            return false;
+        }
+        
         foreach (Transform agent in environment.GetAgents()) {
             Vector3 distanceVector = point - agent.position;
             if (distanceVector.sqrMagnitude > maxDistance * maxDistance) {
