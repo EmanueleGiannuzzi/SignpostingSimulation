@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(NavMeshAgent))]
 public class SocialForceAgent : MonoBehaviour {
     private static readonly List<SocialForceAgent> agents = new ();
     
@@ -54,13 +55,19 @@ public class SocialForceAgent : MonoBehaviour {
 
     private void moveAgent(float stepTime) {
         Vector3 acceleration = calculateSocialForce();
-        Vector3 newVelocity = velocity + acceleration * stepTime;
+        var agentPosition = this.transform.position;
+        DebugExtension.DebugArrow(agentPosition + Vector3.up, acceleration, Color.magenta, .1f);
+        Vector3 newVelocity = velocity + acceleration;
 
         Vector3.ClampMagnitude(newVelocity, desiredSpeed);
         navMeshAgent.velocity = newVelocity;
 
-        navMeshAgent.transform.position = this.transform.position + velocity * stepTime;
+        navMeshAgent.transform.position = agentPosition + velocity * stepTime;
         // navMeshAgent.nextPosition = this.transform.position + velocity * stepTime;
+    }
+    
+    private Vector3 calculateSocialForce() {
+        return drivingForce() + agentInteractForce() + wallInteractForce();
     }
 
     private Vector3 drivingForce() {
@@ -69,12 +76,8 @@ public class SocialForceAgent : MonoBehaviour {
         targetDirection.Normalize();
         Vector3 drivingForce = ((maxSpeed * targetDirection) - velocity) / relaxationTime;
 
-        DebugExtension.DebugArrow(agentPosition + Vector3.up, drivingForce, Color.green, .01f);
+        DebugExtension.DebugArrow(agentPosition + Vector3.up, drivingForce, Color.green, .1f);
         return drivingForce;
-    }
-    
-    private Vector3 calculateSocialForce() {
-        return drivingForce() + agentInteractForce() + wallInteractForce();
     }
 
     private static IEnumerable<SocialForceAgent> getCloseAgents() {
@@ -84,11 +87,11 @@ public class SocialForceAgent : MonoBehaviour {
     private IEnumerable<Vector3> getCloseWallsPoints() {
         List<Vector3> obstaclesPoints = new List<Vector3>();
 
-        Vector3 agentPostion = this.transform.position + (Vector3.up * 0.10f);
+        Vector3 agentPosition = this.transform.position + (Vector3.up * 0.10f);
         const int rays = 32;
         Vector3 direction = Vector3.forward;
         for (int i = 0; i < rays; i++) {
-            Ray ray = new Ray(agentPostion, direction);
+            Ray ray = new Ray(agentPosition, direction);
             direction = Quaternion.AngleAxis(360f/rays, Vector3.up) * direction;
             Physics.Raycast(ray, out RaycastHit hit, maxInteractionDistance, 1 << 11);
             if (hit.collider != null) {
@@ -108,55 +111,63 @@ public class SocialForceAgent : MonoBehaviour {
         const float A = 4.5f;         // Modal parameter A
 
         Vector3 agentPosition = this.transform.position;
-        Vector3 distanceToAgent, vectorToAgent, interactionDirection, interactionNormal, force;
-        float B, theta, forceVelocity, forceTheta;
-        int K;
 
-        force = new Vector3(0.0f, 0.0f, 0.0f);
+        Vector3 force = new Vector3(0.0f, 0.0f, 0.0f);
 
         foreach (SocialForceAgent otherAgent in getCloseAgents()) {
             if (otherAgent == this) continue;
-            distanceToAgent = otherAgent.transform.position - agentPosition;
-            if (Vector3.SqrMagnitude(distanceToAgent) > maxInteractionDistance * maxInteractionDistance) {
+            Vector3 distance_ij = otherAgent.transform.position - agentPosition;
+            if (Vector3.SqrMagnitude(distance_ij) > maxInteractionDistance * maxInteractionDistance) {
                 continue;
             }
 
-            vectorToAgent = distanceToAgent.normalized;
+            Vector3 e_ij = distance_ij.normalized;
 
             // Compute Interaction Vector Between Agent i and j
             // Formula: interactionDirection = Lambda * (Velocity_i - Velocity_j) + directionIJ
-            interactionDirection = lambda * (this.velocity - otherAgent.velocity) + vectorToAgent;
+            Vector3 D_ij = lambda * (this.velocity - otherAgent.velocity) + e_ij;
 
             // Compute Modal Parameter B
             // Formula: B = Gamma * ||interactionDirection||
-            B = gamma *  Vector3.Magnitude(interactionDirection);
+            float B = gamma *  Vector3.Magnitude(D_ij);
 
             // Compute Interaction Direction
             // Formula: interactionDirection = interactionDirection / ||interactionDirection||
-            interactionDirection.Normalize();
+            Vector3 t_ij = D_ij.normalized;
 
             // Compute Angle Between Interaction Direction (interactionDirection) and Vector Pointing from Agent i to j (directionIJ)
-            theta = Vector3.Angle(interactionDirection, vectorToAgent);
-
+            float theta = Vector3.Angle(t_ij, e_ij) * Mathf.Deg2Rad;
+/*
             // Compute Sign of Angle 'theta'
             // Formula: K = theta / |theta|
-            K = (theta == 0) ? 0 : (int)(theta / Mathf.Abs(theta));
+            int K = theta == 0 ? 0 : (int)(theta / Mathf.Abs(theta));
+
 
             // Compute Amount of Deceleration
             // Formula: forceVelocity = -A * Math.Exp(-distanceIJ.Length() / B - ((NPrime * B * theta) * (NPrime * B * theta)))
-            forceVelocity = -A * Mathf.Exp(-Vector3.Magnitude(distanceToAgent) / B - ((nPrime * B * theta) * (nPrime * B * theta)));
+            float forceVelocity = -A * Mathf.Exp(-Vector3.Magnitude(distance_ij) / B - ((nPrime * B * theta) * (nPrime * B * theta)));
 
             // Compute Amount of Directional Changes
             // Formula: forceTheta = -A * K * Math.Exp(-distanceIJ.Length() / B - ((N * B * theta) * (N * B * theta)))
-            forceTheta = -A * K * Mathf.Exp(-Vector3.Magnitude(distanceToAgent) / B - ((n * B * theta) * (n * B * theta)));
+            float forceTheta = -A * K * Mathf.Exp(-Vector3.Magnitude(distance_ij) / B - ((n * B * theta) * (n * B * theta)));
 
             // Compute Normal Vector of Interaction Direction Oriented to the Left
-            interactionNormal = new Vector3(-interactionDirection.z, interactionDirection.y, interactionDirection.x);
-            // interactionNormal = new Vector3(-interactionDirection.y, interactionDirection.x, 0.0f);
-
+            // Vector3 interactionNormal = new Vector3(-interactionDirection.z, interactionDirection.y, interactionDirection.x);
+            Vector3 interactionNormal = new Vector3(-t_ij.x, 0.0f, t_ij.z);
+            
             // Compute Interaction Force
             // Formula: force = forceVelocity * interactionDirection + forceTheta * interactionNormal
-            force += forceVelocity * interactionDirection + forceTheta * interactionNormal;
+            force += forceVelocity * D_ij  + forceTheta * interactionNormal;
+*/
+            theta = theta + (B * 0.005f);
+            float d = Vector3.Magnitude(distance_ij);
+            Vector3 n_ij = Quaternion.Euler(0f, -90f, 0f) * t_ij;
+            
+            Vector3 force_ij = -A * Mathf.Exp(-d/B) * 
+                               (Mathf.Exp(- Mathf.Pow(nPrime * B * theta, 2)) * t_ij + 
+                                Mathf.Exp(- Mathf.Pow(n * B * theta, 2)) * n_ij);
+            
+            force += force_ij;
         }
         
         DebugExtension.DebugArrow(agentPosition + Vector3.up, force, Color.blue, .1f);

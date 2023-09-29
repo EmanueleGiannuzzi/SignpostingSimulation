@@ -13,7 +13,7 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
         //base.Start();
         MarkerGenerator markerGen = FindObjectOfType<MarkerGenerator>();
         if (markerGen == null) {
-            Debug.LogError($"Unable to find {nameof(MarkerGenerator)}");
+            // Debug.LogError($"Unable to find {nameof(MarkerGenerator)}");
             return;
         }
         markerGen.OnMarkersGeneration += OnMarkersGenerated;
@@ -33,6 +33,12 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
         markersConnected.Insert(0,this);
         routingGraph = new RoutingGraphCPT(markersConnected.ToArray());
         route = routingGraph.GetRoute(this);
+    }
+
+    public void SpawnRoutedAgent(GameObject agentPrefab, IEnumerable<IRouteMarker> agentRoute) {
+        GameObject agent = SpawnAgent(agentPrefab);
+        
+        agent.GetComponent<RoutedAgent>().SetRoute(new Queue<IRouteMarker>(agentRoute));
     }
 
     private GameObject SpawnRoutedAgent(GameObject agentPrefab) {

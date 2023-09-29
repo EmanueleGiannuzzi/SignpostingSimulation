@@ -4,7 +4,7 @@ public abstract class SpawnAreaBase : MonoBehaviour {
     public bool Enabled = true;
     private Environment environment;
 
-    protected void Awake() {
+    protected void Start() {
         environment = FindObjectOfType<Environment>();
     }
 
