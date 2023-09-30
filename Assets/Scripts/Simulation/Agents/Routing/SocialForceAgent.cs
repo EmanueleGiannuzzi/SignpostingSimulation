@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -56,7 +57,6 @@ public class SocialForceAgent : MonoBehaviour {
     private void moveAgent(float stepTime) {
         Vector3 acceleration = calculateSocialForce();
         var agentPosition = this.transform.position;
-        DebugExtension.DebugArrow(agentPosition + Vector3.up, acceleration, Color.magenta, .1f);
         Vector3 newVelocity = velocity + acceleration;
 
         Vector3.ClampMagnitude(newVelocity, desiredSpeed);
@@ -66,8 +66,24 @@ public class SocialForceAgent : MonoBehaviour {
         // navMeshAgent.nextPosition = this.transform.position + velocity * stepTime;
     }
     
+    private Vector3 driving;
+    private Vector3 agentInteract;
+    private Vector3 wallInteract;
+
+    private void OnDrawGizmos() {
+        var agentPosition = this.transform.position;
+        DebugExtension.DebugArrow(agentPosition + Vector3.up, driving, Color.green);
+        DebugExtension.DebugArrow(agentPosition + Vector3.up, wallInteract, Color.red);
+        DebugExtension.DebugArrow(agentPosition + Vector3.up, agentInteract, Color.blue);
+    }
+
     private Vector3 calculateSocialForce() {
-        return drivingForce() + agentInteractForce() + wallInteractForce();
+        driving = this.drivingForce();
+        agentInteract = this.agentInteractForce();
+        wallInteract = this.wallInteractForce();
+
+        
+        return driving + agentInteract + wallInteract;
     }
 
     private Vector3 drivingForce() {
@@ -76,7 +92,6 @@ public class SocialForceAgent : MonoBehaviour {
         targetDirection.Normalize();
         Vector3 drivingForce = ((maxSpeed * targetDirection) - velocity) / relaxationTime;
 
-        DebugExtension.DebugArrow(agentPosition + Vector3.up, drivingForce, Color.green, .1f);
         return drivingForce;
     }
 
@@ -137,29 +152,29 @@ public class SocialForceAgent : MonoBehaviour {
 
             // Compute Angle Between Interaction Direction (interactionDirection) and Vector Pointing from Agent i to j (directionIJ)
             float theta = Vector3.Angle(t_ij, e_ij) * Mathf.Deg2Rad;
-/*
-            // Compute Sign of Angle 'theta'
-            // Formula: K = theta / |theta|
-            int K = theta == 0 ? 0 : (int)(theta / Mathf.Abs(theta));
 
+            // // Compute Sign of Angle 'theta'
+            // // Formula: K = theta / |theta|
+            // int K = theta == 0 ? 0 : (int)(theta / Mathf.Abs(theta));
+            //
+            //
+            // // Compute Amount of Deceleration
+            // // Formula: forceVelocity = -A * Math.Exp(-distanceIJ.Length() / B - ((NPrime * B * theta) * (NPrime * B * theta)))
+            // float forceVelocity = -A * Mathf.Exp(-Vector3.Magnitude(distance_ij) / B - ((nPrime * B * theta) * (nPrime * B * theta)));
+            //
+            // // Compute Amount of Directional Changes
+            // // Formula: forceTheta = -A * K * Math.Exp(-distanceIJ.Length() / B - ((N * B * theta) * (N * B * theta)))
+            // float forceTheta = -A * K * Mathf.Exp(-Vector3.Magnitude(distance_ij) / B - ((n * B * theta) * (n * B * theta)));
+            //
+            // // Compute Normal Vector of Interaction Direction Oriented to the Left
+            // // Vector3 interactionNormal = new Vector3(-interactionDirection.z, interactionDirection.y, interactionDirection.x);
+            // Vector3 interactionNormal = new Vector3(-t_ij.x, 0.0f, t_ij.z);
+            //
+            // // Compute Interaction Force
+            // // Formula: force = forceVelocity * interactionDirection + forceTheta * interactionNormal
+            // force += forceVelocity * D_ij  + forceTheta * interactionNormal;
 
-            // Compute Amount of Deceleration
-            // Formula: forceVelocity = -A * Math.Exp(-distanceIJ.Length() / B - ((NPrime * B * theta) * (NPrime * B * theta)))
-            float forceVelocity = -A * Mathf.Exp(-Vector3.Magnitude(distance_ij) / B - ((nPrime * B * theta) * (nPrime * B * theta)));
-
-            // Compute Amount of Directional Changes
-            // Formula: forceTheta = -A * K * Math.Exp(-distanceIJ.Length() / B - ((N * B * theta) * (N * B * theta)))
-            float forceTheta = -A * K * Mathf.Exp(-Vector3.Magnitude(distance_ij) / B - ((n * B * theta) * (n * B * theta)));
-
-            // Compute Normal Vector of Interaction Direction Oriented to the Left
-            // Vector3 interactionNormal = new Vector3(-interactionDirection.z, interactionDirection.y, interactionDirection.x);
-            Vector3 interactionNormal = new Vector3(-t_ij.x, 0.0f, t_ij.z);
-            
-            // Compute Interaction Force
-            // Formula: force = forceVelocity * interactionDirection + forceTheta * interactionNormal
-            force += forceVelocity * D_ij  + forceTheta * interactionNormal;
-*/
-            theta = theta + (B * 0.005f);
+            theta += B * 0.005f;
             float d = Vector3.Magnitude(distance_ij);
             Vector3 n_ij = Quaternion.Euler(0f, -90f, 0f) * t_ij;
             
@@ -170,7 +185,6 @@ public class SocialForceAgent : MonoBehaviour {
             force += force_ij;
         }
         
-        DebugExtension.DebugArrow(agentPosition + Vector3.up, force, Color.blue, .1f);
         return force;
     }
 
@@ -179,7 +193,6 @@ public class SocialForceAgent : MonoBehaviour {
          const float decayCoefficient = 0.1f;
 
          Vector3 minWallAgentVector = new(0f, 0f, 0f);
-         Vector3 minPoint= new(0f, 0f, 0f);
          float distanceSquared, minDistanceSquared = float.PositiveInfinity;
 
          foreach (Vector3 wallPoint in getCloseWallsPoints()) {
@@ -189,7 +202,6 @@ public class SocialForceAgent : MonoBehaviour {
              if (distanceSquared < minDistanceSquared) {
                  minDistanceSquared = distanceSquared;
                  minWallAgentVector = wallAgentVector;
-                 minPoint = wallPoint;
              }
          }
          
@@ -197,17 +209,12 @@ public class SocialForceAgent : MonoBehaviour {
              return Vector3.zero;
          }
          
-         // minDistanceSquared = minWallAgentVector.sqrMagnitude;
-         var agentPosition = this.transform.position;
-         // DebugExtension.DebugArrow(agentPosition + Vector3.up, minWallAgentVector, Color.blue, .1f);
-         // distanceToWall = Mathf.Sqrt(minDistanceSquared) - radius; // Distance between wall and agent i
          float distanceToWall = minWallAgentVector.magnitude - radius; // Distance between wall and agent i
 
          // Compute Interaction Force
          // Formula: interactionForce = RepulsionCoefficient * exp(-distanceToWall / DecayCoefficient)
          float interactionForce = repulsionCoefficient * Mathf.Exp(-distanceToWall / decayCoefficient);
          minWallAgentVector.Normalize();
-         DebugExtension.DebugArrow(agentPosition + Vector3.up, interactionForce * minWallAgentVector, Color.red, .1f);
          return interactionForce * minWallAgentVector;
      }
 
