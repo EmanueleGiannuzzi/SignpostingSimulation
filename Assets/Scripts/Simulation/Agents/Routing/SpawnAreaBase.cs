@@ -4,6 +4,8 @@ public abstract class SpawnAreaBase : MonoBehaviour {
     public bool Enabled = true;
     private Environment environment;
 
+    private const float SPAWNED_AGENTS_MIN_DISTANCE = 2f;
+
     protected void Start() {
         environment = FindObjectOfType<Environment>();
     }
@@ -39,7 +41,7 @@ public abstract class SpawnAreaBase : MonoBehaviour {
             }
             spawnPoint = new Vector3(position.x + randX, position.y, position.z + randZ);
             tentatives++;
-        } while (isSpawnPointCloseToAgents(spawnPoint, 0.25f));
+        } while (isSpawnPointCloseToAgents(spawnPoint, SPAWNED_AGENTS_MIN_DISTANCE));
 
         GameObject agent = Instantiate(agentPrefab, spawnPoint, Quaternion.identity);
 
