@@ -11,7 +11,17 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     public InputArea AreaStart;
     public InputArea AreaFinish;
 
-    private readonly Dictionary<NavMeshAgent, float> crossingsLog = new (); //Agent - start crossing time
+    private readonly Dictionary<NavMeshAgent, AgentInfo> crossingsLog = new (); //Agent - start crossing time
+
+    private struct AgentInfo {
+        public readonly float startingTime;
+        public List<Vector2> agentPos;
+
+        public AgentInfo(float startingTime) {
+            this.startingTime = startingTime;
+            agentPos = new List<Vector2>();
+        }
+    }
     
     
     [SerializeField]
@@ -30,19 +40,27 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         FinishCollider.collisionEvent.AddListener(onFinishCrossed);
     }
 
+    private void FixedUpdate() {
+        foreach (NavMeshAgent agent in crossingsLog.Keys) {
+            crossingsLog[agent].agentPos.Add(agent.transform.position);
+        }
+    }
+
     private void onStartCrossed(NavMeshAgent agent, Collider triggerCollider) {
         float now = Time.time;
         if (crossingsLog.ContainsKey(agent)) {
             crossingsLog.Remove(agent);
         }
-        crossingsLog.Add(agent, now);
+
+        AgentInfo agentInfo = new AgentInfo(now);
+        crossingsLog.Add(agent, agentInfo);
         
         Debug.Log("Agent entered");
     }
 
     private void onFinishCrossed(NavMeshAgent agent, Collider triggerCollider) {
         if (crossingsLog.ContainsKey(agent)) {
-            float startTime = crossingsLog[agent];
+            float startTime = crossingsLog[agent].startingTime;
             float now = Time.time;
             float elapsed = now - startTime;
             

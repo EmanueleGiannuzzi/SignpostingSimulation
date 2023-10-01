@@ -13,16 +13,20 @@ public class SocialForceAgent : MonoBehaviour {
     private Vector3 velocity => navMeshAgent != null ? navMeshAgent.velocity : Vector3.zero;
     private float radius => navMeshAgent.radius;
     private float maxSpeed => navMeshAgent.speed;
-    private NormalDistribution desiredSpeed;
 
     // private AgentsSpawnHandler agentsSpawnHandler;
     
     private const float maxInteractionDistance = 2f;
     private const float relaxationTime = 0.54f; 
     private const float speedStdDeviation = 0.19f; 
+    private NormalDistribution desiredSpeed;
+    // Constant Values Based on (Moussaid et al., 2009)
+    private static readonly NormalDistribution lambda = new(2.0f, 0.2f);    // 2.0 +- 0.2 Weight reflecting relative importance of velocity vector against position vector
+    private static readonly NormalDistribution gamma =  new(0.35f, 0.01f);    // 0.35 +- 0.01 Speed interaction
+    private static readonly NormalDistribution nPrime =  new(3.0f, 0.7f);    // 3.0 +- 0.7 Angular interaction
+    private static readonly NormalDistribution n =  new(2.0f, 0.1f);         // 2.0 +- 0.1 Angular interaction
+    private static readonly NormalDistribution A =  new(4.5f, 0.3f);         // 4.5 +- 0.3 Modal parameter A
     
-
-    private static readonly string[] ifcWallTags = { "IfcWallStandardCase" };
     private void Awake() {
         navMeshAgent = this.GetComponent<NavMeshAgent>();
         // agentsSpawnHandler = FindObjectOfType<AgentsSpawnHandler>();
@@ -36,17 +40,6 @@ public class SocialForceAgent : MonoBehaviour {
     private void OnDestroy() {
         agents.Remove(this);
     }
-
-    // private void FixedUpdate() {
-    //     if (navMeshAgent == null) {
-    //         return;
-    //     }
-    //
-    //     Vector3 socialForce = calculateSocialForce();
-    //     socialForce = Vector3.ClampMagnitude(socialForce, maxSpeed);
-    //
-    //     navMeshAgent.velocity += socialForce / relaxationTime;
-    // }
 
     private void Update() {
         if (navMeshAgent == null) {
@@ -117,13 +110,8 @@ public class SocialForceAgent : MonoBehaviour {
         return obstaclesPoints.ToArray();
     }
 
+    
      private Vector3 agentInteractForce() { 
-        // Constant Values Based on (Moussaid et al., 2009)
-        const float lambda = 2.0f;    // Weight reflecting relative importance of velocity vector against position vector
-        const float gamma = 0.35f;    // Speed interaction
-        const float nPrime = 3.0f;    // Angular interaction
-        const float n = 2.0f;         // Angular interaction
-        const float A = 4.5f;         // Modal parameter A
 
         Vector3 agentPosition = this.transform.position;
 
