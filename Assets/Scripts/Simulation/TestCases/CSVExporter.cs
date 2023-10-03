@@ -31,8 +31,7 @@ public class CSVExporter
         return signboardData;
     }
 
-    private float normalize(float val, float valMin, float valMax, float min, float max) 
-    {
+    private float normalize(float val, float valMin, float valMax, float min, float max) {
         return (val - valMin) / (valMax - valMin) * (max - min) + min;
     }
     
