@@ -10,7 +10,8 @@ public class PedestrianSpeedMeasureEditor : Editor {
     public override void OnInspectorGUI() {
         DrawDefaultInspector();
 
-        if(GUILayout.Button("Start")) {
+        if(handler.SelectedAction != PedestrianSpeedMeasure.UseCase.NONE 
+           && GUILayout.Button("Start")) {
             handler.PerformSelectedAction();
         }
         

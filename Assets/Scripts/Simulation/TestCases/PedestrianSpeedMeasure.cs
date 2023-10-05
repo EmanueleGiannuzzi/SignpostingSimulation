@@ -20,11 +20,13 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
 
     private readonly Dictionary<NavMeshAgent, AgentInfo> crossingsLog = new ();
     private readonly Dictionary<NavMeshAgent, List<float>> agentSpeedLog = new ();
+    
 
     [ReadOnly]
     public bool testStarted = false;
     private const float POSITION_SAVE_FREQUENCY_HZ = 5f;
     private const float TEST_DURATION_SECONDS = 60f;
+    private const float SPAWN_RATE_PED_PER_SEC = 0.65f;
     
     private const float ACCEL_TEST_DURATION_SECONDS = 5f;
     private int ACCEL_TEST_MAX_READS;
@@ -117,12 +119,14 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         }
     }
 
-    private IEnumerator startAccelTest(Queue<IRouteMarker> route) {
+    private IEnumerator startAccelTest() {
+        Queue<IRouteMarker> route = new();
+        route.Enqueue(AreaFinish);
         testStarted = true;
-        while (true) {
+        while (testStarted) {
             NavMeshAgent agent = AreaStart.SpawnRoutedAgent(AgentPrefab, route).GetComponent<NavMeshAgent>();
             StartCoroutine(logAgentSpeed(agent));
-            yield return new WaitForSeconds(4f);
+            yield return new WaitForSeconds(1 / SPAWN_RATE_PED_PER_SEC);
         }
     }
 
@@ -133,7 +137,6 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     }
 
     private IEnumerator logAgentSpeed(NavMeshAgent agent) {
-        
         agentSpeedLog.Add(agent, new List<float>());
         int i = 0;
         while (i < ACCEL_TEST_MAX_READS && agent != null) {
@@ -144,18 +147,36 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         }
     }
 
+    private IEnumerator startCounterflowTest() {
+        Queue<IRouteMarker> routeForward = new();
+        Queue<IRouteMarker> routeBackwards = new();
+        routeForward.Enqueue(AreaFinish);
+        routeBackwards.Enqueue(AreaFinish);
+        
+        testStarted = true;
+        while (testStarted) {
+            NavMeshAgent agentForward = AreaStart.SpawnRoutedAgent(AgentPrefab, routeForward).GetComponent<NavMeshAgent>();
+            NavMeshAgent agentBackwards = AreaFinish.SpawnRoutedAgent(AgentPrefab, routeForward).GetComponent<NavMeshAgent>();
+            // StartCoroutine(logAgentSpeed(agent));
+            yield return new WaitForSeconds(1 / SPAWN_RATE_PED_PER_SEC);
+        }
+    }
+
+    private void stopCounterflowTest() {
+        
+    }
+
     private void PerformAction(UseCase action) {
         switch (action) {
             case UseCase.NONE:
                 break;
             case UseCase.ACELERATION_TEST:
-                Queue<IRouteMarker> route = new Queue<IRouteMarker>();
-                route.Enqueue(AreaFinish);
-                
-                StartCoroutine(startAccelTest(route));
+                StartCoroutine(startAccelTest());
                 Invoke(nameof(stopAccelTest), TEST_DURATION_SECONDS);
                 break;
             case UseCase.GO_TO_AND_BACK:
+                StartCoroutine(startAccelTest(route));
+                Invoke(nameof(stopAccelTest), TEST_DURATION_SECONDS);
                 break;
             case UseCase.DOUBLE_GO_TO_AND_BACK:
                 break;
