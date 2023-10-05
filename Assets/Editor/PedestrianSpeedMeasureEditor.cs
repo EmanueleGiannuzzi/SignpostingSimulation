@@ -21,17 +21,15 @@ public class PedestrianSpeedMeasureEditor : Editor {
             switch (handler.SelectedAction) {
                 case PedestrianSpeedMeasure.UseCase.NONE:
                     break;
-                case PedestrianSpeedMeasure.UseCase.ACELERATION_TEST:
+                case PedestrianSpeedMeasure.UseCase.ACCELERATION_TEST:
                     handler.ExportSpeedLogCSV(pathToCSV);
                     break;
-                case PedestrianSpeedMeasure.UseCase.GO_TO_AND_BACK:
-                    break;
-                case PedestrianSpeedMeasure.UseCase.DOUBLE_GO_TO_AND_BACK:
+                case PedestrianSpeedMeasure.UseCase.COUNTERFLOW_TEST:
+                    handler.ExportTrajectoriesCSV(pathToCSV);
                     break;
                 default:
                     break;
             }
-            // handler.ExportTrajectoriesCSV(pathToCSV);
         }
         GUI.enabled = true;
     }

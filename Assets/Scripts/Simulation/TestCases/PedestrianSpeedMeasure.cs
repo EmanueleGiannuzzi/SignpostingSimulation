@@ -19,13 +19,14 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     public InputArea AreaFinish;
 
     private readonly Dictionary<NavMeshAgent, AgentInfo> crossingsLog = new ();
+    private readonly Dictionary<NavMeshAgent, AgentInfo> crossingsLog = new ();
     private readonly Dictionary<NavMeshAgent, List<float>> agentSpeedLog = new ();
     
 
     [ReadOnly]
     public bool testStarted = false;
     private const float POSITION_SAVE_FREQUENCY_HZ = 5f;
-    private const float TEST_DURATION_SECONDS = 60f;
+    private const float TEST_DURATION_SECONDS = 60f * 2;
     private const float SPAWN_RATE_PED_PER_SEC = 0.65f;
     
     private const float ACCEL_TEST_DURATION_SECONDS = 5f;
@@ -35,18 +36,13 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         public string agentName;
         public readonly float startingTime;
         public List<Vector2> agentPos;
-        public Direction direction;
         public float time;
+        
+        public AgentInfo() {}
 
-        public enum Direction {
-            LEFT,
-            RIGHT
-        }
-
-        public AgentInfo(int agentID, float startingTime, Direction direction) {
+        public AgentInfo(int agentID, float startingTime) {
             this.agentName = $"Agent{agentID}";
             this.startingTime = startingTime;
-            this.direction = direction;  
             this.agentPos = new List<Vector2>();
             time = 0f;
         }
@@ -57,9 +53,8 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
 
     public enum UseCase {
         NONE,
-        ACELERATION_TEST,
-        GO_TO_AND_BACK,
-        DOUBLE_GO_TO_AND_BACK
+        ACCELERATION_TEST,
+        COUNTERFLOW_TEST
     }
 
 
@@ -101,10 +96,10 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         }
 
         float now = Time.time;
-        AgentInfo agentInfo = new AgentInfo(agent.GetHashCode(), now, AgentInfo.Direction.RIGHT);
+        AgentInfo agentInfo = new AgentInfo(agent.GetHashCode(), now);
         crossingsLog.Add(agent, agentInfo);
         
-        Debug.Log("Agent entered");
+        // Debug.Log("Agent entered");
     }
 
     private void onFinishCrossed(NavMeshAgent agent, Collider triggerCollider) {
@@ -115,7 +110,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
 
             crossingsLog[agent].time = elapsed;
             
-            Debug.Log("Agent exited in " + elapsed);
+            // Debug.Log("Agent exited in " + elapsed);
         }
     }
 
@@ -147,38 +142,38 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         }
     }
 
-    private IEnumerator startCounterflowTest() {
+    private IEnumerator counterflowTest() {
         Queue<IRouteMarker> routeForward = new();
         Queue<IRouteMarker> routeBackwards = new();
         routeForward.Enqueue(AreaFinish);
-        routeBackwards.Enqueue(AreaFinish);
+        routeBackwards.Enqueue(AreaStart);
         
         testStarted = true;
         while (testStarted) {
-            NavMeshAgent agentForward = AreaStart.SpawnRoutedAgent(AgentPrefab, routeForward).GetComponent<NavMeshAgent>();
-            NavMeshAgent agentBackwards = AreaFinish.SpawnRoutedAgent(AgentPrefab, routeForward).GetComponent<NavMeshAgent>();
+            AreaStart.SpawnRoutedAgent(AgentPrefab, routeForward);
+            AreaFinish.SpawnRoutedAgent(AgentPrefab, routeBackwards);
             // StartCoroutine(logAgentSpeed(agent));
             yield return new WaitForSeconds(1 / SPAWN_RATE_PED_PER_SEC);
         }
     }
 
     private void stopCounterflowTest() {
-        
+        StopCoroutine(counterflowTest());
+        testStarted = false;
+        Debug.Log("Job's done");
     }
 
     private void PerformAction(UseCase action) {
         switch (action) {
             case UseCase.NONE:
                 break;
-            case UseCase.ACELERATION_TEST:
+            case UseCase.ACCELERATION_TEST:
                 StartCoroutine(startAccelTest());
                 Invoke(nameof(stopAccelTest), TEST_DURATION_SECONDS);
                 break;
-            case UseCase.GO_TO_AND_BACK:
-                StartCoroutine(startAccelTest(route));
-                Invoke(nameof(stopAccelTest), TEST_DURATION_SECONDS);
-                break;
-            case UseCase.DOUBLE_GO_TO_AND_BACK:
+            case UseCase.COUNTERFLOW_TEST:
+                StartCoroutine(counterflowTest());
+                Invoke(nameof(stopCounterflowTest), TEST_DURATION_SECONDS);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(action), action, null);
@@ -235,20 +230,29 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     public void ExportTrajectoriesCSV(string pathToFile) {
         using StreamWriter writer = new StreamWriter(pathToFile);
         using CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-        csv.Configuration.RegisterClassMap(new PedestrianTestDataMap());
-        csv.Configuration.HasHeaderRecord = true;
+        // csv.Configuration.RegisterClassMap(new PedestrianTestDataMap());
+        // csv.Configuration.HasHeaderRecord = true;
         
         csv.WriteField("sep=" + csv.Configuration.Delimiter, false);
         csv.NextRecord();
-        csv.WriteRecords(crossingsLog);
+
+        foreach (AgentInfo agentInfo in crossingsLog.Values) {
+            string row = "";
+            foreach (Vector2 position in agentInfo.agentPos) {
+                
+            }
+            csv.WriteRecord(agentInfo);
+            csv.NextRecord();
+        }
+        // csv.WriteRecords(crossingsLog);
     }
     
-    private sealed class PedestrianTestDataMap : ClassMap<AgentInfo> {
-        public PedestrianTestDataMap() {
-            Map(agentInfo => agentInfo.agentName).Name("Name");
-            Map(m => m.direction).Name("Direction");
-            Map(m => m.agentPos).Name("Positions");
-            Map(m => m.time).Name("Time");
-        }
-    }
+    // private sealed class PedestrianTestDataMap : ClassMap<AgentInfo> {
+    //     public PedestrianTestDataMap() {
+    //         Map(agentInfo => agentInfo.agentName).Name("Name");
+    //         Map(m => m.direction).Name("Direction");
+    //         Map(m => m.agentPos).Name("Positions");
+    //         Map(m => m.time).Name("Time");
+    //     }
+    // }
 }

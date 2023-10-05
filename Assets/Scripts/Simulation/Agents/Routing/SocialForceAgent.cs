@@ -64,7 +64,7 @@ public class SocialForceAgent : MonoBehaviour {
 
     private void OnDrawGizmos() {
         var agentPosition = this.transform.position;
-        DebugExtension.DrawArrow(agentPosition + Vector3.up, driving, Color.green);
+        // DebugExtension.DrawArrow(agentPosition + Vector3.up, driving, Color.green);
         DebugExtension.DrawArrow(agentPosition + Vector3.up, agentInteract, Color.blue);
         DebugExtension.DrawArrow(agentPosition + Vector3.up, wallInteract, Color.magenta);
         DebugExtension.DrawArrow(agentPosition + Vector3.up, velocity, Color.red);
