@@ -5,7 +5,7 @@ using UnityEngine;
 public class PedestrianSpeedMeasureEditor : Editor {
     private PedestrianSpeedMeasure handler;
 
-    private string pathToCSV = "C:/Users/emagi/Desktop/pedestrianTests.csv";
+    private string pathToCSV = "C:/Users/emagi/Desktop/PedestrianTest";
     
     public override void OnInspectorGUI() {
         DrawDefaultInspector();

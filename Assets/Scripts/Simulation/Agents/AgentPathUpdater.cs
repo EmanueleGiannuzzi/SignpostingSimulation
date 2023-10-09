@@ -17,7 +17,7 @@ public class AgentPathUpdater : MonoBehaviour {
             NavMesh.CalculatePath(transform.position, navMeshAgent.destination, NavMesh.AllAreas, path);
             navMeshAgent.SetPath(path);
         }
-        for (int i = 0; i < path.corners.Length - 1; i++)
-            Debug.DrawLine(path.corners[i], path.corners[i + 1], Color.red);
+        // for (int i = 0; i < path.corners.Length - 1; i++)
+        //     Debug.DrawLine(path.corners[i], path.corners[i + 1], Color.red);
     }
 }
