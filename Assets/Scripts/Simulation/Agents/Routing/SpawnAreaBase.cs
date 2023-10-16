@@ -5,29 +5,41 @@ using UnityEngine;
 public abstract class SpawnAreaBase : MonoBehaviour {
     public bool Enabled = true;
     protected Environment environment;
+    
+    private static List<GameObject> agentsSpawned = new();
 
-    protected const float SPAWNED_AGENTS_MIN_DISTANCE = 3f;
+    private const float SPAWNED_AGENTS_INITIAL_MIN_DISTANCE = 5f;
+    private const float SPAWNED_AGENTS_MIN_DISTANCE = 1f;
 
     protected void Start() {
         environment = FindObjectOfType<Environment>();
     }
 
-    protected bool isSpawnPointCloseToAgents(IEnumerable<GameObject> agents, Vector3 point, float maxDistance) {
-        if (environment.GetAgents() == null) {
+    protected static List<GameObject> GetAgents() {
+        return agentsSpawned;
+    }
+
+    private static bool isSpawnPointCloseToAgents(IEnumerable<GameObject> agents, Vector3 point, float minDistance) {
+        if (agents == null || agents.Count() <= 0) {
             return false;
         }
-        
+
+        float min = float.MaxValue;
         foreach (GameObject agent in agents) {
+            if (agent == null) {
+                continue;
+            }
             Vector3 distanceVector = point - agent.transform.position;
-            if (distanceVector.sqrMagnitude < maxDistance * maxDistance) {
+            if (distanceVector.sqrMagnitude < minDistance * minDistance) {
                 return true;
             }
         }
         return false;
     }
+    
 
-    protected GameObject SpawnAgent(GameObject agentPrefab) {
-        return SpawnAgent(environment.GetAgents().Cast<GameObject>(), agentPrefab);
+    public GameObject SpawnAgent(GameObject agentPrefab) {
+        return SpawnAgent(GetAgents(), agentPrefab);
     }
 
     protected GameObject SpawnAgent(IEnumerable<GameObject> agents, GameObject agentPrefab) {
@@ -35,20 +47,26 @@ public abstract class SpawnAreaBase : MonoBehaviour {
         Vector3 position = agentTransform.position;
         Vector3 localScale = agentTransform.localScale / 2;
 
-        List<GameObject> agentList = agents.ToList();
         Vector3 spawnPoint;
-        const int MAX_TENTATIVES = 1000;
-        int tentatives = 0;
+        const int MAX_TENTATIVES = 50;
+        float agentsMinDistance = SPAWNED_AGENTS_INITIAL_MIN_DISTANCE;
+        bool spawnPointFound;
         do {
-            if (tentatives >= MAX_TENTATIVES) {
-                Debug.LogError("Unable to Spawn Agent: Spawn Area too full.");
-                return null;
-            }
-            float randX = Random.Range(-localScale.x, localScale.x) * 9;
-            float randZ = Random.Range(-localScale.z, localScale.z) * 9;
-            spawnPoint = new Vector3(position.x + randX, position.y, position.z + randZ);
-            tentatives++;
-        } while (isSpawnPointCloseToAgents(agentList, spawnPoint, SPAWNED_AGENTS_MIN_DISTANCE));
+            var tentatives = 0;
+            do {
+                float randX = Random.Range(-localScale.x, localScale.x) * 9.5f;
+                float randZ = Random.Range(-localScale.z, localScale.z) * 9.5f;
+                spawnPoint = new Vector3(position.x + randX, position.y, position.z + randZ);
+                tentatives++;
+                spawnPointFound = !isSpawnPointCloseToAgents(agents, spawnPoint, agentsMinDistance);
+            } while (tentatives < MAX_TENTATIVES && !spawnPointFound);
+            agentsMinDistance -= agentsMinDistance * 0.2f;
+        } while (!spawnPointFound && agentsMinDistance > SPAWNED_AGENTS_MIN_DISTANCE);
+
+        if (!spawnPointFound) {
+            Debug.LogWarning("Unable to spawn agent. Skipping. " + agentsMinDistance);
+            return null;
+        }
 
         GameObject agent = Instantiate(agentPrefab, spawnPoint, Quaternion.identity);
 
@@ -56,6 +74,7 @@ public abstract class SpawnAreaBase : MonoBehaviour {
             environment.OnAgentSpawned();
         }
 
+        agentsSpawned.Add(agent);
         return agent;
     }
 

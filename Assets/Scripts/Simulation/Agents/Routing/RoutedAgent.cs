@@ -47,8 +47,12 @@ public class RoutedAgent : MonoBehaviour {
     public void SetRoute(Queue<IRouteMarker> newRoute) {
         route = newRoute;
         if (newRoute.TryPeek(out IRouteMarker destination)) {
-            agent.SetDestination(destination.Position);
+            SetDestination(destination.Position);
         }
+    }
+
+    public void SetDestination(Vector3 destination) {
+        agent.SetDestination(destination);
     }
 
     // private void OnDrawGizmos() {

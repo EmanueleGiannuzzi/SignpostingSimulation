@@ -18,6 +18,8 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
 
     private readonly Dictionary<NavMeshAgent, AgentInfo> positionLog = new ();
     private readonly Dictionary<NavMeshAgent, List<float>> agentSpeedLog = new ();
+
+    private const string CSV_DELIMITER = ",";
     
 
     [ReadOnly]
@@ -38,12 +40,16 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
             this.agentName = $"Agent{agentID}";
             this.startingTime = startingTime;
             this.agentPos = new List<Vector2>();
-            time = 0f;
+            time = -1f;
         }
 
         public AgentInfo(int agentID, float startingTime, EventAgentTriggerCollider startCheckpoint) 
             : this(agentID, startingTime) {
             this.startCheckpoint = startCheckpoint;
+        }
+
+        public bool HasFinished() {
+            return time > 0f;
         }
     }
     
@@ -63,27 +69,15 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
             checkpoint.collisionEvent.AddListener(onCheckpointCrossed);
         }
     }
-
-    // private IEnumerator logAgentPositions() {
-    //     if (!testStarted) {
-    //         yield return null;
-    //     }
-    //     
-    //     foreach (NavMeshAgent agent in positionLog.Keys) {
-    //         positionLog[agent].agentPos.Add(agent.transform.position);
-    //     }
-    //
-    //     yield return new WaitForSeconds(1 / POSITION_SAVE_FREQUENCY_HZ);
-    // }
-
+    
     private void stopTest() {
         // StopCoroutine(logAgentPositions());
     }
 
     private void onTestStarted() {
         testStarted = true;
-        // StartCoroutine(logAgentPositions());
         Invoke(nameof(stopTest), TEST_DURATION_SECONDS);
+        Debug.Log("Test Started");
     }
 
 
@@ -99,16 +93,18 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     }
     
     private void onStartCrossed(NavMeshAgent agent, Collider checkpoint) {
-        if (!testStarted && positionLog.Count <= 0) {
-            onTestStarted();
+        if (testStarted) {
+            StartCoroutine(logAgentPosition(agent, checkpoint.GetComponent<EventAgentTriggerCollider>()));
         }
-        
-        StartCoroutine(logAgentPosition(agent, checkpoint.GetComponent<EventAgentTriggerCollider>()));
         // Debug.Log("Agent entered");
     }
     
     private void onFinishCrossed(NavMeshAgent agent, Collider checkpoint) {
-        if (positionLog.ContainsKey(agent)) {
+        if (!testStarted && positionLog.Count <= 0) {
+            onTestStarted();
+        }
+        
+        if (testStarted && positionLog.ContainsKey(agent)) {
             float startTime = positionLog[agent].startingTime;
             float now = Time.time;
             float elapsed = now - startTime;
@@ -117,6 +113,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
             StopCoroutine(logAgentPosition(agent, positionLog[agent].startCheckpoint));
             // Debug.Log("Agent exited in " + elapsed);
         }
+        Destroy(agent.gameObject);
     }
 
     private IEnumerator startAccelTest() {
@@ -150,24 +147,37 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     private IEnumerator logAgentPosition(NavMeshAgent agent, EventAgentTriggerCollider checkpoint) {
         positionLog.Add(agent, new AgentInfo(agent.GetHashCode(), Time.time, checkpoint));
         
-        while (testStarted && agent != null) {
+        while (testStarted && !positionLog[agent].HasFinished() && agent != null) {
             Vector3 pos = agent.transform.position;
+            Vector3 offset = this.transform.position;
             
-            positionLog[agent].agentPos.Add(pos);
-            yield return new WaitForSeconds(1 / POSITION_SAVE_FREQUENCY_HZ);
+            positionLog[agent].agentPos.Add(new(pos.x - offset.x, pos.z - offset.z));
+            yield return new WaitForSeconds(1f / POSITION_SAVE_FREQUENCY_HZ);
         }
-    } 
+    }
+
+    private void setAgentDestination(GameObject agent, IRouteMarker routeDestination) {
+        if (agent == null) {
+            return;
+        }
+
+        Vector3 agentDestination = new Vector3(agent.transform.position.x, routeDestination.Position.y, routeDestination.Position.z);
+        agent.GetComponent<RoutedAgent>().SetDestination(agentDestination);
+    }
 
     private IEnumerator counterflowTest() {
-        Queue<IRouteMarker> routeForward = new();
-        Queue<IRouteMarker> routeBackwards = new();
-        routeForward.Enqueue(AreaFinish);
-        routeBackwards.Enqueue(AreaStart);
+        // Queue<IRouteMarker> routeForward = new();
+        // Queue<IRouteMarker> routeBackwards = new();
+        // routeForward.Enqueue(AreaFinish);
+        // routeBackwards.Enqueue(AreaStart);
         
         testStarted = true;
         while (testStarted) {
-            NavMeshAgent agent1 = AreaStart.SpawnRoutedAgent(AgentPrefab, routeForward).GetComponent<NavMeshAgent>();
-            NavMeshAgent agent2 = AreaFinish.SpawnRoutedAgent(AgentPrefab, routeBackwards).GetComponent<NavMeshAgent>();
+            GameObject agent1 = AreaStart.SpawnAgent(AgentPrefab);
+            GameObject agent2 = AreaFinish.SpawnAgent(AgentPrefab);
+            setAgentDestination(agent1, AreaFinish);
+            setAgentDestination(agent2, AreaStart);
+            
             yield return new WaitForSeconds(1 / SPAWN_RATE_PED_PER_SEC);
         }
     }
@@ -203,7 +213,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         using StreamWriter writer = new StreamWriter(Path.Combine(pathToFolder, "AccelerationTest.csv"));
         using CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
         csv.Configuration.HasHeaderRecord = true;
-        csv.Configuration.Delimiter = ";";
+        csv.Configuration.Delimiter = CSV_DELIMITER;
 
         csv.WriteField("sep=" + csv.Configuration.Delimiter, false);
         csv.NextRecord();
@@ -243,17 +253,9 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     }
 
     public void ExportTrajectoriesCSV(string pathToFolder) {
-        // using StreamWriter writer = new StreamWriter(pathToFile);
-        // csv.Configuration.RegisterClassMap(new PedestrianTestDataMap());
-        // csv.Configuration.HasHeaderRecord = true;
-        
         Debug.Log("Export Started " + Checkpoints.Length);
         
         Dictionary<NavMeshAgent, AgentInfo>[] directionalPosLogs = new Dictionary<NavMeshAgent, AgentInfo>[Checkpoints.Length];
-        // for (int i = 0; i < Checkpoints.Length; i++) {
-        //     var checkpoint = Checkpoints[i];
-        //     directionalPosLogs[i] = new Dictionary<NavMeshAgent, AgentInfo>(positionLog.Where(pair => pair.Value.startCheckpoint == checkpoint));
-        // }
         for (int i = 0; i < Checkpoints.Length; i++) {
             directionalPosLogs[i] = new Dictionary<NavMeshAgent, AgentInfo>();
             var checkpoint = Checkpoints[i];
@@ -268,7 +270,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         foreach (var posLog in directionalPosLogs) {
             using StreamWriter writer = new StreamWriter(Path.Combine(pathToFolder, $"Trajectories_{j}.csv"));
             using CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-            csv.Configuration.Delimiter = ";";
+            csv.Configuration.Delimiter = CSV_DELIMITER;
             csv.WriteField("sep=" + csv.Configuration.Delimiter, false);
             csv.NextRecord();
 
@@ -278,31 +280,24 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
                 valuesFound = false;
                 string row = "";
                 foreach (var agentInfo in posLog.Values) {
-                    List<Vector2> agentPos = agentInfo.agentPos;
-                    if (k < agentPos.Count) {
-                        valuesFound = true;
-                        row += agentPos[k].x + csv.Configuration.Delimiter + agentPos[k].y + csv.Configuration.Delimiter;
+                    if (agentInfo.HasFinished()) {
+                        List<Vector2> agentPos = agentInfo.agentPos;
+                        if (k < agentPos.Count) {
+                            valuesFound = true;
+                            row += agentPos[k].x + csv.Configuration.Delimiter + agentPos[k].y +
+                                   csv.Configuration.Delimiter;
+                        }
                     }
                 }
 
                 if (valuesFound) {
-                    csv.WriteField(row);
+                    csv.WriteField(row, false);
                     csv.NextRecord();
                 }
-
                 k++;
             } while (valuesFound);
             j++;
         }
         Debug.Log("Export Done");
     }
-    
-    // private sealed class PedestrianTestDataMap : ClassMap<AgentInfo> {
-    //     public PedestrianTestDataMap() {
-    //         Map(agentInfo => agentInfo.agentName).Name("Name");
-    //         Map(m => m.direction).Name("Direction");
-    //         Map(m => m.agentPos).Name("Positions");
-    //         Map(m => m.time).Name("Time");
-    //     }
-    // }
 }
