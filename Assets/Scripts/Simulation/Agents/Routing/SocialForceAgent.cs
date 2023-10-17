@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -61,6 +62,9 @@ public class SocialForceAgent : MonoBehaviour {
     private Vector3 driving;
     private Vector3 agentInteract;
     private Vector3 wallInteract;
+    
+    private Vector3 tijDebug;
+    private Vector3 nijDebug;
 
     private void OnDrawGizmos() {
         var agentPosition = this.transform.position;
@@ -68,6 +72,9 @@ public class SocialForceAgent : MonoBehaviour {
         DebugExtension.DrawArrow(agentPosition + Vector3.up, agentInteract, Color.blue);
         DebugExtension.DrawArrow(agentPosition + Vector3.up, wallInteract, Color.magenta);
         DebugExtension.DrawArrow(agentPosition + Vector3.up, velocity, Color.red);
+        
+        DebugExtension.DrawArrow(agentPosition + Vector3.up, tijDebug, Color.cyan);
+        DebugExtension.DrawArrow(agentPosition + Vector3.up, nijDebug, Color.yellow);
     }
 
     private Vector3 calculateSocialForce() {
@@ -112,7 +119,12 @@ public class SocialForceAgent : MonoBehaviour {
 
     
      private Vector3 agentInteractForce() { 
-
+         float lambda = SocialForceAgent.lambda;
+         float gamma =  SocialForceAgent.gamma;
+         float nPrime =  SocialForceAgent.nPrime;
+         float n =  SocialForceAgent.n;
+         float A =  SocialForceAgent.A;
+         
         Vector3 agentPosition = this.transform.position;
 
         Vector3 force = new Vector3(0.0f, 0.0f, 0.0f);
@@ -143,7 +155,11 @@ public class SocialForceAgent : MonoBehaviour {
 
             theta += B * 0.005f;
             float d = Vector3.Magnitude(distance_ij);
-            Vector3 n_ij = Quaternion.Euler(0f, -90f, 0f) * t_ij;
+            // Vector3 n_ij = Quaternion.Euler(0f, -90f, 0f) * t_ij;
+            Vector3 n_ij = new Vector3(-t_ij.z, t_ij.y, t_ij.x);
+
+            tijDebug = -t_ij;
+            nijDebug = -n_ij;
             
             Vector3 force_ij = -A * Mathf.Exp(-d/B) * 
                                (Mathf.Exp(- Mathf.Pow(nPrime * B * theta, 2)) * t_ij + 

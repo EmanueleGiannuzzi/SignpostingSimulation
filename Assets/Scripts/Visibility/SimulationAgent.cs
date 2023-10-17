@@ -123,7 +123,7 @@ public class SimulationAgent : MonoBehaviour {
         float angleToPoint = Mathf.Rad2Deg * Mathf.Acos(Vector2.Dot(directionLooking, directionSignboard));
         float angleFOV = environment.AgentFOVDegrees;
 
-        return angleToPoint <= (angleFOV / 2);
+        return angleToPoint <= angleFOV / 2;
     }
 
     private void OnDrawGizmos() {

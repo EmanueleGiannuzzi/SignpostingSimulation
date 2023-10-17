@@ -113,8 +113,14 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
             StopCoroutine(logAgentPosition(agent, positionLog[agent].startCheckpoint));
             // Debug.Log("Agent exited in " + elapsed);
         }
+        StartCoroutine(destroyAgentDelayed(agent.gameObject, 2f));
+    }
+
+    private static IEnumerator destroyAgentDelayed(GameObject agent, float time) {
+        yield return new WaitForSeconds(time);
         Destroy(agent.gameObject);
     }
+    
 
     private IEnumerator startAccelTest() {
         Queue<IRouteMarker> route = new();
@@ -266,37 +272,29 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
             }
         }
 
-        int j = 0;
+        int directionIndex = 0;
         foreach (var posLog in directionalPosLogs) {
-            using StreamWriter writer = new StreamWriter(Path.Combine(pathToFolder, $"Trajectories_{j}.csv"));
+            using StreamWriter writer = new StreamWriter(Path.Combine(pathToFolder, $"Trajectories_{directionIndex}.csv"));
             using CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
             csv.Configuration.Delimiter = CSV_DELIMITER;
             csv.WriteField("sep=" + csv.Configuration.Delimiter, false);
             csv.NextRecord();
 
-            bool valuesFound;
-            int k = 0;
-            do {
-                valuesFound = false;
-                string row = "";
-                foreach (var agentInfo in posLog.Values) {
-                    if (agentInfo.HasFinished()) {
-                        List<Vector2> agentPos = agentInfo.agentPos;
-                        if (k < agentPos.Count) {
-                            valuesFound = true;
-                            row += agentPos[k].x + csv.Configuration.Delimiter + agentPos[k].y +
-                                   csv.Configuration.Delimiter;
-                        }
+            foreach (var agentInfo in posLog.Values) {
+                if (agentInfo.HasFinished()) {
+                    string rowX = "";
+                    string rowY = "";
+                    foreach (var agentPos in agentInfo.agentPos) {
+                        rowX += agentPos.x + csv.Configuration.Delimiter;
+                        rowY += agentPos.y + csv.Configuration.Delimiter;
                     }
-                }
-
-                if (valuesFound) {
-                    csv.WriteField(row, false);
+                    csv.WriteField(rowX, false);
+                    csv.NextRecord();
+                    csv.WriteField(rowY, false);
                     csv.NextRecord();
                 }
-                k++;
-            } while (valuesFound);
-            j++;
+            }
+            directionIndex++;
         }
         Debug.Log("Export Done");
     }
