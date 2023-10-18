@@ -21,12 +21,14 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
 
     private const string CSV_DELIMITER = ",";
     
-
     [ReadOnly]
     public bool testStarted = false;
+    [ReadOnly]
+    public bool testFinished = false;
+    public float testDurationSeconds = 60f * 2;
     private const float POSITION_SAVE_FREQUENCY_HZ = 5f;
-    private const float TEST_DURATION_SECONDS = 60f * 2;
-    private const float SPAWN_RATE_PED_PER_SEC = 0.65f;
+    // private const float SPAWN_RATE_PED_PER_SEC = 0.65f;
+    private const float SPAWN_RATE_PED_PER_SEC = 0.20f;
     private int ACCEL_TEST_MAX_READS;
 
     private class AgentInfo {
@@ -64,20 +66,23 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
 
 
     private void Start() { 
-        ACCEL_TEST_MAX_READS = Mathf.CeilToInt(1f / Time.fixedDeltaTime * TEST_DURATION_SECONDS);
+        ACCEL_TEST_MAX_READS = Mathf.CeilToInt(1f / Time.fixedDeltaTime * testDurationSeconds);
         foreach (var checkpoint in Checkpoints) {
             checkpoint.collisionEvent.AddListener(onCheckpointCrossed);
         }
     }
     
     private void stopTest() {
-        // StopCoroutine(logAgentPositions());
+        testStarted = false;
+        testFinished = true;
+        Debug.Log("Job's done");
     }
 
     private void onTestStarted() {
-        testStarted = true;
-        Invoke(nameof(stopTest), TEST_DURATION_SECONDS);
         Debug.Log("Test Started");
+        testStarted = true;
+        testFinished = false;
+        Invoke(nameof(stopTest), testDurationSeconds);
     }
 
 
@@ -93,14 +98,12 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     }
     
     private void onStartCrossed(NavMeshAgent agent, Collider checkpoint) {
-        if (testStarted) {
-            StartCoroutine(logAgentPosition(agent, checkpoint.GetComponent<EventAgentTriggerCollider>()));
-        }
+        StartCoroutine(logAgentPosition(agent, checkpoint.GetComponent<EventAgentTriggerCollider>()));
         // Debug.Log("Agent entered");
     }
     
     private void onFinishCrossed(NavMeshAgent agent, Collider checkpoint) {
-        if (!testStarted && positionLog.Count <= 0) {
+        if (!testStarted && !testFinished) {
             onTestStarted();
         }
         
@@ -113,7 +116,8 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
             StopCoroutine(logAgentPosition(agent, positionLog[agent].startCheckpoint));
             // Debug.Log("Agent exited in " + elapsed);
         }
-        StartCoroutine(destroyAgentDelayed(agent.gameObject, 2f));
+        Destroy(agent.gameObject);
+        // StartCoroutine(destroyAgentDelayed(agent.gameObject, 0.5f));
     }
 
     private static IEnumerator destroyAgentDelayed(GameObject agent, float time) {
@@ -123,6 +127,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     
 
     private IEnumerator startAccelTest() {
+        Debug.Log("Accel Test Started");
         Queue<IRouteMarker> route = new();
         route.Enqueue(AreaFinish);
         testStarted = true;
@@ -152,12 +157,11 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
 
     private IEnumerator logAgentPosition(NavMeshAgent agent, EventAgentTriggerCollider checkpoint) {
         positionLog.Add(agent, new AgentInfo(agent.GetHashCode(), Time.time, checkpoint));
-        
         while (testStarted && !positionLog[agent].HasFinished() && agent != null) {
             Vector3 pos = agent.transform.position;
             Vector3 offset = this.transform.position;
             
-            positionLog[agent].agentPos.Add(new(pos.x - offset.x, pos.z - offset.z));
+            positionLog[agent].agentPos.Add(new Vector2(pos.x - offset.x, pos.z - offset.z));
             yield return new WaitForSeconds(1f / POSITION_SAVE_FREQUENCY_HZ);
         }
     }
@@ -172,27 +176,27 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     }
 
     private IEnumerator counterflowTest() {
-        // Queue<IRouteMarker> routeForward = new();
-        // Queue<IRouteMarker> routeBackwards = new();
-        // routeForward.Enqueue(AreaFinish);
-        // routeBackwards.Enqueue(AreaStart);
+        Queue<IRouteMarker> routeForward = new();
+        Queue<IRouteMarker> routeBackwards = new();
+        routeForward.Enqueue(AreaFinish);
+        routeBackwards.Enqueue(AreaStart);
         
-        testStarted = true;
-        while (testStarted) {
+        while (!testFinished) {
+            // GameObject agent1 = AreaStart.SpawnAgent(AgentPrefab);
+            // GameObject agent2 = AreaFinish.SpawnAgent(AgentPrefab);
+            // setAgentDestination(agent1, AreaFinish);
+            // setAgentDestination(agent2, AreaStart);
             GameObject agent1 = AreaStart.SpawnAgent(AgentPrefab);
             GameObject agent2 = AreaFinish.SpawnAgent(AgentPrefab);
-            setAgentDestination(agent1, AreaFinish);
-            setAgentDestination(agent2, AreaStart);
+            if (agent1 != null)
+                agent1.GetComponent<RoutedAgent>().SetRoute(routeForward);
+            if (agent2 != null)
+                agent2.GetComponent<RoutedAgent>().SetRoute(routeBackwards);
             
             yield return new WaitForSeconds(1 / SPAWN_RATE_PED_PER_SEC);
         }
     }
 
-    private void stopCounterflowTest() {
-        StopCoroutine(counterflowTest());
-        testStarted = false;
-        Debug.Log("Job's done");
-    }
 
     private void PerformAction(UseCase action) {
         switch (action) {
@@ -200,11 +204,10 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
                 break;
             case UseCase.ACCELERATION_TEST:
                 StartCoroutine(startAccelTest());
-                Invoke(nameof(stopAccelTest), TEST_DURATION_SECONDS);
+                Invoke(nameof(stopAccelTest), testDurationSeconds);
                 break;
             case UseCase.COUNTERFLOW_TEST:
                 StartCoroutine(counterflowTest());
-                Invoke(nameof(stopCounterflowTest), TEST_DURATION_SECONDS);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(action), action, null);

@@ -9,14 +9,15 @@ public class PedestrianSpeedMeasureEditor : Editor {
     
     public override void OnInspectorGUI() {
         DrawDefaultInspector();
-
-        if(handler.SelectedAction != PedestrianSpeedMeasure.UseCase.NONE 
-           && GUILayout.Button("Start")) {
+        
+        GUI.enabled = Application.isPlaying && handler.SelectedAction != PedestrianSpeedMeasure.UseCase.NONE;
+        if(GUILayout.Button("Start")) {
             handler.PerformSelectedAction();
         }
+        GUI.enabled = true;
         
         pathToCSV = EditorGUILayout.TextField("Path to CSV: ", pathToCSV);
-        GUI.enabled = !handler.testStarted;
+        GUI.enabled = handler.testFinished;
         if(GUILayout.Button("Export to CSV")) {
             switch (handler.SelectedAction) {
                 case PedestrianSpeedMeasure.UseCase.NONE:

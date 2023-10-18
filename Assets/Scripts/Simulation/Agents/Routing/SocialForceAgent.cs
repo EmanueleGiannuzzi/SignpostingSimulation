@@ -62,9 +62,6 @@ public class SocialForceAgent : MonoBehaviour {
     private Vector3 driving;
     private Vector3 agentInteract;
     private Vector3 wallInteract;
-    
-    private Vector3 tijDebug;
-    private Vector3 nijDebug;
 
     private void OnDrawGizmos() {
         var agentPosition = this.transform.position;
@@ -72,9 +69,6 @@ public class SocialForceAgent : MonoBehaviour {
         DebugExtension.DrawArrow(agentPosition + Vector3.up, agentInteract, Color.blue);
         DebugExtension.DrawArrow(agentPosition + Vector3.up, wallInteract, Color.magenta);
         DebugExtension.DrawArrow(agentPosition + Vector3.up, velocity, Color.red);
-        
-        DebugExtension.DrawArrow(agentPosition + Vector3.up, tijDebug, Color.cyan);
-        DebugExtension.DrawArrow(agentPosition + Vector3.up, nijDebug, Color.yellow);
     }
 
     private Vector3 calculateSocialForce() {
@@ -117,7 +111,6 @@ public class SocialForceAgent : MonoBehaviour {
         return obstaclesPoints.ToArray();
     }
 
-    
      private Vector3 agentInteractForce() { 
          float lambda = SocialForceAgent.lambda;
          float gamma =  SocialForceAgent.gamma;
@@ -158,9 +151,6 @@ public class SocialForceAgent : MonoBehaviour {
             // Vector3 n_ij = Quaternion.Euler(0f, -90f, 0f) * t_ij;
             Vector3 n_ij = new Vector3(-t_ij.z, t_ij.y, t_ij.x);
 
-            tijDebug = -t_ij;
-            nijDebug = -n_ij;
-            
             Vector3 force_ij = -A * Mathf.Exp(-d/B) * 
                                (Mathf.Exp(- Mathf.Pow(nPrime * B * theta, 2)) * t_ij + 
                                 Mathf.Exp(- Mathf.Pow(n * B * theta, 2)) * n_ij);
