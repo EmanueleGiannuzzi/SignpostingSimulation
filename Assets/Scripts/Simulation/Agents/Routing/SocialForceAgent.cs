@@ -122,40 +122,60 @@ public class SocialForceAgent : MonoBehaviour {
 
         Vector3 force = new Vector3(0.0f, 0.0f, 0.0f);
 
+        Vector3 e_ij, D_ij, t_ij, n_ij;
+        float B, theta, f_v, f_theta;
+        int K;
         foreach (SocialForceAgent otherAgent in getCloseAgents()) {
             if (otherAgent == this) continue;
+            // Compute Distance Between Agent j and i
             Vector3 distance_ij = otherAgent.transform.position - agentPosition;
+
+            // Skip Computation if Agents i and j are Too Far Away
             if (Vector3.SqrMagnitude(distance_ij) > maxInteractionDistance * maxInteractionDistance) {
                 continue;
             }
 
-            Vector3 e_ij = distance_ij.normalized;
+            // Compute Direction of Agent j from i
+            // Formula: e_ij = (position_j - position_i) / ||position_j - position_i||
+            e_ij = distance_ij;
+            e_ij.Normalize();
 
             // Compute Interaction Vector Between Agent i and j
-            // Formula: interactionDirection = Lambda * (Velocity_i - Velocity_j) + directionIJ
-            Vector3 D_ij = lambda * (this.velocity - otherAgent.velocity) + e_ij;
+            // Formula: D = lambda * (velocity_i - velocity_j) + e_ij
+            D_ij = lambda * (velocity - otherAgent.velocity) + e_ij;
 
             // Compute Modal Parameter B
-            // Formula: B = Gamma * ||interactionDirection||
-            float B = gamma *  Vector3.Magnitude(D_ij);
+            // Formula: B = gamma * ||D_ij||
+            B = gamma * D_ij.magnitude;
 
             // Compute Interaction Direction
-            // Formula: interactionDirection = interactionDirection / ||interactionDirection||
-            Vector3 t_ij = D_ij.normalized;
+            // Formula: t_ij = D_ij / ||D_ij||
+            t_ij = D_ij;
+            t_ij.Normalize();
 
-            // Compute Angle Between Interaction Direction (interactionDirection) and Vector Pointing from Agent i to j (directionIJ)
-            float theta = Vector3.Angle(t_ij, e_ij) * Mathf.Deg2Rad;
+            // Compute Angle Between Interaction Direction (t_ij) and Vector Pointing from Agent i to j (e_ij)
+            theta = Vector3.SignedAngle(e_ij, t_ij, Vector3.up) * Mathf.Deg2Rad;
 
-            theta += B * 0.005f;
-            float d = Vector3.Magnitude(distance_ij);
-            // Vector3 n_ij = Quaternion.Euler(0f, -90f, 0f) * t_ij;
-            Vector3 n_ij = new Vector3(-t_ij.z, t_ij.y, t_ij.x);
+            // Compute Sign of Angle 'theta'
+            // Formula: K = theta / |theta|
+            K = theta == 0 ? 0 : (int)(theta / Mathf.Abs(theta));
 
-            Vector3 force_ij = -A * Mathf.Exp(-d/B) * 
-                               (Mathf.Exp(- Mathf.Pow(nPrime * B * theta, 2)) * t_ij + 
-                                Mathf.Exp(- Mathf.Pow(n * B * theta, 2)) * n_ij);
+            Debug.Log("K: " + K + " theta: " + theta * Mathf.Rad2Deg);
             
-            force += force_ij;
+            // Compute Amount of Deceleration
+            // Formula: f_v = -A * exp(-distance_ij / B - ((n_prime * B * theta) * (n_prime * B * theta)))
+            f_v = -A * Mathf.Exp(-distance_ij.magnitude / B - ((nPrime * B * theta) * (nPrime * B * theta)));
+
+            // Compute Amount of Directional Changes
+            // Formula: f_theta = -A * K * exp(-distance_ij / B - ((n * B * theta) * (n * B * theta)))
+            f_theta = -A * K * Mathf.Exp(-distance_ij.magnitude / B - ((n * B * theta) * (n * B * theta)));
+
+            // Compute Normal Vector of Interaction Direction Oriented to the Left
+            n_ij = new Vector3(-t_ij.z, 0f, t_ij.x);
+
+            // Compute Interaction Force
+            // Formula: f_ij = f_v * t_ij + f_theta * n_ij
+            force += f_v * t_ij + f_theta * n_ij;
         }
         
         return force;

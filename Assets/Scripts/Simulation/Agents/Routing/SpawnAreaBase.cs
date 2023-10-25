@@ -11,6 +11,8 @@ public abstract class SpawnAreaBase : MonoBehaviour {
     private const float SPAWNED_AGENTS_INITIAL_MIN_DISTANCE = 5f;
     private const float SPAWNED_AGENTS_MIN_DISTANCE = 1f;
 
+    public bool IsSpawnRandom = true;
+
     protected void Start() {
         environment = FindObjectOfType<Environment>();
     }
@@ -43,9 +45,9 @@ public abstract class SpawnAreaBase : MonoBehaviour {
     }
 
     protected GameObject SpawnAgent(IEnumerable<GameObject> agents, GameObject agentPrefab) {
-        Transform agentTransform = this.transform;
-        Vector3 position = agentTransform.position;
-        Vector3 localScale = agentTransform.localScale / 2;
+        Transform spawnAreaTransform = this.transform;
+        Vector3 position = spawnAreaTransform.position;
+        Vector3 localScale = spawnAreaTransform.localScale / 2;
 
         Vector3 spawnPoint;
         const int MAX_TENTATIVES = 50;
@@ -54,9 +56,13 @@ public abstract class SpawnAreaBase : MonoBehaviour {
         do {
             var tentatives = 0;
             do {
-                float randX = Random.Range(-localScale.x, localScale.x) * 9.5f;
-                float randZ = Random.Range(-localScale.z, localScale.z) * 9.5f;
-                spawnPoint = new Vector3(position.x + randX, position.y, position.z + randZ);
+                float randXOffset = 0;
+                float randZOffset = 0;
+                if (IsSpawnRandom) {
+                    randXOffset = Random.Range(-localScale.x, localScale.x) * 9.5f;
+                    randZOffset = Random.Range(-localScale.z, localScale.z) * 9.5f;
+                }
+                spawnPoint = new Vector3(position.x + randXOffset, position.y, position.z + randZOffset);
                 tentatives++;
                 spawnPointFound = !isSpawnPointCloseToAgents(agents, spawnPoint, agentsMinDistance);
             } while (tentatives < MAX_TENTATIVES && !spawnPointFound);
