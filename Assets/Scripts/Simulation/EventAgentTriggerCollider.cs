@@ -1,14 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
+
+public class AgentCollisionEvent : UnityEvent<NavMeshAgent, EventAgentTriggerCollider> { }
 
 [RequireComponent(typeof(Collider))]
 public class EventAgentTriggerCollider : MonoBehaviour {
-    [HideInInspector]
-    public CollisionEvent collisionEvent;
+    public readonly AgentCollisionEvent collisionEvent = new ();
     private new Collider collider;
 
     private void Start() {
-        collisionEvent ??= new CollisionEvent();
         collider = GetComponent<Collider>();
         if (!collider.isTrigger) {
             collider.isTrigger = true;
@@ -17,6 +18,6 @@ public class EventAgentTriggerCollider : MonoBehaviour {
     }
 
     public void OnAgentCrossed(NavMeshAgent agent) {
-        collisionEvent.Invoke(agent, collider);
+        collisionEvent.Invoke(agent, this);
     }
 }

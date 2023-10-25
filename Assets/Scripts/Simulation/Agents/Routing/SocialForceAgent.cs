@@ -22,11 +22,17 @@ public class SocialForceAgent : MonoBehaviour {
     private const float speedStdDeviation = 0.19f; 
     private NormalDistribution desiredSpeed;
     // Constant Values Based on (Moussaid et al., 2009)
-    private static readonly NormalDistribution lambda = new(2.0f, 0.2f);    // 2.0 +- 0.2 Weight reflecting relative importance of velocity vector against position vector
-    private static readonly NormalDistribution gamma =  new(0.35f, 0.01f);    // 0.35 +- 0.01 Speed interaction
-    private static readonly NormalDistribution nPrime =  new(3.0f, 0.7f);    // 3.0 +- 0.7 Angular interaction
-    private static readonly NormalDistribution n =  new(2.0f, 0.1f);         // 2.0 +- 0.1 Angular interaction
-    private static readonly NormalDistribution A =  new(4.5f, 0.3f);         // 4.5 +- 0.3 Modal parameter A
+    private static readonly NormalDistribution lambdaDistribution = new(2.0f, 0.2f);    // 2.0 +- 0.2 Weight reflecting relative importance of velocity vector against position vector
+    private static readonly NormalDistribution gammaDistribution =  new(0.35f, 0.01f);    // 0.35 +- 0.01 Speed interaction
+    private static readonly NormalDistribution nPrimeDistribution =  new(3.0f, 0.7f);    // 3.0 +- 0.7 Angular interaction
+    private static readonly NormalDistribution nDistribution =  new(2.0f, 0.1f);         // 2.0 +- 0.1 Angular interaction
+    private static readonly NormalDistribution ADistribution =  new(4.5f, 0.3f);         // 4.5 +- 0.3 Modal parameter A
+    
+    private readonly float lambda = lambdaDistribution;
+    private readonly float gamma =  gammaDistribution;
+    private readonly float nPrime =  nPrimeDistribution;
+    private readonly float n =  nDistribution;
+    private readonly float A =  ADistribution;
     
     private void Awake() {
         navMeshAgent = this.GetComponent<NavMeshAgent>();
@@ -112,16 +118,12 @@ public class SocialForceAgent : MonoBehaviour {
     }
 
      private Vector3 agentInteractForce() { 
-         float lambda = SocialForceAgent.lambda;
-         float gamma =  SocialForceAgent.gamma;
-         float nPrime =  SocialForceAgent.nPrime;
-         float n =  SocialForceAgent.n;
-         float A =  SocialForceAgent.A;
          
         Vector3 agentPosition = this.transform.position;
 
         Vector3 force = new Vector3(0.0f, 0.0f, 0.0f);
 
+        
         Vector3 e_ij, D_ij, t_ij, n_ij;
         float B, theta, f_v, f_theta;
         int K;
@@ -155,12 +157,11 @@ public class SocialForceAgent : MonoBehaviour {
 
             // Compute Angle Between Interaction Direction (t_ij) and Vector Pointing from Agent i to j (e_ij)
             theta = Vector3.SignedAngle(e_ij, t_ij, Vector3.up) * Mathf.Deg2Rad;
+            theta += B * 0.005f;
 
             // Compute Sign of Angle 'theta'
             // Formula: K = theta / |theta|
             K = theta == 0 ? 0 : (int)(theta / Mathf.Abs(theta));
-
-            Debug.Log("K: " + K + " theta: " + theta * Mathf.Rad2Deg);
             
             // Compute Amount of Deceleration
             // Formula: f_v = -A * exp(-distance_ij / B - ((n_prime * B * theta) * (n_prime * B * theta)))

@@ -56,8 +56,8 @@ public abstract class SpawnAreaBase : MonoBehaviour {
         do {
             var tentatives = 0;
             do {
-                float randXOffset = 0;
-                float randZOffset = 0;
+                float randXOffset = 0f;
+                float randZOffset = 0f;
                 if (IsSpawnRandom) {
                     randXOffset = Random.Range(-localScale.x, localScale.x) * 9.5f;
                     randZOffset = Random.Range(-localScale.z, localScale.z) * 9.5f;

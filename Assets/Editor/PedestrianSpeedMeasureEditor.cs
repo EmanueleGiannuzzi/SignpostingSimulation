@@ -21,14 +21,13 @@ public class PedestrianSpeedMeasureEditor : Editor {
         if(GUILayout.Button("Export to CSV")) {
             switch (handler.SelectedAction) {
                 case PedestrianSpeedMeasure.UseCase.NONE:
+                    // handler.ExportSpeedLogCSV(pathToCSV);
                     break;
-                case PedestrianSpeedMeasure.UseCase.ACCELERATION_TEST:
-                    handler.ExportSpeedLogCSV(pathToCSV);
-                    break;
-                case PedestrianSpeedMeasure.UseCase.COUNTERFLOW_TEST:
+                case PedestrianSpeedMeasure.UseCase.BACK_AND_FORTH:
                     handler.ExportTrajectoriesCSV(pathToCSV);
                     break;
-                default:
+                case PedestrianSpeedMeasure.UseCase.COUNTERFLOW:
+                    handler.ExportTrajectoriesCSV(pathToCSV);
                     break;
             }
         }
