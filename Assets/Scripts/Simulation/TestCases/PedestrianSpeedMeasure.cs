@@ -20,7 +20,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     private readonly Dictionary<NavMeshAgent, AgentInfo> positionLog = new ();
     private readonly Dictionary<NavMeshAgent, List<float>> agentSpeedLog = new ();
 
-    private const string CSV_DELIMITER = ",";
+    private const string CSV_DELIMITER = ";";
     
     [ReadOnly]
     public bool testStarted = false;
@@ -32,35 +32,34 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     private const float POSITION_SAVE_FREQUENCY_HZ = 5f;
     // private const float SPAWN_RATE_PED_PER_SEC = 0.65f;
     private const float SPAWN_RATE_PED_PER_SEC = 0.20f;
+    // private const float DESTINATION_ERROR = 0.5f;
+    private const float DESTINATION_ERROR = 0f;
     private int ACCEL_TEST_MAX_READS;
 
     private class AgentInfo {
-        // public string agentName;
-        // public readonly float startingTime;
-        public List<Vector2> agentPos;
-        // public float time;
-        public EventAgentTriggerCollider startCheckpoint;
+        public readonly List<Vector2> agentPos = new ();
+        public readonly EventAgentTriggerCollider startCheckpoint;
+        public bool shouldLogTrajectory = false;
+        public int crossingNumber = 0;
         
-        public AgentInfo(int agentID, float startingTime) {
-            // this.agentName = $"Agent{agentID}";
-            // this.startingTime = startingTime;
-            this.agentPos = new List<Vector2>();
-            // time = -1f;
-        }
-
-        public AgentInfo(int agentID, float startingTime, EventAgentTriggerCollider startCheckpoint) 
-            : this(agentID, startingTime) {
+        public AgentInfo(EventAgentTriggerCollider startCheckpoint) {
             this.startCheckpoint = startCheckpoint;
         }
     }
     
     
     public UseCase SelectedAction;
+    public LoggingType SelectedLoggingType;
 
     public enum UseCase {
         NONE,
         BACK_AND_FORTH,
-        COUNTERFLOW,
+        COUNTERFLOW
+    }
+
+    public enum LoggingType {
+        ALL,
+        LEFT_RIGHT_ONLY
     }
 
 
@@ -97,6 +96,20 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         else {
             onStartCrossed(agent, checkpointCrossed);
         }
+
+        positionLog[agent].crossingNumber++;
+        switch (SelectedLoggingType) {
+            case LoggingType.ALL:
+                positionLog[agent].shouldLogTrajectory = !positionLog[agent].shouldLogTrajectory;
+                break;
+            case LoggingType.LEFT_RIGHT_ONLY:
+                bool shouldLogTrajectory = (positionLog[agent].crossingNumber - 1) % 4 == 0;
+                positionLog[agent].shouldLogTrajectory = shouldLogTrajectory;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        Debug.Log(positionLog[agent].shouldLogTrajectory);
     }
     
     private void onStartCrossed(NavMeshAgent agent, EventAgentTriggerCollider checkpoint) {
@@ -106,17 +119,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     }
 
     private void onFinishCrossed(NavMeshAgent agent, EventAgentTriggerCollider checkpoint) {
-        // if (!testStarted && !testFinished) {
-        //     onTestStarted();
-        // }
-        //
-        // if (testStarted && positionLog.ContainsKey(agent)) {
-        //     float startTime = positionLog[agent].startingTime;
-        //     float now = Time.time;
-        //     float elapsed = now - startTime;
-        //
-        //     positionLog[agent].time = elapsed;
-        // }
+        
     }
     
     private IEnumerator startAccelTest() {
@@ -149,12 +152,15 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     }
 
     private IEnumerator logAgentPosition(NavMeshAgent agent, EventAgentTriggerCollider checkpoint) {
-        positionLog.Add(agent, new AgentInfo(agent.GetHashCode(), Time.time, checkpoint));
+        positionLog.Add(agent, new AgentInfo(checkpoint));
         while (testStarted && agent != null) {
-            Vector3 pos = agent.transform.position;
-            Vector3 offset = this.transform.position;
-            
-            positionLog[agent].agentPos.Add(new Vector2(pos.x - offset.x, pos.z - offset.z));
+            if (positionLog[agent].shouldLogTrajectory) {
+                Vector3 pos = agent.transform.position;
+                Vector3 offset = this.transform.position;
+                
+                positionLog[agent].agentPos.Add(new Vector2(pos.x - offset.x, pos.z - offset.z));
+                Debug.Log("BANANA");
+            }
             yield return new WaitForSeconds(1f / POSITION_SAVE_FREQUENCY_HZ);
         }
     }
@@ -198,7 +204,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
             GameObject agentObject = AreaStart.SpawnAgent(AgentPrefab);
             if (agentObject != null) {
                 RoutedAgent routedAgent = agentObject.GetComponent<RoutedAgent>();
-                routedAgent.Error = 0.5f;
+                routedAgent.Error = DESTINATION_ERROR;
                 routedAgent.SetRoute(route);
             }
             yield return new WaitForSeconds(testDurationSeconds);
