@@ -5,8 +5,6 @@ using UnityEngine;
 public class PedestrianSpeedMeasureEditor : Editor {
     private PedestrianSpeedMeasure handler;
 
-    private string pathToCSV = "C:/Users/emagi/Desktop/PedestrianTest";
-    
     public override void OnInspectorGUI() {
         DrawDefaultInspector();
         
@@ -16,7 +14,7 @@ public class PedestrianSpeedMeasureEditor : Editor {
         }
         GUI.enabled = true;
         
-        pathToCSV = EditorGUILayout.TextField("Path to CSV: ", pathToCSV);
+        handler.pathToCSV = EditorGUILayout.TextField("Path to CSV: ", handler.pathToCSV);
         GUI.enabled = handler.testFinished;
         if(GUILayout.Button("Export to CSV")) {
             switch (handler.SelectedAction) {
@@ -24,10 +22,10 @@ public class PedestrianSpeedMeasureEditor : Editor {
                     // handler.ExportSpeedLogCSV(pathToCSV);
                     break;
                 case PedestrianSpeedMeasure.UseCase.BACK_AND_FORTH:
-                    handler.ExportTrajectoriesCSV(pathToCSV);
+                    handler.ExportTrajectoriesCSV(handler.pathToCSV);
                     break;
                 case PedestrianSpeedMeasure.UseCase.COUNTERFLOW:
-                    handler.ExportTrajectoriesCSV(pathToCSV);
+                    handler.ExportTrajectoriesCSV(handler.pathToCSV);
                     break;
             }
         }

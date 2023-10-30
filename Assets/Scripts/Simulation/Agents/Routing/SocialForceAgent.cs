@@ -34,6 +34,10 @@ public class SocialForceAgent : MonoBehaviour {
     private readonly float n =  nDistribution;
     private readonly float A =  ADistribution;
     
+    private Vector3 driving;
+    private Vector3 agentInteract;
+    private Vector3 wallInteract;
+    
     private void Awake() {
         navMeshAgent = this.GetComponent<NavMeshAgent>();
         // agentsSpawnHandler = FindObjectOfType<AgentsSpawnHandler>();
@@ -64,10 +68,6 @@ public class SocialForceAgent : MonoBehaviour {
 
         navMeshAgent.transform.position = this.transform.position + velocity * stepTime;
     }
-    
-    private Vector3 driving;
-    private Vector3 agentInteract;
-    private Vector3 wallInteract;
 
     private void OnDrawGizmos() {
         var agentPosition = this.transform.position;

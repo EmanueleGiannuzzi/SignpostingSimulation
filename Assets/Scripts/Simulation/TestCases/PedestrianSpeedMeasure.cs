@@ -20,7 +20,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     private readonly Dictionary<NavMeshAgent, AgentInfo> positionLog = new ();
     private readonly Dictionary<NavMeshAgent, List<float>> agentSpeedLog = new ();
 
-    private const string CSV_DELIMITER = ";";
+    private const string CSV_DELIMITER = ",";
     
     [ReadOnly]
     public bool testStarted = false;
@@ -36,14 +36,29 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     private const float DESTINATION_ERROR = 0f;
     private int ACCEL_TEST_MAX_READS;
 
+    [HideInInspector]
+    public string pathToCSV;
+    
     private class AgentInfo {
-        public readonly List<Vector2> agentPos = new ();
-        public readonly EventAgentTriggerCollider startCheckpoint;
-        public bool shouldLogTrajectory = false;
-        public int crossingNumber = 0;
-        
+        public List<List<Vector2>> AgentPos { get; } = new();
+        public EventAgentTriggerCollider StartCheckpoint { get; }
+        public bool ShouldLogTrajectory = false;
+        public int CrossingNumber = 0;
+        private List<Vector2> currentTrajectory;
+
         public AgentInfo(EventAgentTriggerCollider startCheckpoint) {
-            this.startCheckpoint = startCheckpoint;
+            StartCheckpoint = startCheckpoint;
+            NextTrajectory();
+        }
+
+        public void NextTrajectory() {
+            List<Vector2> trajectory = new();
+            AgentPos.Add(trajectory);
+            currentTrajectory = trajectory;
+        }
+
+        public void AddPosition(Vector2 pos) {
+            currentTrajectory.Add(pos);
         }
     }
     
@@ -88,8 +103,8 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     }
 
     private void onCheckpointCrossed(NavMeshAgent agent, EventAgentTriggerCollider checkpointCrossed) {
-        if (positionLog.ContainsKey(agent) ) {
-            if (positionLog[agent].startCheckpoint != checkpointCrossed) {
+        if (positionLog.TryGetValue(agent, out var agentInfo) ) {
+            if (agentInfo.StartCheckpoint != checkpointCrossed) {
                 onFinishCrossed(agent, checkpointCrossed);
             }
         }
@@ -97,19 +112,22 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
             onStartCrossed(agent, checkpointCrossed);
         }
 
-        positionLog[agent].crossingNumber++;
+        positionLog[agent].CrossingNumber++;
         switch (SelectedLoggingType) {
             case LoggingType.ALL:
-                positionLog[agent].shouldLogTrajectory = !positionLog[agent].shouldLogTrajectory;
+                positionLog[agent].ShouldLogTrajectory = !positionLog[agent].ShouldLogTrajectory;
                 break;
             case LoggingType.LEFT_RIGHT_ONLY:
-                bool shouldLogTrajectory = (positionLog[agent].crossingNumber - 1) % 4 == 0;
-                positionLog[agent].shouldLogTrajectory = shouldLogTrajectory;
+                bool shouldLogTrajectory = (positionLog[agent].CrossingNumber - 1) % 4 == 0;
+                positionLog[agent].ShouldLogTrajectory = shouldLogTrajectory;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        Debug.Log(positionLog[agent].shouldLogTrajectory);
+
+        if (positionLog[agent].ShouldLogTrajectory) {
+            positionLog[agent].NextTrajectory();
+        }
     }
     
     private void onStartCrossed(NavMeshAgent agent, EventAgentTriggerCollider checkpoint) {
@@ -154,12 +172,11 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     private IEnumerator logAgentPosition(NavMeshAgent agent, EventAgentTriggerCollider checkpoint) {
         positionLog.Add(agent, new AgentInfo(checkpoint));
         while (testStarted && agent != null) {
-            if (positionLog[agent].shouldLogTrajectory) {
+            if (positionLog[agent].ShouldLogTrajectory) {
                 Vector3 pos = agent.transform.position;
-                Vector3 offset = this.transform.position;
+                Vector3 offset = transform.position;
                 
-                positionLog[agent].agentPos.Add(new Vector2(pos.x - offset.x, pos.z - offset.z));
-                Debug.Log("BANANA");
+                positionLog[agent].AddPosition(new Vector2(pos.x - offset.x, pos.z - offset.z));
             }
             yield return new WaitForSeconds(1f / POSITION_SAVE_FREQUENCY_HZ);
         }
@@ -209,7 +226,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
             }
             yield return new WaitForSeconds(testDurationSeconds);
             NavMeshAgent agent = agentObject.GetComponent<NavMeshAgent>();
-            StopCoroutine(logAgentPosition(agent, positionLog[agent].startCheckpoint));
+            StopCoroutine(logAgentPosition(agent, positionLog[agent].StartCheckpoint));
             Destroy(agentObject);
         }
         stopTest();
@@ -281,44 +298,57 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         }
     }
 
+    private static bool isPositiveTrajectory(IReadOnlyList<Vector2> trajectory) {
+        float[] yAxis = new float[trajectory.Count];
+        for (int i = 0; i < yAxis.Length; i++) {
+            yAxis[i] = trajectory[i].y;
+        }
+        return Mathf.Abs(yAxis.Max()) > Mathf.Abs(yAxis.Min());
+    }
+
     public void ExportTrajectoriesCSV(string pathToFolder) {
         Debug.Log("Export Started " + Checkpoints.Length);
-        
+
         Dictionary<NavMeshAgent, AgentInfo>[] directionalPosLogs = new Dictionary<NavMeshAgent, AgentInfo>[Checkpoints.Length];
         for (int i = 0; i < Checkpoints.Length; i++) {
             directionalPosLogs[i] = new Dictionary<NavMeshAgent, AgentInfo>();
             var checkpoint = Checkpoints[i];
             foreach (var pair in positionLog) {
-                if (pair.Value.startCheckpoint.Equals(checkpoint)) {
+                if (pair.Value.StartCheckpoint.Equals(checkpoint)) {
                     directionalPosLogs[i].Add(pair.Key, pair.Value);
                 }
             }
         }
 
+        CultureInfo cultureInfo = CultureInfo.InvariantCulture;
         int directionIndex = 0;
         foreach (var posLog in directionalPosLogs) {
             if (posLog.IsNullOrEmpty())
                 continue;
-            
+
             using StreamWriter writer = new StreamWriter(Path.Combine(pathToFolder, $"Trajectories_{directionIndex}.csv"));
-            using CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            using CsvWriter csv = new CsvWriter(writer, cultureInfo);
             csv.Configuration.Delimiter = CSV_DELIMITER;
             csv.WriteField("sep=" + csv.Configuration.Delimiter, false);
             csv.NextRecord();
 
             foreach (var agentInfo in posLog.Values) {
-                // if (agentInfo.HasFinished()) {
-                string rowX = "";
-                string rowY = "";
-                foreach (var agentPos in agentInfo.agentPos) {
-                    rowX += agentPos.x + csv.Configuration.Delimiter;
-                    rowY += agentPos.y + csv.Configuration.Delimiter;
+                foreach (List<Vector2> trajectory in agentInfo.AgentPos) {
+                    if (trajectory.IsNullOrEmpty() || !isPositiveTrajectory(trajectory)) {
+                        continue;
+                    }
+                    string rowX = "";
+                    string rowY = "";
+                    foreach (var agentPos in trajectory) {
+                        rowX += agentPos.x.ToString(cultureInfo) + csv.Configuration.Delimiter;
+                        rowY += agentPos.y.ToString(cultureInfo) + csv.Configuration.Delimiter;
+                    }
+
+                    csv.WriteField(rowX, false);
+                    csv.NextRecord();
+                    csv.WriteField(rowY, false);
+                    csv.NextRecord();
                 }
-                csv.WriteField(rowX, false);
-                csv.NextRecord();
-                csv.WriteField(rowY, false);
-                csv.NextRecord();
-                // }
             }
             directionIndex++;
         }
