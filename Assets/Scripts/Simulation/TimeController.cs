@@ -1,3 +1,4 @@
+using Unity.Collections;
 using UnityEngine;
 
 public class TimeController : MonoBehaviour {
@@ -8,6 +9,8 @@ public class TimeController : MonoBehaviour {
     private float elapsed = 0f;
 
     private CircularBuffer<float> fpsBuffer = new(FPS_BUFFER_SIZE);
+
+    [ReadOnly] public float Multiplier;
     
     
     // private const float PROPORTIONAL_GAIN = 1f;
@@ -47,6 +50,8 @@ public class TimeController : MonoBehaviour {
         float scaleFactor = avgFPS / TargetFPS;
         float newTimeScale = Time.timeScale * scaleFactor;
         Time.timeScale = Mathf.Clamp(newTimeScale, 1f, 100f);
+
+        Multiplier = Time.timeScale;
         //update FixedDeltaTime?
     }
 }

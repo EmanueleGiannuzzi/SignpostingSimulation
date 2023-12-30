@@ -51,6 +51,7 @@ public abstract class SpawnAreaBase : MonoBehaviour {
 
         Vector3 spawnPoint;
         const int MAX_TENTATIVES = 50;
+        const float ERROR = 0.2f;
         float agentsMinDistance = SPAWNED_AGENTS_INITIAL_MIN_DISTANCE;
         bool spawnPointFound;
         do {
@@ -59,8 +60,10 @@ public abstract class SpawnAreaBase : MonoBehaviour {
                 float randXOffset = 0f;
                 float randZOffset = 0f;
                 if (IsSpawnRandom) {
-                    randXOffset = Random.Range(-localScale.x, localScale.x) * 9.5f;
-                    randZOffset = Random.Range(-localScale.z, localScale.z) * 9.5f;
+                    randXOffset = Random.Range(-ERROR, ERROR);
+                    randZOffset = Random.Range(-ERROR, ERROR);
+                    // randXOffset = Random.Range(-localScale.x, localScale.x) * 9.5f;
+                    // randZOffset = Random.Range(-localScale.z, localScale.z) * 9.5f;
                 }
                 spawnPoint = new Vector3(position.x + randXOffset, position.y, position.z + randZOffset);
                 tentatives++;

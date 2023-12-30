@@ -23,9 +23,11 @@ public class PedestrianSpeedMeasureEditor : Editor {
                     break;
                 case PedestrianSpeedMeasure.UseCase.BACK_AND_FORTH:
                     handler.ExportTrajectoriesCSV(handler.pathToCSV);
+                    handler.ExportLeftRightCount(handler.pathToCSV);
                     break;
                 case PedestrianSpeedMeasure.UseCase.COUNTERFLOW:
                     handler.ExportTrajectoriesCSV(handler.pathToCSV);
+                    handler.ExportLeftRightCount(handler.pathToCSV);
                     break;
             }
         }

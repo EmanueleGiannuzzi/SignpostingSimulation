@@ -15,9 +15,12 @@ public class SocialForceAgent : MonoBehaviour {
     private float radius => navMeshAgent.radius;
     private float maxSpeed => navMeshAgent.speed;
 
+    public int ChooseLeft { get; private set; } = 0;
+    public int ChooseRight { get; private set; } = 0;
+
     // private AgentsSpawnHandler agentsSpawnHandler;
     
-    private const float maxInteractionDistance = 2f;
+    private const float maxInteractionDistance = 100f;
     private const float relaxationTime = 0.54f; 
     private const float speedStdDeviation = 0.19f; 
     private NormalDistribution desiredSpeed;
@@ -156,6 +159,13 @@ public class SocialForceAgent : MonoBehaviour {
             // Compute Sign of Angle 'theta'
             // Formula: K = theta / |theta|
             int K = theta == 0 ? 0 : (int)(theta / Mathf.Abs(theta));
+
+            if (K >= 0) {
+                ChooseRight++;
+            }
+            else {
+                ChooseLeft++;
+            }
             
             // Compute Amount of Deceleration
             // Formula: f_v = -A * exp(-distance_ij / B - ((n_prime * B * theta) * (n_prime * B * theta)))

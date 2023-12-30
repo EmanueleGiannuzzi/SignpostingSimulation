@@ -26,18 +26,22 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     public bool testStarted = false;
     [ReadOnly]
     public bool testFinished = false;
+    [ReadOnly]
+    public int TestDone = 0;
 
     public int numberOfTests = 1;
     public float testDurationSeconds = 60f * 2;
     private const float POSITION_SAVE_FREQUENCY_HZ = 5f;
     // private const float SPAWN_RATE_PED_PER_SEC = 0.65f;
     private const float SPAWN_RATE_PED_PER_SEC = 0.20f;
-    // private const float DESTINATION_ERROR = 0.5f;
-    private const float DESTINATION_ERROR = 0f;
+    private const float DESTINATION_ERROR = 0.2f;
     private int ACCEL_TEST_MAX_READS;
 
     [HideInInspector]
     public string pathToCSV;
+    
+    private int chooseLeft = 0; 
+    private int chooseRight = 0; 
     
     private class AgentInfo {
         public List<List<Vector2>> AgentPos { get; } = new();
@@ -61,7 +65,6 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
             currentTrajectory.Add(pos);
         }
     }
-    
     
     public UseCase SelectedAction;
     public LoggingType SelectedLoggingType;
@@ -88,11 +91,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     private void stopTest() {
         testStarted = false;
         testFinished = true;
-
-        // foreach (NavMeshAgent agent in positionLog.Keys) {
-        //     StopCoroutine(logAgentPosition(agent, positionLog[agent].startCheckpoint));
-        //     Destroy(agent.gameObject);
-        // }
+        TestDone = 0;
         Debug.Log("Job's done");
     }
 
@@ -100,6 +99,10 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         Debug.Log("Test Started");
         testStarted = true;
         testFinished = false;
+        chooseLeft = 0;
+        chooseRight = 0;
+        positionLog.Clear();
+        agentSpeedLog.Clear();
     }
 
     private void onCheckpointCrossed(NavMeshAgent agent, EventAgentTriggerCollider checkpointCrossed) {
@@ -176,7 +179,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
                 Vector3 pos = agent.transform.position;
                 Vector3 offset = transform.position;
                 
-                positionLog[agent].AddPosition(new Vector2(pos.x - offset.x, pos.z - offset.z));
+                positionLog[agent].AddPosition(new Vector2(pos.z - offset.z, pos.x - offset.x));
             }
             yield return new WaitForSeconds(1f / POSITION_SAVE_FREQUENCY_HZ);
         }
@@ -191,43 +194,85 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         agent.GetComponent<RoutedAgent>().SetDestination(agentDestination);
     }
 
-    private IEnumerator counterflowTest() {
-        Queue<IRouteMarker> routeForward = new();
-        Queue<IRouteMarker> routeBackwards = new();
-        routeForward.Enqueue(AreaFinish);
-        routeBackwards.Enqueue(AreaStart);
-        
-        while (!testFinished) {
-            GameObject agent1 = AreaStart.SpawnAgent(AgentPrefab);
-            GameObject agent2 = AreaFinish.SpawnAgent(AgentPrefab);
-            if (agent1 != null)
-                agent1.GetComponent<RoutedAgent>().SetRoute(routeForward);
-            if (agent2 != null)
-                agent2.GetComponent<RoutedAgent>().SetRoute(routeBackwards);
-            
-            yield return new WaitForSeconds(1 / SPAWN_RATE_PED_PER_SEC);
+    private void SaveAgentLeftRightChoice(GameObject agentObject) {
+        SocialForceAgent socialForceAgent = agentObject.GetComponent<SocialForceAgent>();
+        chooseLeft += socialForceAgent.ChooseLeft;
+        chooseRight += socialForceAgent.ChooseRight;
+    }
+
+    private GameObject setupAgent(Queue<IRouteMarker> route, InputArea startingArea) {
+        GameObject agentObject = startingArea.SpawnAgent(AgentPrefab);
+        if (agentObject != null) {
+            RoutedAgent routedAgent = agentObject.GetComponent<RoutedAgent>();
+            routedAgent.Error = DESTINATION_ERROR;
+            routedAgent.SetRoute(route);
         }
+        return agentObject;
+    }
+
+    private void removeAgent(GameObject agentObject) {
+        NavMeshAgent agent = agentObject.GetComponent<NavMeshAgent>();
+        if (positionLog.ContainsKey(agent)) {
+            StopCoroutine(logAgentPosition(agent, positionLog[agent].StartCheckpoint));
+        }
+        SaveAgentLeftRightChoice(agentObject);
+        Destroy(agentObject);
+    }
+
+    private IEnumerator counterflowTest() {
+        onTestStarted();
+        for (int i = 0; i < numberOfTests; i++) {
+            Queue<IRouteMarker> routeForward = new();
+            Queue<IRouteMarker> routeBackwards = new();
+            for (int j = 0; j < 500; j++) {
+                routeForward.Enqueue(AreaFinish);
+                routeForward.Enqueue(AreaStart);
+                routeBackwards.Enqueue(AreaStart);
+                routeBackwards.Enqueue(AreaFinish);
+            }
+
+            GameObject agentObj1, agentObj2;
+            do {
+                agentObj1 = setupAgent(routeForward, AreaStart);
+                if (agentObj1 == null) {
+                    yield return new WaitForSeconds(1f);
+                }
+            } while (agentObj1 == null);
+            do {
+                agentObj2 = setupAgent(routeBackwards, AreaFinish);
+                if (agentObj2 == null) {
+                    yield return new WaitForSeconds(1f);
+                }
+            } while (agentObj2 == null);
+
+            yield return new WaitForSeconds(testDurationSeconds);
+            
+            removeAgent(agentObj1);
+            removeAgent(agentObj2);
+            TestDone++;
+        }
+        stopTest();
     }
 
     private IEnumerator backAndForthTest() {
         onTestStarted();
         for (int i = 0; i < numberOfTests; i++) {
             Queue<IRouteMarker> route = new();
-            for (int j = 0; j < 100; j++) {
+            for (int j = 0; j < 500; j++) {
                 route.Enqueue(AreaFinish);
                 route.Enqueue(AreaStart);
             }
-        
-            GameObject agentObject = AreaStart.SpawnAgent(AgentPrefab);
-            if (agentObject != null) {
-                RoutedAgent routedAgent = agentObject.GetComponent<RoutedAgent>();
-                routedAgent.Error = DESTINATION_ERROR;
-                routedAgent.SetRoute(route);
-            }
+            GameObject agentObject;
+            do {
+                agentObject = setupAgent(route, AreaStart);
+                if (agentObject == null) {
+                    yield return new WaitForSeconds(1f);
+                }
+            } while (agentObject == null);
             yield return new WaitForSeconds(testDurationSeconds);
-            NavMeshAgent agent = agentObject.GetComponent<NavMeshAgent>();
-            StopCoroutine(logAgentPosition(agent, positionLog[agent].StartCheckpoint));
-            Destroy(agentObject);
+            
+            removeAgent(agentObject);
+            TestDone++;
         }
         stopTest();
     }
@@ -306,8 +351,27 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         return Mathf.Abs(yAxis.Max()) > Mathf.Abs(yAxis.Min());
     }
 
+    public void ExportLeftRightCount(string pathToFolder) {
+        using StreamWriter writer = new StreamWriter(Path.Combine(pathToFolder, "LeftRight.csv"));
+        using CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+        csv.Configuration.HasHeaderRecord = true;
+        csv.Configuration.Delimiter = CSV_DELIMITER;
+
+        csv.WriteField("sep=" + csv.Configuration.Delimiter, false);
+        csv.NextRecord();
+        
+        string header = "LEFT" + csv.Configuration.Delimiter + "RIGHT";
+        csv.WriteField(header, false);
+        csv.NextRecord();
+        
+        csv.WriteField(chooseLeft + csv.Configuration.Delimiter + chooseRight, false);
+        csv.NextRecord();
+        
+        Debug.Log("LeftRight Export Done");
+    }
+
     public void ExportTrajectoriesCSV(string pathToFolder) {
-        Debug.Log("Export Started " + Checkpoints.Length);
+        Debug.Log("Export Started");
 
         Dictionary<NavMeshAgent, AgentInfo>[] directionalPosLogs = new Dictionary<NavMeshAgent, AgentInfo>[Checkpoints.Length];
         for (int i = 0; i < Checkpoints.Length; i++) {
@@ -352,6 +416,6 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
             }
             directionIndex++;
         }
-        Debug.Log("Export Done");
+        Debug.Log("Trajectory Export Done");
     }
 }
