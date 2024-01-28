@@ -12,7 +12,7 @@ public class AgentsSpawnHandler : MonoBehaviour
     public bool EnableSpawn = true;
     [Tooltip("Agents per second.")]
     [Range(0.0f, 100.0f)]
-    public float SpawRate;
+    public float SpawnRate;
 
     private GameObject AgentsGameObjectParent;
     private GameObject AgentPrefab;
@@ -57,8 +57,8 @@ public class AgentsSpawnHandler : MonoBehaviour
     }
 
     public void StartSpawn() {
-        if(SpawRate > 0) {
-            InvokeRepeating(nameof(SpawnAgents), 1f, 1 / SpawRate);
+        if(SpawnRate > 0) {
+            InvokeRepeating(nameof(SpawnAgents), 1f, 1 / SpawnRate);
         }
     }
 

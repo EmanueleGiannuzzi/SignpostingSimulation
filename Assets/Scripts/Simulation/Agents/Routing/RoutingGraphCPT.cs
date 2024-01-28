@@ -115,7 +115,6 @@ public class RoutingGraphCPT : OpenCPT {
         Queue<int> openCPTVertPos = getOpenCPT(startVertexPos);
         
         foreach (int vertexPos in openCPTVertPos) {
-            
             debug += vertexPos + " ";
             if (vertexPos < nVertices) {
                 openCPT.Enqueue(VertLabels[vertexPos]);
