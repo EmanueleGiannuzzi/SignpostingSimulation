@@ -56,10 +56,13 @@ public class MarkerGenerator : MonoBehaviour {
             Bounds traversableRendererBounds = traversableRenderer.bounds;
             Vector3 traversableCenter = traversableRendererBounds.center;
 
+            const float MIN_SIZE = 0.5f;
             if(TraversableCenterProjectionOnNavMesh(traversableCenter, out Vector3 projectionOnNavmesh)
                && traversableCenter.y > projectionOnNavmesh.y) {
                 float widthX = traversableRendererBounds.extents.x*2;
                 float widthZ = traversableRendererBounds.extents.z*2;
+                widthX = Mathf.Max(MIN_SIZE, widthX);
+                widthZ = Mathf.Max(MIN_SIZE, widthZ);
                 IntermediateMarker marker = SpawnMarker(projectionOnNavmesh, widthX, widthZ, $"IntermediateMarker-{spawnedMarkers}");
                 spawnedMarkers++;
                 
@@ -121,7 +124,7 @@ public class MarkerGenerator : MonoBehaviour {
         pos += new Vector3(0f, 0.01f, 0f);
         markerGO.transform.position = pos;
         markerGO.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-        markerGO.transform.localScale = new Vector3(widthX, widthZ, 1.0f);
+        markerGO.transform.localScale = new Vector3(widthX, widthZ, 1.6f);
         markerGO.GetComponent<Renderer>().sharedMaterial = markerMaterial;
         markerGO.layer = 10;
         markerGO.name = name;

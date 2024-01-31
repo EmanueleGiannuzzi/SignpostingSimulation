@@ -103,6 +103,8 @@ public class Environment : MonoBehaviour {
 
         signageBoards = FindObjectsOfType<SignBoard>();
         Debug.Log(signageBoards.Length + " Signage Boards found.");
+        
+        SignboardAgentViews = new int[GetVisibilityHandler().agentTypes.Length, signageBoards.Length];
 
         visibilityHandler.GenerateVisibilityData();
     }
@@ -212,7 +214,6 @@ public class Environment : MonoBehaviour {
             Dictionary<Vector2Int, VisibilityInfo>[] visInfos = visibilityHandler.visibilityInfos[visPlaneId];
             Dictionary<Vector2Int, VisibilityInfo> visInfoDictionary = visInfos[agentTypeID];
             foreach(VisibilityInfo value in visInfoDictionary.Values) {
-
                 Vector2 heading;
                 float distanceSquared;  
 
@@ -225,7 +226,6 @@ public class Environment : MonoBehaviour {
                     return value.GetVisibleBoards();
                 }
             }
-
         }
         return new List<int>();
     }
@@ -246,7 +246,16 @@ public class Environment : MonoBehaviour {
     public void OnAgentExitVisibilityArea(GameObject agent, int agentTypeID, int signboardID, float residenceTime) {
         SignBoard signBoard = signageBoards[signboardID];
 
+
         if(residenceTime >= signBoard.MinimumReadingTime) {
+            int sizeAgents = SignboardAgentViews.GetLength(0);
+            int sizeSignboard = SignboardAgentViews.GetLength(1);
+            if (agentTypeID >= sizeAgents || signboardID >= sizeSignboard) {
+                Debug.LogError($"agentTypeID={agentTypeID} [{sizeAgents}]  --  signboardID={signboardID} [{sizeSignboard}]");
+                return;
+            }
+            
+            
             SignboardAgentViews[agentTypeID, signboardID]++;
         }
 

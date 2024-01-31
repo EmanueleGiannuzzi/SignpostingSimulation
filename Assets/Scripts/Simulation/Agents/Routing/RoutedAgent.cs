@@ -11,6 +11,8 @@ public class RoutedAgent : MonoBehaviour {
 
     private Queue<IRouteMarker> route;
     public float Error { get; set; } = 0f;
+    
+    // private const float ARRIVED_DISTANCE_SQR = 0.09f;
 
     public Vector3 Target {
         get {

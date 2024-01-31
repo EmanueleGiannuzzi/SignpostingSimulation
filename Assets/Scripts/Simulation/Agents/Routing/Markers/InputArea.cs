@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = Unity.Mathematics.Random;
 
 public class InputArea : SpawnAreaBase, IRouteMarker {
     Vector3 IRouteMarker.Position => transform.position;
@@ -8,8 +11,11 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
     private RoutingGraphCPT routingGraph;
     private Queue<IRouteMarker> route;
     
+    private Random rand;
+    
 
     private void Awake() {
+        rand = new Random((uint)DateTime.Now.Millisecond);
         //base.Start();
         MarkerGenerator markerGen = FindObjectOfType<MarkerGenerator>();
         if (markerGen == null) {
@@ -51,14 +57,46 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
         return agent;
     }
 
+    private int RandomExponential(int max, float rateParameter) {
+        float randomUniform = rand.NextFloat(0f, 1f);
+        float expValue = -Mathf.Log(1 - randomUniform) / rateParameter;
+        return Mathf.Min(Mathf.FloorToInt(expValue) + 1, max);
+    }
+    
+    private Queue<IRouteMarker> thinPath(Queue<IRouteMarker> path) {
+        
+        Debug.Log($"Route max: {path.Count} items");
+        Queue<IRouteMarker> newPath = new Queue<IRouteMarker>(path);
+        int maxItemsToRemove = (int)Mathf.Floor(newPath.Count * 0.8f);
+        float rateParameter = 1 / (((float)maxItemsToRemove + 1) / 10);
+        // int itemsToRemove = maxItemsToRemove - RandomExponential(maxItemsToRemove, rateParameter);
+        int itemsToRemove = rand.NextInt(0, maxItemsToRemove);
+
+        for (int i = 0; i < itemsToRemove; i++) {
+            newPath.Dequeue();
+        }
+        Debug.Log($"Removed {itemsToRemove} items");
+        return newPath;
+    }
+
+    [CanBeNull]
     private GameObject SpawnRoutedAgent(GameObject agentPrefab) {
         if (routingGraph == null) {
             Debug.LogError("Unable to find a Routing Graph to spawn the agent");
             return null;
         }
         GameObject agent = SpawnAgent(agentPrefab);
+        if (agent == null) {
+            return null;
+        }
         
-        agent.GetComponent<RoutedAgent>().SetRoute(new Queue<IRouteMarker>(route));
+        RoutedAgent routedAgent = agent.GetComponent<RoutedAgent>();
+        if (routedAgent != null && route != null) {
+            routedAgent.SetRoute(thinPath(route));
+        }
+        else {
+            Destroy(routedAgent.gameObject);
+        }
         
         return agent;
     }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEngine;
 
 public abstract class SpawnAreaBase : MonoBehaviour {
@@ -39,11 +40,12 @@ public abstract class SpawnAreaBase : MonoBehaviour {
         return false;
     }
     
-
+    [CanBeNull]
     public GameObject SpawnAgent(GameObject agentPrefab) {
         return SpawnAgent(GetAgents(), agentPrefab);
     }
 
+    [CanBeNull]
     protected GameObject SpawnAgent(IEnumerable<GameObject> agents, GameObject agentPrefab) {
         Transform spawnAreaTransform = this.transform;
         Vector3 position = spawnAreaTransform.position;

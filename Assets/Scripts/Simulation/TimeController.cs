@@ -10,6 +10,7 @@ public class TimeController : MonoBehaviour {
 
     private CircularBuffer<float> fpsBuffer = new(FPS_BUFFER_SIZE);
 
+    [ReadOnly] public float CurrentFPS;
     [ReadOnly] public float Multiplier;
     
     
@@ -26,8 +27,8 @@ public class TimeController : MonoBehaviour {
     void Update() {
         elapsed += Time.deltaTime;
 
-        float currentFPS = 1f / Time.deltaTime;
-        fpsBuffer.PushBack(currentFPS);
+        CurrentFPS = 1f / Time.deltaTime;
+        fpsBuffer.PushBack(CurrentFPS);
         if (elapsed > UPDATE_FREQUENCY) {
             elapsed = 0f;
 
