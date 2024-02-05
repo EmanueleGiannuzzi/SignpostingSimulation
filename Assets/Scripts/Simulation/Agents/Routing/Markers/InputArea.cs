@@ -64,8 +64,6 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
     }
     
     private Queue<IRouteMarker> thinPath(Queue<IRouteMarker> path) {
-        
-        Debug.Log($"Route max: {path.Count} items");
         Queue<IRouteMarker> newPath = new Queue<IRouteMarker>(path);
         int maxItemsToRemove = (int)Mathf.Floor(newPath.Count * 0.8f);
         float rateParameter = 1 / (((float)maxItemsToRemove + 1) / 10);
@@ -75,7 +73,6 @@ public class InputArea : SpawnAreaBase, IRouteMarker {
         for (int i = 0; i < itemsToRemove; i++) {
             newPath.Dequeue();
         }
-        Debug.Log($"Removed {itemsToRemove} items");
         return newPath;
     }
 

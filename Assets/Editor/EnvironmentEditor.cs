@@ -17,9 +17,11 @@ public class EnvironmentEditor : Editor {
             handler.GenerateVisibilityPlanes();
         }
 
-
         if(GUILayout.Button("Calculate Visibility Data")) {
+            handler.GetSignboardGridGenerator().GenerateGrid();
+
             handler.InitVisibilityHandlerData();
+            handler.GetVisibilityHandler().ShowVisibilityPlane(0);
 
             handler.visibilityHandler.ShowVisibilityPlane(0);
         }

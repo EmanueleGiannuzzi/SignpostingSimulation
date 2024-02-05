@@ -71,6 +71,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
 
     public enum UseCase {
         NONE,
+        ACCELERATION_TEST,
         BACK_AND_FORTH,
         COUNTERFLOW
     }
@@ -158,6 +159,7 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
     private void stopAccelTest() {
         StopAllCoroutines();
         testStarted = false;
+        stopTest();
         Debug.Log("Job's done");
     }
 
@@ -282,9 +284,10 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         switch (action) {
             case UseCase.NONE:
                 break;
-                // StartCoroutine(startAccelTest());
-                // Invoke(nameof(stopAccelTest), testDurationSeconds);
-                // break;
+            case UseCase.ACCELERATION_TEST:
+                StartCoroutine(startAccelTest());
+                Invoke(nameof(stopAccelTest), testDurationSeconds);
+                break;
             case UseCase.BACK_AND_FORTH:
                 StartCoroutine(backAndForthTest());
                 break;
@@ -314,12 +317,14 @@ public class PedestrianSpeedMeasure : MonoBehaviour {
         csv.NextRecord();
 
         foreach (var keyValuePair in agentSpeedLog.Where(kv => kv.Value.Count  < ACCEL_TEST_MAX_READS).ToList()) {
+            Debug.Log(keyValuePair.Value.Count);
             agentSpeedLog.Remove(keyValuePair.Key);
         }
 
         List<float> minAll = new();
         List<float> maxAll = new();
         List<float> avgAll = new();
+        
         for (int i = 0; i < ACCEL_TEST_MAX_READS; i++) {
             float min = float.PositiveInfinity;
             float max = -float.PositiveInfinity;

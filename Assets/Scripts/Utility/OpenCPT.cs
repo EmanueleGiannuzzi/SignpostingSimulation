@@ -43,9 +43,7 @@ public class OpenCPT {
             }
             cost = g.basicCost;
             g.findUnbalanced(); // initialise g.neg on original graph
-            Debug.Log("1: L="   + g.unbalancedVerticesNeg.Length + " i=" + i);
             g.addArc("'virtual start'", nVertices, startVertex, cost);
-            Debug.Log("2: L="   + g.unbalancedVerticesNeg.Length + " i=" + i);
             g.addArc("'virtual end'", 
                 g.unbalancedVerticesNeg.Length <= 1 ? startVertex : g.unbalancedVerticesNeg[i], nVertices, cost); // graph is Eulerian if neg.length=0
             g.solve();
@@ -59,7 +57,6 @@ public class OpenCPT {
                 EditorUtility.ClearProgressBar();
                 return null;
             }
-            Debug.Log("3: L="   + g.unbalancedVerticesNeg.Length + " i=" + i);
         } while(++i < g.unbalancedVerticesNeg.Length);
         
         EditorUtility.ClearProgressBar();

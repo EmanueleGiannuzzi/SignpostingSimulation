@@ -81,7 +81,6 @@ public class SignboardGridGenerator {
     }
 
     public void GenerateGrid(GameObject parent) {
-        int sizeSignboards = 0;
         for(int visPlaneId = 0; visPlaneId < GetVisibilityPlaneSize(); visPlaneId++) {
             GameObject visibilityPlane = GetVisibilityPlane(visPlaneId);
 
@@ -113,12 +112,9 @@ public class SignboardGridGenerator {
                             Random.Range(0f, 1f)
                         );
                         GameObject signboardObj = GenerateMainSignboard(x, z, signboardColor, position, sideWidth, sideHeight, visPlaneParent, signboardBackMaterial);
-                        sizeSignboards++;
                     }
                 }
             }
         }
-
-        Debug.Log("BANANA " + sizeSignboards);
     }
 }
